@@ -1,0 +1,4 @@
+# ignore all subsequent file formats
+*.pdf
+*.csv
+*.html
