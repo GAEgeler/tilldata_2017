@@ -10,3 +10,7 @@
 .Rhistory
 .RData
 .Ruserdata
+
+
+# ignore subequent folders
+/data
