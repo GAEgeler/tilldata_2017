@@ -2,3 +2,11 @@
 *.pdf
 *.csv
 *.html
+*.xlsx
+
+# ignore all files ending with
+# do not update selected files
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
