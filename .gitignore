@@ -11,10 +11,12 @@
 *.RData
 *.Ruserdata
 *.Rproj
+.Rproj.user
 
 
 # ignore subequent folders
 /raw data
 /clean data
 /augmented data
-.Rproj.user
+/files
+/analysen
