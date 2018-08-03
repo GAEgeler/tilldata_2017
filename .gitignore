@@ -13,6 +13,6 @@
 
 
 # ignore subequent folders
-/data
+/raw data
 /clean data
 /augmented data
