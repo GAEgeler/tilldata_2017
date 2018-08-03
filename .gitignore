@@ -6,13 +6,14 @@
 
 # ignore all files ending with
 # do not update selected files
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+*.Rproj.user
+*.Rhistory
+*.RData
+*.Ruserdata
+*.Rproj
 
 
 # ignore subequent folders
-/data
+/raw data
 /clean data
 /augmented data
