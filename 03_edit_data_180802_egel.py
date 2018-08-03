@@ -1,6 +1,7 @@
+##### edit special cases in data
 #### Manuelle Anpassungen an die Kassendaten:
 
-# Stand: 2.05.18 // egel    
+# Stand: 2.08.18 // egel    
 
 # see documentation: "anpassungen an datensatz 180502.txt"
 
@@ -13,8 +14,8 @@ import os
 
 
 # load data
-os.chdir('S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_original/Versand an ZHAW/files')
-d= pd.read_csv('filtered_r_180502_egel.csv',sep=';', parse_dates=['trans_date','date'])
+os.chdir('S:/pools/n/N-IUNR-nova-data/02_kassendaten/01_tilldata_2017/clean data')
+d= pd.read_csv('data_filtered_180802_egel.csv',sep=';', parse_dates=['trans_date','date'])
 
 # two special cases:
 # 1. take 65 random local favorites from data frame and change them to favorite
@@ -25,7 +26,7 @@ spec['article_description'] = 'Favorite' # rename label
 d.update(spec)# merge it back to data frame
 
 # 2. not handled yet
-## am 17.11
+## am 17.11 ???????
 
 
 # adjust data frame according to the description above
@@ -99,5 +100,5 @@ d.loc[(d['date']=='2017-12-15') & (d['article_description']=="Local Favorite"),'
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista Mensa') & (d['article_description']=="Local Favorite"),'article_description'] = 'Favorite'
 
 ### save data
-d.to_csv('filtered_r_edit_180502_egel.csv',sep=';', index=False) # not including time filter
+d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/01_tilldata_2017/augmented data/data_edit_180802_egel.csv',sep=';', index=False) # not including time filter
 

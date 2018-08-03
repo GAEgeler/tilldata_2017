@@ -14,3 +14,5 @@
 
 # ignore subequent folders
 /data
+/clean data
+/augmented data
