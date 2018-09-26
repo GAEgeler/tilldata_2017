@@ -1,4 +1,4 @@
-Erklärung der Files (25.4.18 // egel):
+Erklärung der Files (3.8.18 // egel):
 ----------------------------------------
 
 00_merge_data.R: Zusammenführung der Daten von SV Schweiz

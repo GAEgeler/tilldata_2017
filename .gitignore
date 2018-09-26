@@ -3,6 +3,7 @@
 *.csv
 *.html
 *.xlsx
+*.txt
 
 # ignore all files ending with
 # do not update selected files
