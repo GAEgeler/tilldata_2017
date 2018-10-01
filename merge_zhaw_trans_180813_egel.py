@@ -101,6 +101,9 @@ expand_list(df1['mseriennr'], sv_sample['card_num'])
 
 
 test = [x if x in df1['mseriennr'] else 0 for x in sv_sample['card_num']] # search for match in sv_sample
+t = set(test)
+t
+
 
 test2= pd.merge()
 
