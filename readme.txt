@@ -11,6 +11,8 @@ Erklärung der Files (3.8.18 // egel):
 
 04_load_data.R: Script fürs einlesen der Daten
 
-05_analyse_data.R:
+05_load_add_data.R: Script fürs einlesen von zusätzlichen Datensätzen 
+
+06_analyse_data.R:
 
 06_plot_data.R:
