@@ -53,14 +53,18 @@ df_ <- filter(df, article_description %in% articl_name) # attention no time filt
 # time filter (only lunch meals)-----
 # between 8 and 9 oclock are weiered transactions (total amount over 1000). it seems that michael krauer then feed in missing sold meals of the evenings
 # filter all meals between 9 and 10 to see how many are affected 
-# thus filter total amount over 1000 chf
+# thus filter total amount over 1000 chf => only for old dataset
 df_ <- filter(df_, (hour(trans_date) >= 9 & hour(trans_date) <= 14)) # starts at 9:00 and end at 14:59, and excluds cases (only one) which the total_amount is higher than 1000
+
+#exclude Gutschein payers for old data set, becaus of double entries
+#df_ <- filter(df_7, !grepl("Gutschein",df_$pay_description))
+
 
 # change date format (because it causes several problems while merging)----------
 df_$date <- as.Date(df_$date) # change date format from POSIXct to Date
 
 # save data-------
-# old data set: 26333 obs
+# old data set: 26234 obs
 # new data set: 23683 obs
 
 write_delim(df_, "clean data/data_filtered_180929_egel.csv", delim = ';')

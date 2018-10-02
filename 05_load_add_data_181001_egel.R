@@ -2,8 +2,27 @@
 
 # status 1.10.18 // egel
 
+# load packages
+pck <- c("dplyr", "stringr", "readr", "readxl", "reshape2", "lubridate")
+lapply(pck, function(x){do.call("library", list(x))})
 
-# load environment data-----------
+# load documentation ----------- (last update sept 2018)
+info_orig <- read_delim("augmented data/menu_inhalt_protein_180420_matu08.csv", delim =';', locale = locale(encoding = 'LATIN1'),
+                        col_types = cols(date = col_date(format = "%d.%m.%Y"))) %>% # pay attention to the date format (now is it Date format not POSIXct)
+    mutate(date = as.Date(.$date)) %>%
+    mutate(week = isoweek(.$date)) %>%
+    mutate(condit = ifelse(.$cycle == 1 & .$week %%2 == 0,"Basis",ifelse(.$cycle == 2 & .$week %%2 == 1,"Basis","Intervention"))) %>%
+    mutate(shop_description = str_replace(.$shop_description, " .*", "")) # take only first word of shop_description (better for merge)
+
+
+# load hot and cold buffet information-----
+buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
+    mutate(article_description = "Hot and Cold") %>%
+    mutate(date = parse_date(.$date)) %>% # to get same date format as other data frames
+    mutate(shop_description = str_replace(.$shop_description, " .*", ""))
+
+
+# load environmental data-----------
 
 ## load ubp
 ubp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T) %>% # load specific space in excel sheet
@@ -38,12 +57,7 @@ ubp <- ubp %>%
     mutate(date=as.Date(ubp$date,format="%b.%d.%y")) # important change date to date format (not posixct)
 
 # join with documentation to achive the best names matches
-info1 <- read_delim("augmented data/menu_inhalt_protein_180420_matu08.csv", delim=';',locale = locale(encoding = 'LATIN1'), col_types = cols(date=col_date(format = "%d.%m.%Y"))) # pay attention to the date format (now is it Date format not POSIXct)
-info1$week <- isoweek(info1$date)
-info1$date <- parse_date(info1$date) # important change date to date format (not posixct)
-info1$condit <- ifelse((info1$cycle ==1 & info1$week %%2 == 0),"Basis",ifelse((info1$cycle == 2 & info1$week %%2 == 1),"Basis","Intervention"))
-
-ubp_ <- info1 %>%
+ubp_ <- info_orig %>%
     select(article_description, week, cycle, date, label_content, meal_name) %>%
     filter(duplicated(meal_name)) %>% # only duplicates (because of shop_description)
     left_join(ubp, .,by = c("article_description", "cycle", "date", "week")) %>%
@@ -68,7 +82,7 @@ gwp[grep("Seitanragout", gwp$meal_name_comp), ]$label_content <- "vegan (Fleisch
 gwp_ <- left_join(gwp, ubp[c("meal_name_comp", "label_content", "article_description", "date", "week", "cycle")], by = c("meal_name_comp", "label_content"))
 
 # merge with documentation
-gwp_1 <- info1 %>%
+gwp_1 <- info_orig %>%
     select(article_description, week, cycle, date, label_content, meal_name) %>%
     filter(duplicated(meal_name)) %>% # only duplicates (because of shop_description)
     left_join(gwp_, .,by = c("article_description", "cycle", "date", "week")) %>%
@@ -77,7 +91,10 @@ gwp_1 <- info1 %>%
 # melt into long format
 gwp_long <- melt(gwp_1, id.vars = c("meal_name", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "label_content.x", "tot_gwp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "gwp")
 
-
+# merge dataframes of environmental data
+envir_tot <- inner_join(ubp_long[-7], gwp_long[-c(2,4,7)], by = c("meal_name.y" = "meal_name", "article_description", "label_content.y", "date", "content")) %>%
+    rename("meal_name" = "meal_name.y", "label_content" = "label_content.y") %>%
+    mutate(week = isoweek(.$date))
 
 
 # load nutritional data-----------
@@ -104,17 +121,17 @@ nutri_wide[grep("Hot", nutri_wide$meal_name),]$date <-  strptime(as.character("2
 nutri_wide <- nutri_wide[-grep("85_Auberginen-Moussaka_45K9.11",nutri_wide$meal_name),] # delete moussaka with meat 
 nutri_wide[grep("85_Auberginen-Moussaka",nutri_wide$meal_name),]$date <- "2017-11-09" # change date to correct date in cycle 1
 
-nutri_wide_ <- info1 %>%
+nutri_wide_ <- info_orig %>%
     select(article_description, week, cycle, date, label_content, meal_name) %>%
-    left_join(gwp_, .,by = c("article_description", "cycle", "date", "week")) %>%
-    filter(!duplicated(meal_name))
+    left_join(nutri_wide, .,by = c("article_description", "cycle", "date", "week")) %>%
+    filter(!duplicated(meal_name.y)) %>%
+    select(-meal_name.x)
 
 
-# not done yet
-nutri_long <- melt(nutri_wide_, id.vars = c("meal_name", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "label_content.x", "tot_gwp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "gwp")
+# nutritionoal data into long format 
+nutri_long <- melt(nutri_wide_, id.vars = c("meal_name.y", "date", "cycle", "article_description", "label_content"), measure.vars = c("ebp_points", "ebp_label", "teller_points", "teller_label"))
 
 
-# merge dataframes
-envir_nutri <- inner_join(ubp_long[-7], gwp_long[-c(2,4,7)], by = c("meal_name.y" = "meal_name", "article_description", "label_content.y", "date", "content"))
-envir_nutri_ <- inner_join(envir_nutri, nutri_long ... )
-    
+#delete other datasets
+rm(list=c("gwp", "gwp_", "gwp_1" , "info1", "nutri_wide",  "pck",  "ubp" ,        
+           "ubp_"  , "ubp_long", "gwp_long", "nutri_long"))

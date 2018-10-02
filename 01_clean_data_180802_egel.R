@@ -15,10 +15,9 @@ df_n <- read_delim("raw data/data_trans_180929_egel.csv", delim=';', col_types =
 # old data set (rename from ZHAW_transactions_180802_egel)
 df_n1 <- read_delim("raw data/data_trans_180802_egel.csv",  delim=';', col_types = cols(qty_weight = col_double()))
 # filter for grüental and vista (old data set 50'026, new data set 41'585) -----------
-# after first comparisons of the two data sets, my fist conclusion, they seem to be completely different
 df_dat <- df_n %>%
     filter(shop_description == "Grüental" | shop_description== "Vista") %>%
-    select(transaction_id, trans_date, date, art_description, art_code, qty_weight, 
+    select(ccrs, transaction_id, trans_date, date, art_description, art_code, qty_weight, 
                  card_num, gender, Dob, member, price_descript,
                  total_amount, price_article, single_price, pay_description, shop_description) %>%
     rename(article_description = art_description, rab_descript = price_descript, prop_price = single_price) # total_amount_trans = total_amount.x, total_amount_pay = total_amount.y
