@@ -9,8 +9,10 @@ lapply(pack, function(x){do.call("library", list(x))})
 
 ####
 # data from 2017-------- for individual analysis
+# problem with encoding, dont know how to handle => especially while file savings
 df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
     mutate(date = as.Date(date)) 
+
 
 # data from 2017---------- for aggregated analysis
 df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
@@ -47,10 +49,10 @@ rm(list = c("buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info
 ###
 # data from 2015 & 2016----
 #same dataset as in earlier version
-dat_hs_tot <- read_delim("raw data/verkaufsdaten täglich HS 15-16 180731.csv", 
+dat_hs_tot <- read_delim("raw data/verkaufsdaten tÃ¤glich HS 15-16 180731.csv", 
                          delim = ';',
                          col_types = cols(date = col_date(format="%d.%m.%Y"))) %>% # load data
-    dplyr::rename(tot_sold=Verkaufte_Stücke, shop_description = ort) %>% # rename variables
+    dplyr::rename(tot_sold=Verkaufte_StÃ¼cke, shop_description = ort) %>% # rename variables
     filter(article_description %in% c('KitchenTotal','Green','FavoriteTotal','BuffetTotal')) %>% # filter data for the four main meals
     mutate(week=strftime(date, format= "%V")) %>% # might get an error
     select(article_description, date, week, year, shop_description, tot_sold)
@@ -74,32 +76,32 @@ df_tot$shop_description <- firstup(df_tot$shop_description)
 dt <- filter(df_tot, year == 2015) %>%
     rename(tot=tot_sold)
 
-# meal content for mensa grüental
+# meal content for mensa grÃ¼ental
 #meat
-Fleisch_g <- cbind.data.frame(dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$tot*0.8 +
-                                  dt[dt["article_description"]=="Kitchen"& dt["shop_description"]=="Grüental",]$tot, # 80% of Favorite meals and 100% of Kitchen meals contain meat
-                              dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$date)
+Fleisch_g <- cbind.data.frame(dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$tot*0.8 +
+                                  dt[dt["article_description"]=="Kitchen"& dt["shop_description"]=="GrÃ¼ental",]$tot, # 80% of Favorite meals and 100% of Kitchen meals contain meat
+                              dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$date)
 
 names(Fleisch_g) <- c("tot_sold","date") # rename
 Fleisch_g$label_content <- "Meat" # add label content
-Fleisch_g$shop_description <- "Grüental" # add shop_description
+Fleisch_g$shop_description <- "GrÃ¼ental" # add shop_description
 
 #vegetarian
-Vegetarisch_g <- cbind.data.frame(dt[dt["article_description"]=="Green" & dt["shop_description"]=="Grüental",]$tot +
-                                      dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$tot*.2, # 100% of Green meals and 20% of Favorite meals are vegetarian
-                                  dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$date)
+Vegetarisch_g <- cbind.data.frame(dt[dt["article_description"]=="Green" & dt["shop_description"]=="GrÃ¼ental",]$tot +
+                                      dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$tot*.2, # 100% of Green meals and 20% of Favorite meals are vegetarian
+                                  dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$date)
 
 names(Vegetarisch_g) <- c("tot_sold","date")
 Vegetarisch_g$label_content <- "Vegetarian"
-Vegetarisch_g$shop_description <- "Grüental"
+Vegetarisch_g$shop_description <- "GrÃ¼ental"
 
 #buffet
-Hot_Cold_g <- cbind.data.frame(dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="Grüental",]$tot,
-                               dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="Grüental",]$date)
+Hot_Cold_g <- cbind.data.frame(dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="GrÃ¼ental",]$tot,
+                               dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="GrÃ¼ental",]$date)
 
 names(Hot_Cold_g) <- c("tot_sold","date")
 Hot_Cold_g$label_content <- "Hot and Cold"
-Hot_Cold_g$shop_description <- "Grüental  "
+Hot_Cold_g$shop_description <- "GrÃ¼ental  "
 
 
 # meal content for mensa vista
@@ -140,32 +142,32 @@ menu_tot5$week <- isoweek(menu_tot5$date) # add week nr -- ATTENTION week() retu
 dt <- filter(df_tot, year == 2016) %>%
     rename(tot=tot_sold)
 
-# meal content for mensa grüental
+# meal content for mensa grÃ¼ental
 #meat
-Fleisch_g <- cbind.data.frame(dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$tot*0.8 +
-                                  dt[dt["article_description"]=="Kitchen"& dt["shop_description"]=="Grüental",]$tot, # 80% of Favorite meals and 100% of Kitchen meals contain meat
-                              dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$date)
+Fleisch_g <- cbind.data.frame(dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$tot*0.8 +
+                                  dt[dt["article_description"]=="Kitchen"& dt["shop_description"]=="GrÃ¼ental",]$tot, # 80% of Favorite meals and 100% of Kitchen meals contain meat
+                              dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$date)
 
 names(Fleisch_g) <- c("tot_sold","date") # rename 
 Fleisch_g$label_content <- "Meat" # add label_content
-Fleisch_g$shop_description <- "Grüental" # add shop_description
+Fleisch_g$shop_description <- "GrÃ¼ental" # add shop_description
 
 #vegetarian
-Vegetarisch_g <- cbind.data.frame(dt[dt["article_description"]=="Green" & dt["shop_description"]=="Grüental",]$tot +
-                                      dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$tot*.2, # 100% of Green meals and 20% of Favorite meals are vegetarian
-                                  dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="Grüental",]$date)
+Vegetarisch_g <- cbind.data.frame(dt[dt["article_description"]=="Green" & dt["shop_description"]=="GrÃ¼ental",]$tot +
+                                      dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$tot*.2, # 100% of Green meals and 20% of Favorite meals are vegetarian
+                                  dt[dt["article_description"]=="Favorite" & dt["shop_description"]=="GrÃ¼ental",]$date)
 
 names(Vegetarisch_g) <- c("tot_sold","date")
 Vegetarisch_g$label_content <- "Vegetarian"
-Vegetarisch_g$shop_description <- "Grüental"
+Vegetarisch_g$shop_description <- "GrÃ¼ental"
 
 #buffet
-Hot_Cold_g <- cbind.data.frame(dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="Grüental",]$tot,
-                               dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="Grüental",]$date)
+Hot_Cold_g <- cbind.data.frame(dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="GrÃ¼ental",]$tot,
+                               dt[dt["article_description"]=="Hot and Cold" & dt["shop_description"]=="GrÃ¼ental",]$date)
 
 names(Hot_Cold_g) <- c("tot_sold","date")
 Hot_Cold_g$label_content <- "Hot and Cold"
-Hot_Cold_g$shop_description <- "Grüental"
+Hot_Cold_g$shop_description <- "GrÃ¼ental"
 
 
 # meal content for mensa vista
