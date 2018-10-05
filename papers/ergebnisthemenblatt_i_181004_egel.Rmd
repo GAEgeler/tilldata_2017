@@ -1,0 +1,46 @@
+---
+title: |
+    | Ergebnisthemenblätter NOVANIMAL WPIII.1 
+    | Menü-Linien, ein veraltetes Konzept? Wie Gäste dazu bewegt werden können vermehrt ressourcenleichte Gerichte zu wählen
+author: "Gian-Andrea Egeler, Priska Baur"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: 
+    fig_caption: yes
+  html_document: default
+bibliography: biblio_181004.bib
+---
+
+
+###	1. Lead / Teaser
+
+Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastronomie. Im Jahr 201X sind Fleischgerichte (20.3%) mit den entsprechenden Beilagen (30.8%) im Zusammenhang der Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz (GastroSuisse, 2016). Gemäss der ersten in den Jahren 2014/2015 durchgeführten nationalen Ernährungserhebung menuCH essen 70 % der Bevölkerung zwischen 18 und 75 Jahren am Mittag auswärts [@bochud_anthropometric_2017]. Daher rückt die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen Ernährungswirtschaft ins Blickfeld. Welche Innovationen in der Gastronomie könnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
+
+###	2. Forschungsfragen und Ziele
+
+Die übergeordnete Forschungsfrage dieses Arbeitspackets war es die Gäste dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die abgeleitete Forschungsfragen interessiert es wie beeinflusst das Menü-Angebot die Menü-Wahl? Und wie beeinflussen die Menü-Beschriftungen (sog. Menülinien) die Menü-Wahl?
+
+
+###	3. Theoretischer Hintergrund und Methoden 
+
+Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Quasi-Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgeführt wird. Konkret wird untersucht, wie die Gäste auf ein verändertes Menü-Angebot mit einem höheren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
+
+Das Quasi-Experiment findet im Herbstsemester 2017 während 12 Wochen statt und besteht aus zwei Mensazyklen à 6 Wochen (siehe Abbildung 1). Über den gesamten Untersuchungszeitraum werden insgesamt 93 verschiedene Menüs angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Menüs und ein vegetarisches Menü angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische Gerichte (z.B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z.B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
+
+Versuchspläne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als Umkehrpläne (Jain & Spieß, 2012). Ziel dieser Umkehrdesigns ist es zu überprüfen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen Versuchsplänen stellen die Teilnehmenden Einzelfälle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren (Gravetter & Forzano, 2016). 
+Dieser ABABAB-Umkehrplan (oder Design) wurde gewählt, weil die Mensabesucher per Definition Einzelfälle darstellen. In unserem Quasi-Experiment dient dieses Design zu überprüfen, ob das veränderte Menü-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. 
+Die Abbildung 1 zeigt, wie die Menüs über drei vorgegebene Menülinien: Favorite, Kitchen, World währen des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Menüs war es, einerseits die Mensagäste zu «desorientieren» und andererseits Übungs- oder Gewöhnungseffekten zu unterbinden. Übungs- oder Gewöhnungseffekten (engl. Testing effect or habituation) können jedoch die interne Validität bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design änderten. 
+
+![Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwoche 40 bis 45).](design_eng_experiment_ohne datum_180426_03egel.png)
+
+###	4. Ergebnisse
+
+###	5. Diskussion (inkl.  Einordnung der Ergebnisse in die internationale Forschung)
+
+###	6. Schlussfolgerungen mit Empfehlungen/Implikationen für Praxis und Politik
+
+###	7. Danksagung
+
+Wir bedanken uns bei der SV Schweiz und insbesondere bei den konkreten Verantwortlichen (Area- und Restaurantmanager und Küchenteam) für die hilfsbereite und unkomplizierte Unterstützung (Lieferung von Daten, Rezepturen, Beantwortung von Fragen).
+
+## 8. Quellen

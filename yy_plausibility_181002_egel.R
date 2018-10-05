@@ -17,12 +17,11 @@ write_delim(df, "augmented data/plausibility_180310_egel.csv", delim = ";") # so
 df_7$rab_descript2 <- str_replace(df_7$rab_descript, "Mitarbeiter", "Mitarbeitende")
 
 t <- filter(df_7, rab_descript == "Externer Preis") # 24 obs => is it realistic, that only 24
-t_ <- filter(df_agg, rab_descript == "Externer Preis") # in comparison 403 obs in data frame from sv
+t_ <- filter(df_agg, rab_descript == "Externer Preis") # in comparison 403 obs in data frame from sv, however only 25 were payed with campuscard
 t2 <- filter(df_7, member  == "Spezialkarten")
 t3 <- df_7[!df_7$member == df_7$rab_descript2,] # two observations are missing somehow
 
 # compare unique card numbers and their member and check it with padis information
-
 df <- filter(df_7, ccrs %in% unique(df_7$ccrs)) # not working
 
 df <- group_by(df_7, ccrs, member, gender) %>% summarise(test = n())

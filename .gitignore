@@ -4,6 +4,8 @@
 *.html
 *.xlsx
 *.txt
+*.bib
+*.png
 
 # ignore all files ending with
 # do not update selected files
@@ -22,3 +24,4 @@
 /files
 /analysen
 /archive
+/plots
