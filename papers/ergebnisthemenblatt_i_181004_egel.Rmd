@@ -1,39 +1,228 @@
 ---
+lang: de-DE
 title: |
     | Ergebnisthemenblätter NOVANIMAL WPIII.1 
     | Menü-Linien, ein veraltetes Konzept? Wie Gäste dazu bewegt werden können vermehrt ressourcenleichte Gerichte zu wählen
 author: "Gian-Andrea Egeler, Priska Baur"
-date: "`r Sys.Date()`"
+date: "`r format(Sys.Date(), '%B %Y')`"
 output:
   pdf_document: 
     fig_caption: yes
   html_document: default
+fontsize: 12pt
 bibliography: biblio_181004.bib
 ---
+
+```{r, echo=F, results='hide'}
+#rmarkdown::render("papers/ergebnisthemenblatt_i_181004_egel.Rmd") # here is the code to knitr the rmd file in the environment (takes data already load)
+
+```
 
 
 ###	1. Lead / Teaser
 
-Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastronomie. Im Jahr 201X sind Fleischgerichte (20.3%) mit den entsprechenden Beilagen (30.8%) im Zusammenhang der Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz (GastroSuisse, 2016). Gemäss der ersten in den Jahren 2014/2015 durchgeführten nationalen Ernährungserhebung menuCH essen 70 % der Bevölkerung zwischen 18 und 75 Jahren am Mittag auswärts [@bochud_anthropometric_2017]. Daher rückt die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen Ernährungswirtschaft ins Blickfeld. Welche Innovationen in der Gastronomie könnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
+Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastronomie. Im Jahr 2015 sind Fleischgerichte (20.3%) mit den entsprechenden Beilagen (30.8%) im Zusammenhang der Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz [@] (GastroSuisse, 2016). Gemäss der ersten in den Jahren 2014/2015 durchgeführten nationalen Ernährungserhebung menuCH essen 70 % der Bevölkerung zwischen 18 und 75 Jahren am Mittag auswärts [@bochud_anthropometric_2017]. Daher rückt die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen Ernährungswirtschaft ins Blickfeld. Welche Innovationen in der Gastronomie könnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
 
 ###	2. Forschungsfragen und Ziele
 
-Die übergeordnete Forschungsfrage dieses Arbeitspackets war es die Gäste dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die abgeleitete Forschungsfragen interessiert es wie beeinflusst das Menü-Angebot die Menü-Wahl? Und wie beeinflussen die Menü-Beschriftungen (sog. Menülinien) die Menü-Wahl?
+Die übergeordnete Forschungsfrage dieses Arbeitspackets war es die Gäste dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die abgeleitete Forschungsfragen interessiert es wie das Menü-Angebot oder die Menü-Beschriftung die Menü-Wahl beeinflusst?
 
 
 ###	3. Theoretischer Hintergrund und Methoden 
 
 Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Quasi-Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgeführt wird. Konkret wird untersucht, wie die Gäste auf ein verändertes Menü-Angebot mit einem höheren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
+<br>
+Das Quasi-Experiment findet im Herbstsemester 2017 während 12 Wochen statt und besteht aus zwei Mensazyklen à 6 Wochen (siehe Abbildung \ref{fig:fig1}). Über den gesamten Untersuchungszeitraum werden insgesamt 93 verschiedene Menüs angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein vegetarisches Menü angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische Gerichte (z. B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z.B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
+<br>
+Versuchspläne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als Umkehrpläne [@] (Jain & Spieß, 2012). Ziel dieser Umkehrdesigns ist es zu überprüfen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen Versuchsplänen stellen die Teilnehmenden Einzelfälle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren [@] (Gravetter & Forzano, 2016).<br>
+Dieser ABABAB-Umkehrplan (oder Design) wurde gewählt, weil die Mensabesucher per Definition Einzelfälle darstellen. In unserem Quasi-Experiment dient dieses Design zu überprüfen, ob das veränderte Menü-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. <br>
+Die Abbildung \ref{fig:fig1} zeigt, wie die Gerichte über drei vorgegebene Menü-Linien: Favorite, Kitchen, World währen des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Gerichte war es, einerseits die Mensagäste zu «desorientieren» und andererseits Übungs- oder Gewöhnungseffekten zu unterbinden. Übungs- oder Gewöhnungseffekten (engl. Testing effect or habituation) können jedoch die interne Validität bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design änderten. 
 
-Das Quasi-Experiment findet im Herbstsemester 2017 während 12 Wochen statt und besteht aus zwei Mensazyklen à 6 Wochen (siehe Abbildung 1). Über den gesamten Untersuchungszeitraum werden insgesamt 93 verschiedene Menüs angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Menüs und ein vegetarisches Menü angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische Gerichte (z.B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z.B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
+```{r, echo=FALSE, fig.cap="\\label{fig:fig1} Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwochen 40 bis 45).", out.width = '100%'}
+knitr::include_graphics("design_eng_experiment_ohne datum_180426_03egel.png")
+```
 
-Versuchspläne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als Umkehrpläne (Jain & Spieß, 2012). Ziel dieser Umkehrdesigns ist es zu überprüfen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen Versuchsplänen stellen die Teilnehmenden Einzelfälle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren (Gravetter & Forzano, 2016). 
-Dieser ABABAB-Umkehrplan (oder Design) wurde gewählt, weil die Mensabesucher per Definition Einzelfälle darstellen. In unserem Quasi-Experiment dient dieses Design zu überprüfen, ob das veränderte Menü-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. 
-Die Abbildung 1 zeigt, wie die Menüs über drei vorgegebene Menülinien: Favorite, Kitchen, World währen des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Menüs war es, einerseits die Mensagäste zu «desorientieren» und andererseits Übungs- oder Gewöhnungseffekten zu unterbinden. Übungs- oder Gewöhnungseffekten (engl. Testing effect or habituation) können jedoch die interne Validität bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design änderten. 
 
-![Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwoche 40 bis 45).](design_eng_experiment_ohne datum_180426_03egel.png)
+<!-- ![Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwoche 40 bis 45).](design_eng_experiment_ohne datum_180426_03egel.png) -->
 
 ###	4. Ergebnisse
+
+Wird ein grösseres, vielfältigeres und schmackhafteres das Angebot an attraktiven vegetarischen und veganen Gerichten von den Mensabesuchern häufiger gewählt? Von insgesamt 93 Menüs, welche pro Mensazyklus angeboten wurden, enthielten `r round(45/93, digits = 0)` Prozent (n = 45) der Gerichte Fleisch. Ein Drittel (n = 31) der Menüs wurde vegetarisch und die restlichen `r round(16/93, digits = 0)` Prozent (n = 16) ausschliesslich pflanzlich angeboten. Im Vergleich zu den vergangenen Jahren (2015 und 2016) wuchs das vegetarische und vegane Angebot im 2017 von `r ((30*.2)+30)/120*100` Prozent auf knapp 40 Prozent, wobei das Hot and Cold-Buffet nicht als vegetarisches Angebot mitgezählt wurde. 
+In der Abbildung \ref{fig:fig2} zeigt alle verkauften Gerichte nach Menü-Inhalt (vegan, vegetarisch, Fleisch und Buffet), welche während des Quasi-Experiments angeboten wurden.
+
+
+```{r, echo=F, fig.cap="\\label{fig:fig2} Die Abbildung 2 zeigt die verkauften Gerichten aufgeteilt nach den fünf Menü-Inhalten über die 12 Wochen", fig.height=14, fig.width=25}
+
+# to load data first execture 04_load_data
+#prepare data for plot: aggregated data
+df_ <- group_by(df_agg, condit ,week, label_content )%>% summarise(tot_sold=n())
+
+df_ <- df_ %>% 
+    group_by(week,condit) %>% # give in variable, you want to calculate percentage
+    mutate(pct=(tot_sold/sum(tot_sold)))
+
+# ranem NA to unknown
+df_$label_content <- ifelse(is.na(df_$label_content),"Unknown",df_$label_content)
+
+# annotation for selling per week
+text <- group_by(df_agg, week) %>% summarise(tot = n()) %>%
+    mutate(label = "italic(n)") %>%
+    mutate(label2 = paste(label, tot, sep="=="))
+
+# define x-lab for plot
+df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+ 
+# detects dark color: for labelling the bars
+isDark <- function(color) {
+    (sum(grDevices::col2rgb(color) *c(299, 587,114))/1000 < 123)
+}
+
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# barplot
+p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
+    ylab("\nVerkaufte Menüs in Prozent")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
+           color = F)+
+    scale_y_continuous(labels=scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","vegan (Fleischersatz)", "vegan (authentisch)", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    annotate( 
+        "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
+    mytheme
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+```
+
+```{r, echo=FALSE, results="hide", warning=F, comment=F,fig.show=F}
+# test if week sellings statistically differ
+sell_dat <- df_agg %>%
+    mutate(day=wday(date, label = T)) %>% 
+    group_by(semwk, condit) %>%
+    summarise(tot_sold=n())
+
+leveneTest(sell_dat$tot_sold, sell_dat$condit)# varianzes are homogene
+ao=(aov(sell_dat$tot_sold ~ sell_dat$condit)) 
+t.test(sell_dat$tot_sold ~ sell_dat$condit) # same as aov
+summary(ao)
+
+# test if meal content differ statistically
+sell_dat <- df_agg %>%
+    mutate(label_content2 = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan")) %>% # change name 
+    mutate(label_content2 = str_replace(.$label_content2, "Pflanzlich", "Vegan")) %>% # chaneg name
+    group_by(semwk, condit, label_content2) %>%
+    summarise(tot_sold=n()) %>%
+    na.omit()  # omit NA
+    #filter(!label_content2 == "Hot and Cold")
+
+leveneTest(sell_dat$tot_sold, sell_dat$label_content2)# varianzes are inhomogene (because of the hot and cold sellings (small groups)), thus kruskal-wallis test
+ao <- aov(sell_dat$tot_sold ~ sell_dat$label_content2: sell_dat$condit) # anova only with interaction between label_content and condit
+autoplot(ao) # dont look very nice, however i would accept it :)
+summary(ao) # display anova
+TukeyHSD(ao) #post-hoc test
+
+
+#kruskal wallis test: a robust alternative to anova
+sell_dat$label_content2 <- factor(sell_dat$label_content2, levels = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold")) # define independent variable as factor
+kr <- kruskal.test(tot_sold ~ interaction(label_content2,condit), data = sell_dat) # it looks like a sign difference between selling melas and interaction label_content and condition
+library(FSA)
+dunnTest(tot_sold ~ interaction(label_content2,condit), data=sell_dat, # post-hoc-test for kruskal tests
+              method="bh") # Benjamini-Hochberg method for correction
+
+# only fleisch.basis and fleisch.intervention are sig different, most of the difference is because hot and cold sellings are low (basis and intervention) compared to the other two
+
+```
+
+```{r, echo = F, fig.cap="\\label{fig:fig3} Die Abbildung 3 zeigt die verkauften Gerichten nach Menü-Inahlt und Bedingung (Intervention- und Basiswochen)", fig.height=14, fig.width=18}
+
+# visualize findings from above
+m_sell <- na.omit(sell_dat) %>% group_by(condit,label_content2) %>% summarise(val = mean(tot_sold)) # calculate means (per what) of the label_content per condition
+
+ggplot(sell_dat, aes(x = condit, y = tot_sold, color = label_content2)) + 
+    geom_point(data = m_sell, aes(y = val)) +
+    geom_line(data = m_sell, aes(y = val, group = label_content2), size = 1.5) + 
+    theme_bw()+
+    labs(y = "Durchschnittlich verkaufte Gerichte pro Woche", x = "Bedingungen") + 
+    guides(color = guide_legend(title = "Menü-Inhalt"))+
+    scale_color_manual(values = c("Fleisch" = "#fad60d", "Vegetarisch" = "#c5b87c", "Vegan" = "#80ccff", "Hot and Cold" = "#4c4848"),
+                       breaks = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold"), 
+                       limits = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold")) + 
+    scale_y_continuous(breaks = seq(0,1400,200), limits = c(0, 1400)) +
+    mytheme
+```
+
+
+
+Der Abbildung \ref{fig:fig2} ist zu entnehmen, dass die wöchentlichen Verkaufszahlen sich statistisch nicht unterscheiden (*F*(1,10) = `r round(summary(ao)[[1]][["F value"]][1], digits = 3)`, *p* = `r round(summary(ao)[[1]][["Pr(>F)"]][1],digits = 3)`). Des Weiteren gab es Unterschiede in den Verkaufszahlen zwischen den Interventions- und Basiswochen (*H*(7) = `r round(kr$statistic[[1]], digits = 2)`, *p* < 0.001). Auffallend dabei sind, dass deutlch weniger fleischhaltige Gerichte in den Basiswochen als in den Interventionswochen konsumiert worden ist (siehe Abbildung \ref{fig:fig3}).   
+
+```{r, echo=F, fig.cap="\\label{fig:fig4} Die Abbildung 4 zeigt die verkauften Gerichten nach Menü-Linien und Menü-Inhalt im Vergleich (2015, 2016 und 2017)", fig.height=14, fig.width=18}
+
+# prepare data
+df <- menu_tot %>%
+    group_by(article_description, year) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+# change first some strings
+df$article_description[grep("Local+",df$article_description)] <- "Local" # summarize all locals
+df$article_description[grep("Green",df$article_description)] <- "Green/World"
+df$article_description[grep("World",df$article_description)] <- "Green/World"
+
+# aggregate again because of locale
+
+df <- df %>% group_by(article_description, year) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+df <- df %>% # calculate percentage
+    group_by(year) %>% mutate(pct = tot_sold/sum(tot_sold))
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Local" = "black","Favorite"="#c5b87c", "Green/World" = "#fad60d", "Kitchen" = "#008099","Hot and Cold"="#4c4848")
+
+df$label_color <- as.factor(sapply(unlist(ColsPerCat)[df$article_description], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# define annotation
+text <- group_by(df, year) %>% summarise(tot=sum(tot_sold)) %>%
+    mutate(tot2=format(tot, big.mark = "'", scientific = F)) %>% # add thousand seperator
+    mutate(label = "n") %>%
+    mutate(label2=paste(label,tot2,sep=" = "))
+
+# plot data
+ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_description,levels=c("Local","Kitchen","Green/World","Favorite","Hot and Cold")), color = label_color)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .6) +
+    #ggtitle("Verkaufte Menüs: 3. + 4. HSW\n") +
+    xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
+    ylab("Verkaufte Menüs pro Herbstsemester")+
+    guides(fill= guide_legend(title = "Menü-Linien"), 
+           color=F)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$names,
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot and Cold"))+
+    scale_color_manual(values = levels(df$label_color))+
+    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 5, position = position_stack(vjust = 0.5))+ # omit 1% annotation
+    annotate("text",x = 1:3, y = 27500, label = text$label2, size=6)+
+    mytheme
+
+
+```
+
 
 ###	5. Diskussion (inkl.  Einordnung der Ergebnisse in die internationale Forschung)
 

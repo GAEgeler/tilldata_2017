@@ -3,7 +3,7 @@
 # status 4.10.18 // egel
 
 # required packages
-pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "here")
+pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "gmodels", "car")
 lapply(pack, function(x){do.call("library", list(x))})
 
 
@@ -13,7 +13,7 @@ lapply(pack, function(x){do.call("library", list(x))})
 
 ### statistical differences between semwk and label content-------------
 CrossTable(df_agg$semwk,df_agg$label_content, chisq = T)
-chisq.test(df_agg$semwk, df_agg$label_content)$stdres
+chisq.test(df_agg$semwk, df_agg$label_content)$stdres # show residuals only
 
 adjp <- 0.05/(length(unique(df_agg$semwk))*length(unique(df_agg$label_content)))# adjusted p-value
 qnorm(adjp, lower.tail = F) # critical z-value from websit:. +- 3.39 
@@ -60,20 +60,21 @@ ao <- (aov(sell_dat$tot_sold ~ sell_dat$condit)) # is this the right test?
 summary.lm(ao)
 TukeyHSD(ao)
 
+chisq.test(sell_dat$tot_sold, sell_dat$condit)
 
 ### statistical analyses: differ label_content between weeks?
 df_ <- df_agg  
-df_[grepl("Vegan$",df_$label_content),]$label_content <- "Vegetarian" # $ sign matches the end of the string, find only vegan (without the +)
-df_[grepl("Vegan\\+",df_$label_content),]$label_content <- "Vegetarian" # after \\ matches even with special sign
+df_[grepl("Pflanzlich$",df_$label_content),]$label_content <- "Vegetarisch" # $ sign matches the end of the string, find only vegan (without the +)
+df_[grepl("Pflanzlich\\+",df_$label_content),]$label_content <- "Vegetarisch" # after \\ matches even with special sign
 
 
-sell_dat <- df_ %>%    
+sell_dat2 <- df_ %>%    
     group_by(condit ,week, label_content)%>%
     summarise(tot_sold=n())
 
-leveneTest(sell_dat$tot_sold ~ sell_dat$condit) # not significant
+leveneTest(sell_dat2$tot_sold ~ sell_dat2$label_content) # not significant
 
-ao1 <- aov(sell_dat$tot_sold ~ sell_dat$label_content*sell_dat$condit)
+ao1 <- aov(sell_dat2$tot_sold ~ interaction(sell_dat$condit, sell_dat$label_content))
 summary.lm(ao1)
 TukeyHSD(ao1)
 
