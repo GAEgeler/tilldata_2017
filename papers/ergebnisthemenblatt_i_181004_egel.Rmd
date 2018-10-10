@@ -1,19 +1,31 @@
 ---
 lang: de-DE
 title: |
-    | ErgebnisthemenblÃ¤tter NOVANIMAL WPIII.1 
-    | MenÃ¼-Linien, ein veraltetes Konzept? Wie GÃ¤ste dazu bewegt werden kÃ¶nnen vermehrt ressourcenleichte Gerichte zu wÃ¤hlen
+    | Ergebnisthemenblätter NOVANIMAL WPIII.1 
+    | Menü-Linien, ein veraltetes Konzept? Wie Gäste dazu bewegt werden können vermehrt ressourcenleichte Gerichte zu wählen
 author: "Gian-Andrea Egeler, Priska Baur"
 date: "`r format(Sys.Date(), '%B %Y')`"
 output:
+  html_document: default
   pdf_document: 
     fig_caption: yes
-  html_document: default
 fontsize: 12pt
+geometry: margin = 1.2in
+header-includes:
+- \usepackage{fancyhdr}
+- \usepackage{placeins}
+- \usepackage{setspace}
+- \usepackage{chngcntr}
+- \onehalfspacing
+# - \counterwithin{figure}{section}
+# - \counterwithin{table}{section}
+
 bibliography: biblio_181004.bib
 ---
 
-```{r, echo=F, results='hide'}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, fig.pos = 'h')
+
 #rmarkdown::render("papers/ergebnisthemenblatt_i_181004_egel.Rmd") # here is the code to knitr the rmd file in the environment (takes data already load)
 
 ```
@@ -21,40 +33,44 @@ bibliography: biblio_181004.bib
 
 ###	1. Lead / Teaser
 
-Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastronomie. Im Jahr 2015 sind Fleischgerichte (20.3%) mit den entsprechenden Beilagen (30.8%) im Zusammenhang der Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz [@] (GastroSuisse, 2016). GemÃ¤ss der ersten in den Jahren 2014/2015 durchgefÃ¼hrten nationalen ErnÃ¤hrungserhebung menuCH essen 70 % der BevÃ¶lkerung zwischen 18 und 75 Jahren am Mittag auswÃ¤rts [@bochud_anthropometric_2017]. Daher rÃ¼ckt die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen ErnÃ¤hrungswirtschaft ins Blickfeld. Welche Innovationen in der Gastronomie kÃ¶nnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
+Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastronomie. Im Jahr 2015 sind Fleischgerichte (20.3%) mit den entsprechenden Beilagen (30.8%) im Zusammenhang der Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz [@] (GastroSuisse, 2016). Gemäss der ersten in den Jahren 2014/2015 durchgeführten nationalen Ernährungserhebung menuCH essen 70 % der Bevölkerung zwischen 18 und 75 Jahren am Mittag auswärts [@bochud_anthropometric_2017]. Daher rückt die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen Ernährungswirtschaft ins Blickfeld. Welche Innovationen in der Gastronomie könnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
 
 ###	2. Forschungsfragen und Ziele
 
-Die Ã¼bergeordnete Forschungsfrage dieses Arbeitspackets war es die GÃ¤ste dazu zu bewegen, hÃ¤ufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wÃ¤hlen. Die abgeleitete Forschungsfragen interessiert es wie das MenÃ¼-Angebot oder die MenÃ¼-Beschriftung die MenÃ¼-Wahl beeinflusst?
+Die übergeordnete Forschungsfrage dieses Arbeitspackets war es die Gäste dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die abgeleitete Forschungsfragen interessiert es wie das Menü-Angebot oder die Menü-Beschriftung die Menü-Wahl beeinflusst?
 
 
 ###	3. Theoretischer Hintergrund und Methoden 
 
-Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Quasi-Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgefÃ¼hrt wird. Konkret wird untersucht, wie die GÃ¤ste auf ein verÃ¤ndertes MenÃ¼-Angebot mit einem hÃ¶heren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
+Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Quasi-Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgeführt wird. Konkret wird untersucht, wie die Gäste auf ein verändertes Menü-Angebot mit einem höheren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
 <br>
-Das Quasi-Experiment findet im Herbstsemester 2017 wÃ¤hrend 12 Wochen statt und besteht aus zwei Mensazyklen Ã  6 Wochen (siehe Abbildung \ref{fig:fig1}). Ãœber den gesamten Untersuchungszeitraum werden insgesamt 93 verschiedene MenÃ¼s angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein vegetarisches MenÃ¼ angeboten. In den 6 Interventionswochen wurde das VerhÃ¤ltnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenstÃ¤ndige authenische Gerichte (z. B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z.B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wÃ¶chentlich ab. WÃ¤hrend der gesamten 12 Wochen konnten die GÃ¤ste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
+Das Quasi-Experiment findet im Herbstsemester 2017 während 12 Wochen (60 Tage) statt und besteht aus zwei Mensazyklen à 6 Wochen (siehe Abbildung \ref{fig:fig1}). Über den gesamten Untersuchungszeitraum werden insgesamt 93 verschiedene Gerichten angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein vegetarisches Gericht angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische Gerichte (z. B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z.B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
 <br>
-VersuchsplÃ¤ne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als UmkehrplÃ¤ne [@] (Jain & SpieÃŸ, 2012). Ziel dieser Umkehrdesigns ist es zu Ã¼berprÃ¼fen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen VersuchsplÃ¤nen stellen die Teilnehmenden EinzelfÃ¤lle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren [@] (Gravetter & Forzano, 2016).<br>
-Dieser ABABAB-Umkehrplan (oder Design) wurde gewÃ¤hlt, weil die Mensabesucher per Definition EinzelfÃ¤lle darstellen. In unserem Quasi-Experiment dient dieses Design zu Ã¼berprÃ¼fen, ob das verÃ¤nderte MenÃ¼-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. <br>
-Die Abbildung \ref{fig:fig1} zeigt, wie die Gerichte Ã¼ber drei vorgegebene MenÃ¼-Linien: Favorite, Kitchen, World wÃ¤hren des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Gerichte war es, einerseits die MensagÃ¤ste zu Â«desorientierenÂ» und andererseits Ãœbungs- oder GewÃ¶hnungseffekten zu unterbinden. Ãœbungs- oder GewÃ¶hnungseffekten (engl. Testing effect or habituation) kÃ¶nnen jedoch die interne ValiditÃ¤t bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design Ã¤nderten. 
+Versuchspläne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als Umkehrpläne [@] (Jain & Spieß, 2012). Ziel dieser Umkehrdesigns ist es zu überprüfen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen Versuchsplänen stellen die Teilnehmenden Einzelfälle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren [@] (Gravetter & Forzano, 2016).<br>
+Dieser ABABAB-Umkehrplan (oder Design) wurde gewählt, weil die Mensabesucher per Definition Einzelfälle darstellen. In unserem Quasi-Experiment dient dieses Design zu überprüfen, ob das veränderte Menü-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. <br>
+Die Abbildung \ref{fig:fig1} zeigt, wie die Gerichte über drei vorgegebene Menü-Linien: Favorite, Kitchen, World während des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Gerichte war es, einerseits die Mensagäste zu «desorientieren» und andererseits Übungs- oder Gewöhnungseffekten zu unterbinden. Übungs- oder Gewöhnungseffekten (engl. Testing effect or habituation) können jedoch die interne Validität bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design änderten. 
 
 ```{r, echo=FALSE, fig.cap="\\label{fig:fig1} Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwochen 40 bis 45).", out.width = '100%'}
 knitr::include_graphics("design_eng_experiment_ohne datum_180426_03egel.png")
 ```
 
-
 <!-- ![Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwoche 40 bis 45).](design_eng_experiment_ohne datum_180426_03egel.png) -->
 
 ###	4. Ergebnisse
 
-Wird ein grÃ¶sseres, vielfÃ¤ltigeres und schmackhafteres das Angebot an attraktiven vegetarischen und veganen Gerichten von den Mensabesuchern hÃ¤ufiger gewÃ¤hlt? Von insgesamt 93 MenÃ¼s, welche pro Mensazyklus angeboten wurden, enthielten `r round(45/93, digits = 0)` Prozent (n = 45) der Gerichte Fleisch. Ein Drittel (n = 31) der MenÃ¼s wurde vegetarisch und die restlichen `r round(16/93, digits = 0)` Prozent (n = 16) ausschliesslich pflanzlich angeboten. Im Vergleich zu den vergangenen Jahren (2015 und 2016) wuchs das vegetarische und vegane Angebot im 2017 von `r ((30*.2)+30)/120*100` Prozent auf knapp 40 Prozent, wobei das Hot and Cold-Buffet nicht als vegetarisches Angebot mitgezÃ¤hlt wurde. 
-In der Abbildung \ref{fig:fig2} zeigt alle verkauften Gerichte nach MenÃ¼-Inhalt (vegan, vegetarisch, Fleisch und Buffet), welche wÃ¤hrend des Quasi-Experiments angeboten wurden.
+Wird ein grösseres und vielfältigeres Angebot an attraktiven vegetarischen und veganen Gerichten von den Mensabesuchern häufiger gewählt? Von insgesamt 93 verschiedenen Gerichten, welche über zwei Mensazyklen verteilt angeboten wurden, enthielten `r round(45/93, digits = 0)` Prozent (n = 45) der Gerichte Fleisch. Ein Drittel (n = 31) der Gerichte wurde vegetarisch und die restlichen `r round(16/93, digits = 0)` Prozent (n = 16) ausschliesslich pflanzlich angeboten. <br>
+Das Angebot in den Interventionenwochen war zu einem Drittel fleischhaltige, zu einem Drittel vegetarische und zu einem Drittel vegane Gerichte. In den Basiswochen waren 50 Prozent des Angebots fleischhaltige Gerichte. Vegetarische Gerichte machten rund 22 Prozent und vegane Gerichte knapp 3 Prozent aus.
+<br>
+Extrapoliert man das Angebot auf beide Mensen und über alle Tage gibt das ein geplantes Angebot von 480 Gerichten^[60 Tage x 2 Mensen x 4 Menü-Inhalten]. Aus betrieblichen Gründen kam es beim des Catering Unternehmen zu Zusatzangeboten, welche das Angebot grundsätzlich vergrösserten. Von den geplanten 480 (pro Mensa) sind noch 120 Gerichten zusätzlich angeboten worden. Das Verhätnis blieb jedoch1im Anhang leichten Abweichungen hinsichtlich des ursprünglichen Versuchsdesigns. Die Abweichungen beeinflussten aber nicht das gesamte Angebot.
+
+Im Vergleich zu den vergangenen Jahren (2015 und 2016) wuchs das vegetarische und vegane Angebot im 2017 von `r ((30*.2)+30)/120*100` Prozent auf knapp 40 Prozent, wobei das Hot and Cold-Buffet nicht als vegetarisches Angebot mitgezählt wurde. 
+In der Abbildung \ref{fig:fig2} zeigt alle verkauften Gerichte nach Menü-Inhalt (vegan, vegetarisch, Fleisch und Buffet), welche während des Quasi-Experiments angeboten wurden.
 
 
-```{r, echo=F, fig.cap="\\label{fig:fig2} Die Abbildung 2 zeigt die verkauften Gerichten aufgeteilt nach den fÃ¼nf MenÃ¼-Inhalten Ã¼ber die 12 Wochen", fig.height=14, fig.width=25}
+```{r, echo=F, fig.cap="\\label{fig:fig2} Die Abbildung 2 zeigt alle verkauften Gerichten (N = 26'234) aufgeteilt nach den fünf Menü-Inhalten über die 12 Wochen", fig.height=14, fig.width=25}
 
 # to load data first execture 04_load_data
-#prepare data for plot: aggregated data
+#prepare data for plot: aggregated data => locals are included
 df_ <- group_by(df_agg, condit ,week, label_content )%>% summarise(tot_sold=n())
 
 df_ <- df_ %>% 
@@ -91,8 +107,8 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
-    ylab("\nVerkaufte MenÃ¼s in Prozent")+
-    guides(fill = guide_legend("MenÃ¼-Inhalt\n"),
+    ylab("\nVerkaufte Menüs in Prozent")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
@@ -108,14 +124,13 @@ p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
 ```
 
-```{r, echo=FALSE, results="hide", warning=F, comment=F,fig.show=F}
+```{r, echo=FALSE, results="hide", warning=F, comment=F, fig.show="hide"}
 # test if week sellings statistically differ
 sell_dat <- df_agg %>%
     mutate(day=wday(date, label = T)) %>% 
     group_by(semwk, condit) %>%
     summarise(tot_sold=n())
 
-leveneTest(sell_dat$tot_sold, sell_dat$condit)# varianzes are homogene
 ao=(aov(sell_dat$tot_sold ~ sell_dat$condit)) 
 t.test(sell_dat$tot_sold ~ sell_dat$condit) # same as aov
 summary(ao)
@@ -131,6 +146,7 @@ sell_dat <- df_agg %>%
 
 leveneTest(sell_dat$tot_sold, sell_dat$label_content2)# varianzes are inhomogene (because of the hot and cold sellings (small groups)), thus kruskal-wallis test
 ao <- aov(sell_dat$tot_sold ~ sell_dat$label_content2: sell_dat$condit) # anova only with interaction between label_content and condit
+library(ggfortify)
 autoplot(ao) # dont look very nice, however i would accept it :)
 summary(ao) # display anova
 TukeyHSD(ao) #post-hoc test
@@ -147,17 +163,19 @@ dunnTest(tot_sold ~ interaction(label_content2,condit), data=sell_dat, # post-ho
 
 ```
 
-```{r, echo = F, fig.cap="\\label{fig:fig3} Die Abbildung 3 zeigt die verkauften Gerichten nach MenÃ¼-Inahlt und Bedingung (Intervention- und Basiswochen)", fig.height=14, fig.width=18}
+Der Abbildung \ref{fig:fig2} ist zu entnehmen, dass die wöchentlichen Verkaufszahlen sich statistisch nicht unterscheiden (*F*(1,10) = `r round(summary(ao)[[1]][["F value"]][1], digits = 3)`, *p* = `r round(summary(ao)[[1]][["Pr(>F)"]][1],digits = 3)`). Des Weiteren gab es Unterschiede in den Verkaufszahlen zwischen den Interventions- und Basiswochen (*H*(7) = `r round(kr$statistic[[1]], digits = 2)`, *p* < 0.001).    
+
+```{r, echo = F, fig.cap="\\label{fig:fig3} Die Abbildung 3 zeigt die verkauften Gerichten nach Menü-Inahlt und Bedingung (Intervention- und Basiswochen)", fig.height=14, fig.width=18}
 
 # visualize findings from above
 m_sell <- na.omit(sell_dat) %>% group_by(condit,label_content2) %>% summarise(val = mean(tot_sold)) # calculate means (per what) of the label_content per condition
 
 ggplot(sell_dat, aes(x = condit, y = tot_sold, color = label_content2)) + 
     geom_point(data = m_sell, aes(y = val)) +
-    geom_line(data = m_sell, aes(y = val, group = label_content2), size = 1.5) + 
+    geom_line(data = m_sell, aes(y = val, group = label_content2), size = 1.7) + 
     theme_bw()+
     labs(y = "Durchschnittlich verkaufte Gerichte pro Woche", x = "Bedingungen") + 
-    guides(color = guide_legend(title = "MenÃ¼-Inhalt"))+
+    guides(color = guide_legend(title = "Menü-Inhalt"))+
     scale_color_manual(values = c("Fleisch" = "#fad60d", "Vegetarisch" = "#c5b87c", "Vegan" = "#80ccff", "Hot and Cold" = "#4c4848"),
                        breaks = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold"), 
                        limits = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold")) + 
@@ -165,11 +183,11 @@ ggplot(sell_dat, aes(x = condit, y = tot_sold, color = label_content2)) +
     mytheme
 ```
 
+Die Abbildung \ref{fig:fig3} zeigt, dass es keine statistischen Unterschiede in den Verkaufszahlen beim Hot and Cold und im vegetarischen Angebot zwischen den beiden Bedingungen gab (Basis- und Intervention). Auffallend sind die Unterschiede im Verkauf von Fleischgerichten, welche deutlich seltener in den Interventionswochen als in den Basiswochen verkauft wurden. Dass sich mehr vegane Gerichte in den Interventionswochen gekauft wurden lag daran, dass es in den Basiswochen ein kleines veganes Angebot gab.
 
+Sind die aktuellen Menü-Linien tatsächlich ein veraltetes Konzept? Nebst der Änderung im Angebot, war eine weitere Intervention die Gerichte über neutrale Menü-Gefässe sog. Menü-Linien zu vertreiben. Für das Quasi-Experiment wurde die Menü-Linie Green zu World unbenannt. Die Menü-Inhalte wurden randomisiert über diese drei Menü-Linien angeboten. Die Abbildung \ref{fig:fig4} vergleicht die Verkaufszahlen gemessen an den Menü-Linien über die Jahren 2015, 2016 und 2017.
 
-Der Abbildung \ref{fig:fig2} ist zu entnehmen, dass die wÃ¶chentlichen Verkaufszahlen sich statistisch nicht unterscheiden (*F*(1,10) = `r round(summary(ao)[[1]][["F value"]][1], digits = 3)`, *p* = `r round(summary(ao)[[1]][["Pr(>F)"]][1],digits = 3)`). Des Weiteren gab es Unterschiede in den Verkaufszahlen zwischen den Interventions- und Basiswochen (*H*(7) = `r round(kr$statistic[[1]], digits = 2)`, *p* < 0.001). Auffallend dabei sind, dass deutlch weniger fleischhaltige Gerichte in den Basiswochen als in den Interventionswochen konsumiert worden ist (siehe Abbildung \ref{fig:fig3}).   
-
-```{r, echo=F, fig.cap="\\label{fig:fig4} Die Abbildung 4 zeigt die verkauften Gerichten nach MenÃ¼-Linien und MenÃ¼-Inhalt im Vergleich (2015, 2016 und 2017)", fig.height=14, fig.width=18}
+```{r, echo=F, fig.cap="\\label{fig:fig4} Die Abbildung 4 zeigt die verkauften Gerichten nach Menü-Linien im Vergleich (2015, 2016 und 2017)", fig.height=14, fig.width=18}
 
 # prepare data
 df <- menu_tot %>%
@@ -207,10 +225,10 @@ text <- group_by(df, year) %>% summarise(tot=sum(tot_sold)) %>%
 # plot data
 ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_description,levels=c("Local","Kitchen","Green/World","Favorite","Hot and Cold")), color = label_color)) +
     geom_bar(stat="identity", position = "stack", color=NA, width = .6) +
-    #ggtitle("Verkaufte MenÃ¼s: 3. + 4. HSW\n") +
+    #ggtitle("Verkaufte Menüs: 3. + 4. HSW\n") +
     xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
-    ylab("Verkaufte MenÃ¼s pro Herbstsemester")+
-    guides(fill= guide_legend(title = "MenÃ¼-Linien"), 
+    ylab("Verkaufte Menüs pro Herbstsemester")+
+    guides(fill= guide_legend(title = "Menü-Linien"), 
            color=F)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$names,
@@ -223,13 +241,16 @@ ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_description,lev
 
 ```
 
+Die Abbildung \ref {fig:fig4} 
+
+
 
 ###	5. Diskussion (inkl.  Einordnung der Ergebnisse in die internationale Forschung)
 
-###	6. Schlussfolgerungen mit Empfehlungen/Implikationen fÃ¼r Praxis und Politik
+###	6. Schlussfolgerungen mit Empfehlungen/Implikationen für Praxis und Politik
 
 ###	7. Danksagung
 
-Wir bedanken uns bei der SV Schweiz und insbesondere bei den konkreten Verantwortlichen (Area- und Restaurantmanager und KÃ¼chenteam) fÃ¼r die hilfsbereite und unkomplizierte UnterstÃ¼tzung (Lieferung von Daten, Rezepturen, Beantwortung von Fragen).
+Wir bedanken uns bei der SV Schweiz und insbesondere bei den konkreten Verantwortlichen (Area- und Restaurantmanager und Küchenteam) für die hilfsbereite und unkomplizierte Unterstützung (Lieferung von Daten, Rezepturen, Beantwortung von Fragen).
 
 ## 8. Quellen
