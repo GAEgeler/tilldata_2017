@@ -64,3 +64,31 @@ pop_zhaw <- c(678,
 d1 = pop_zhaw/sum(pop_zhaw)
 chisq.test(sam_gruen, p = d1) # seems not to differ anymore
 
+## there are some problems with some of the transactions
+# check them out: first load trans_art (all articles sold in that time)
+trans_art2 <- left_join(trans_art,  art_info, by = "article_id")
+trans_pay2 <- left_join(trans_pay, pay_method, by = "payment_id")
+
+# cases are from the dataframe calles plausibilty_egel
+t <- filter(trans_dat, transaction_id == 2377305)
+a <- filter(trans_art2, transaction_id == 2377305) # double entry in, which is not making sense
+p <- filter(trans_pay2, transaction_id == 2377305)
+
+a <- filter(trans_art2, transaction_id == ) # double entry in, which is not making sense
+p <- filter(trans_pay2, transaction_id == )
+
+a <- filter(trans_art2, transaction_id == 2354099)
+
+# check for double or more same entries according time stamp and transaction id
+d_ <- filter(trans_dat, duplicated(trans_dat$trans_date) & duplicated(trans_dat$transaction_id)) 
+d <- filter(d_, ccrs == 1000598155)
+
+# another try via trans_num (KassenbonNr)
+d_2 <- filter(trans_dat, duplicated(trans_dat$trans_num)) # is resulting in manny more duplicates
+
+
+# antijoin between dubplicates and trans_dat
+# continue to check the data again
+trans_dat2 <- anti_join(trans_dat, d_, by = c("transaction_id", "trans_date"))
+
+t <- filter(trans_dat2, transaction_id == 2433098)

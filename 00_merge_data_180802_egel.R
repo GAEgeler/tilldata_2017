@@ -35,7 +35,7 @@ till <- read_xlsx("raw data/ZHAW_Tills.xlsx") %>% # good for small datasets
            till_id = parse_integer(.$till_id)) # change string to integer
 
 # load all acrticle transaction
-trans_art <- read_delim("raw data/ZHAW_Trans_Articles.csv", delim = ';', trim_ws = T) %>% # throw back errors: becaise of NULL string => can be ignored (only vat_id and vat_percent are affected)
+trans_art <- read_delim("raw data/ZHAW_Trans_Articles.csv", delim = ';', trim_ws = T, na = "NULL") %>% # throw back errors: becaise of NULL string (use na = "NULL") => can be ignored (only vat_id and vat_percent are affected)
     select(transaction_id, article_id, qty_weight, price ) %>%
     rename(article_id = article_id, qty_weight = qty_weight, price_article = price )
 
