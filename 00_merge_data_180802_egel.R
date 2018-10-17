@@ -1,6 +1,5 @@
-##############
-# merge tilldata 2017
-#############
+# merge tilldata 2017----------
+
 
 ###
 # Stand: 29.9.18 // egel
@@ -12,9 +11,9 @@ pack <- c("dplyr", "readr", "readxl", "stringr")
 lapply(pack, function(x){do.call("library",list(x))})
 
 
-#####################
-################# First Step: Loading data
-#####################
+
+#### First Step: Loading data--------
+
 
 # all transactions ZHAW 2.Okt 2017 till 22. Dec 2017 (last update from 27.09.18)
 # (No column name) = ccnr | its a number to identify a distinct person (important for indivdiaul analyses)
@@ -77,9 +76,9 @@ pay_method <- read_delim("raw data/ZHAW_payments_171214.csv", delim = ';',trim_w
     select(id, code, description) %>%
     rename(payment_id = id, payment_code = code, pay_description = description)
 
-#####################
-################# Second Step: SQL Merging
-#####################
+
+################# Second Step: SQL Merging-------
+
 
 ## for information see: https://communities.sas.com/t5/SAS-Procedures/Proc-SQL-equiv-of-Merge-If-A-or-B/td-p/255720 
 
@@ -105,5 +104,6 @@ pay_inf <- left_join(trans_pay, pay_method, by = "payment_id") %>%
 df4 <- left_join(df3, pay_inf, by = "transaction_id", "total_amount") %>%# some new observations came along => reason is pay_description (some entries are now double e.g. 2373186)
     select(-total_amount.y) %>% # drop double variable
     rename(total_amount = total_amount.x)
-        
+
+# save data        
 write_delim(df4, "raw data/data_trans_180929_egel.csv", delim = ';') # contains all transaction over ZHAW

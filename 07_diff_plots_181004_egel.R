@@ -1,6 +1,6 @@
 ## different plots -----
 
-# status 5.10.18 // egel
+# status 16.10.18 // egel
 
 # required packages
 pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "ggplot2", "reshape2")
@@ -94,8 +94,8 @@ df_$label_content <- ifelse(is.na(df_$label_content),"Unknown",df_$label_content
 
 # annotation for selling per week
 text <- group_by(df_agg, condit) %>% summarise(tot = n()) %>%
-    mutate(label = "italic(n)") %>%
-    mutate(label2 = paste(label, tot, sep="=="))
+    mutate(label = format(tot, big.mark = "'")) %>%
+    mutate(label2 = paste("italic(n)", format(tot, scientific = F, big.mark = "'"), sep="==")) # with bigmark, parsing the text is not working anymore 
 
 
 # define date of creation
@@ -122,14 +122,14 @@ p <- ggplot(df_, aes(y = pct, x = condit, fill = factor(label_content, c("Unknow
     ylab("\nVerkaufte Menüs in Prozent")+
     guides(fill = guide_legend("Menü-Inhalt\n"),
            color = F)+
-    scale_y_continuous(labels=scales::percent)+
+    scale_y_continuous(labels = scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","vegan (Fleischersatz)", "vegan (authentisch)", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt", "vegan (Fleischersatz)", "vegan (authentisch)", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
     scale_color_manual(values = levels(df_$label_color))+
-    geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    geom_text(aes(label=ifelse(pct * 100 > 1.5, paste0(round(pct*100, digits = 0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
-        "text",x = 1:2, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
+        "text",x = 1:2, y = 1.03, label = paste("italic(n)", bquote(.(text$label)), sep= "="), parse = T, size = 9) + # why so big differences to the first version
     mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)", subtitles = st)
@@ -143,8 +143,8 @@ ggsave("plots/intervention_basis_agg_181005_egel.png",
        device = "png")
 
 ggsave("plots/intervention_basis_agg_181005_egel.pdf",
-       width = 25,
-       height = 14,
+       width = 20,
+       height = 18,
        dpi = 600,
        units="in",
        device= cairo_pdf)

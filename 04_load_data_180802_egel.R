@@ -1,6 +1,6 @@
 ## load data -----
 
-# status 1.10.18 // egel
+# status 17.10.18 // egel
 
 # required packages
 pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "here")
@@ -41,6 +41,10 @@ info_ <- select(info_compl, date,article_description,label_content,cycle,meal_na
 df_7 <- left_join(df_17, info, by = c("shop_description","date","article_description","cycle"))
 df_7_ <- left_join(df_17,info_, by = c("shop_description","date","article_description","cycle"))
 
+# dataset without double entries: check script yy_plausibility
+df_2017 <- filter(df_7, !(duplicated(df_7$ccrs) & duplicated(df_7$transaction_id) & duplicated(df_7$trans_date) & total_amount == prop_price))
+
+# load aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
 
 # delete some datasets
