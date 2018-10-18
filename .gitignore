@@ -4,8 +4,8 @@
 *.html
 *.xlsx
 *.txt
-*.bib
 *.png
+*.log
 
 # ignore all files ending with
 # do not update selected files

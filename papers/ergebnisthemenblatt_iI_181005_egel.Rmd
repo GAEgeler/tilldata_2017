@@ -1,46 +1,67 @@
 ---
+lang: de-DE
 title: |
-    | ErgebnisthemenblÃ¤tter NOVANIMAL WPIII.1 
-    | MenÃ¼-Linien, ein veraltetes Konzept? Wie GÃ¤ste dazu bewegt werden kÃ¶nnen vermehrt ressourcenleichte Gerichte zu wÃ¤hlen
+    | Ergebnisthemenblätter NOVANIMAL
+    | Wer wählt welches Menü? Ernährungsmuster in einer Hochschulmensa
 author: "Gian-Andrea Egeler, Priska Baur"
-date: "`r Sys.Date()`"
+date: "`r format(Sys.Date(), '%B %Y')`"
 output:
-  pdf_document: 
+ pdf_document: 
     fig_caption: yes
-  html_document: default
-bibliography: biblio_181004.bib
+fontsize: 12pt
+geometry: margin = 1.2in
+header-includes:
+- \usepackage{fancyhdr}
+- \usepackage{placeins}
+- \usepackage{setspace}
+- \usepackage{chngcntr}
+- \onehalfspacing
+# - \counterwithin{figure}{section}
+# - \counterwithin{table}{section}
+
+ 
 ---
 
+#bibliography: biblio_181004.bib
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, fig.pos = 'h')
+
+#rmarkdown::render("papers/ergebnisthemenblatt_ii_181004_egel.Rmd", output_format = "pdf_document", encoding="LATIN1")
+
+```
 
 ###	1. Lead / Teaser
 
-Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastronomie. Im Jahr 201X sind Fleischgerichte (20.3%) mit den entsprechenden Beilagen (30.8%) im Zusammenhang der Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz (GastroSuisse, 2016). GemÃ¤ss der ersten in den Jahren 2014/2015 durchgefÃ¼hrten nationalen ErnÃ¤hrungserhebung menuCH essen 70 % der BevÃ¶lkerung zwischen 18 und 75 Jahren am Mittag auswÃ¤rts [@bochud_anthropometric_2017]. Daher rÃ¼ckt die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen ErnÃ¤hrungswirtschaft ins Blickfeld. Welche Innovationen in der Gastronomie kÃ¶nnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
+Täglich fällen Menschen in all ihren Lebensbereichen unzählige Entscheidungen.  Konsumentscheidungen unterscheiden sich - manche können schnell und leicht getroffen werden, andere sind komplex und erfordern ausführliche Verarbeitung von Informationen. In der Literatur wird die Konsumentscheidung oftmals als einen Prozess der Kaufentscheidung beschrieben [@] (Lamb, Hair, & McDaniel, 2012). Dieser Kauf wird von kognitiver und emotionaler Einflüssen, Familie, Freunde, Werbungen, Vorbilder, Stimmungen und Situation aber auch von unterschiedlichen Generationen (oder Alter) beeinflusst [@] (Schiffman, Kanuk, & Wisen-blit, 2010; Wai San Yap & Yazdanifard, 2014). Welche Innovationen in der Gastronomie könnten dazu beitragen, die Konsumentschaiedung nachhaltiger zu gestalten?
 
 ###	2. Forschungsfragen und Ziele
 
-Die Ã¼bergeordnete Forschungsfrage dieses Arbeitspackets war es die GÃ¤ste dazu zu bewegen, hÃ¤ufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wÃ¤hlen. Die abgeleitete Forschungsfragen interessiert es wie beeinflusst das MenÃ¼-Angebot die MenÃ¼-Wahl? Und wie beeinflussen die MenÃ¼-Beschriftungen (sog. MenÃ¼linien) die MenÃ¼-Wahl?
-
+Die übergeordnete Forschungsfrage dieses Arbeitspackets WPIII.1 war es die Gäste dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die abgeleitete Forschungsfragen interessiert es, wie das Menü-Angebot die Menü-Wahl der verschiedener Gästegruppen beeinflusst? Gibt es spezifische Ernährungsmuster in Hochschulmensen?
 
 ###	3. Theoretischer Hintergrund und Methoden 
 
-Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Quasi-Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgefÃ¼hrt wird. Konkret wird untersucht, wie die GÃ¤ste auf ein verÃ¤ndertes MenÃ¼-Angebot mit einem hÃ¶heren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
+Menschen entscheiden begrenzt rational, weil sie über begrenzte Informationen, Intelligenz und Zeit verfügen [@] (Simon, 1956). Zudem vermeiden Menschen komplexe Entscheidungen und bleiben oftmals beim Status Quo. Menschen können beispielsweise Risiken schlecht abschätzen oder es fällt ihnen schwer, kurzfristigen Nutzen für langfristigen Nutzen aufzugeben. Dadurch realisieren Menschen bei ihren Entscheidungen oft nicht immer den grösstmöglichen Nutzen für sich selbst [@] (Felser, 2015). Habituelle Konsumentscheidungen basieren auf der Annahme, dass irrationale Entscheide nicht wesentlich schlechter als aufwändigere, rationale Kaufentscheidungen sind. Choice Architecture und Heuristiken gehören zu diesen habituellen Konsumentscheidungen. 
+Konsumentscheidungen können auf verschiedene Wege beeinflusst werden. Einerseits kann eine Einstellungsänderung dazu führen, dass der Entscheider sein Verhalten verändert. Andererseits kann durch eine Gestaltung der kontextuellen Hinweisreize ein Verhalten geändert werden. Mit dem Letzteren, eine Änderung der Entscheidungsumgebungen, befasst sich die Choice Architecture (Thaler & Sunstein, 2003, 2008). Choice Architecture nutzt Tools, um Entscheidungen zu beeinflussen. 
+<!-- Es gibt zwei Systematiken, welche auf dem Prinzip der Choice Architecture beruhen Nudges^[I**n**centives, **U**nderstand Mapping, **D**efaults, **G**ive Feedback, **E**xpected Error, **S**tructure Complex choices ] & Mindspace^[**M**essenger, **I**ncentives, **N**orms, **D**efaults, **S**alience, **P**riming, **A**ffect, **C**ommitments, **E**go]. -->
+In unserer Studie wurde die Entscheidungsumgebung verändert. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein vegetarisches Gericht angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Das Ziel war es zu schauen, wie dieses veränderte Menü-Angebot die Menü-Wahl der Mensabesucher verändert.
+<br>
+Versuchspläne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als Umkehrpläne [@jain_versuchsplane_2012]. Ziel dieser Umkehrdesigns ist es zu überprüfen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen Versuchsplänen stellen die Teilnehmenden Einzelfälle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren [@gravetter_research_2016].<br>
+Dieser ABABAB-Umkehrplan (oder Design) wurde gewählt, weil die Mensabesucher per Definition Einzelfälle darstellen. In unserem Quasi-Experiment dient dieses Design zu überprüfen, ob das veränderte Menü-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. <br>
+Die Gerichte wurden über drei vorgegebene Menü-Linien: Favorite, Kitchen, World während des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Gerichte war es, einerseits die Mensagäste zu «desorientieren» und andererseits Übungs- oder Gewöhnungseffekten zu unterbinden. Übungs- oder Gewöhnungseffekten (engl. Testing effect or habituation) können jedoch die interne Validität bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design änderten.
+<br>
 
-Das Quasi-Experiment findet im Herbstsemester 2017 wÃ¤hrend 12 Wochen statt und besteht aus zwei Mensazyklen Ã  6 Wochen (siehe Abbildung 1). Ãœber den gesamten Untersuchungszeitraum werden insgesamt 93 verschiedene MenÃ¼s angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige MenÃ¼s und ein vegetarisches MenÃ¼ angeboten. In den 6 Interventionswochen wurde das VerhÃ¤ltnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenstÃ¤ndige authenische Gerichte (z.B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z.B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wÃ¶chentlich ab. WÃ¤hrend der gesamten 12 Wochen konnten die GÃ¤ste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
-
-VersuchsplÃ¤ne, bei denen auf eine Interventionsphase wieder eine Basisphase folgt, bezeichnet man als UmkehrplÃ¤ne (Jain & SpieÃŸ, 2012). Ziel dieser Umkehrdesigns ist es zu Ã¼berprÃ¼fen, ob die Interventionsphase, unter Kontrolle der Basisphase, einen Einfluss auf das zu untersuchende Zielverhalten nimmt. In solchen speziellen VersuchsplÃ¤nen stellen die Teilnehmenden EinzelfÃ¤lle dar. Diese sogenannten single-subject Designs eignen sich gut, um Ursache-Wirkung-Beziehungen zu eruieren (Gravetter & Forzano, 2016). 
-Dieser ABABAB-Umkehrplan (oder Design) wurde gewÃ¤hlt, weil die Mensabesucher per Definition EinzelfÃ¤lle darstellen. In unserem Quasi-Experiment dient dieses Design zu Ã¼berprÃ¼fen, ob das verÃ¤nderte MenÃ¼-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. 
-Die Abbildung 1 zeigt, wie die MenÃ¼s Ã¼ber drei vorgegebene MenÃ¼linien: Favorite, Kitchen, World wÃ¤hren des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der MenÃ¼s war es, einerseits die MensagÃ¤ste zu Â«desorientierenÂ» und andererseits Ãœbungs- oder GewÃ¶hnungseffekten zu unterbinden. Ãœbungs- oder GewÃ¶hnungseffekten (engl. Testing effect or habituation) kÃ¶nnen jedoch die interne ValiditÃ¤t bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design Ã¤nderten. 
-
-![Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwoche 40 bis 45).](design_eng_experiment_ohne datum_180426_03egel.png)
 
 ###	4. Ergebnisse
 
+
+
 ###	5. Diskussion (inkl.  Einordnung der Ergebnisse in die internationale Forschung)
 
-###	6. Schlussfolgerungen mit Empfehlungen/Implikationen fÃ¼r Praxis und Politik
+###	6. Schlussfolgerungen mit Empfehlungen/Implikationen für Praxis und Politik
 
 ###	7. Danksagung
 
-Wir bedanken uns bei der SV Schweiz und insbesondere bei den konkreten Verantwortlichen (Area- und Restaurantmanager und KÃ¼chenteam) fÃ¼r die hilfsbereite und unkomplizierte UnterstÃ¼tzung (Lieferung von Daten, Rezepturen, Beantwortung von Fragen).
+Wir bedanken uns bei der SV Schweiz und insbesondere bei den konkreten Verantwortlichen (Area- und Restaurantmanager und Küchenteam) für die hilfsbereite und unkomplizierte Unterstützung (Lieferung von Daten, Rezepturen, Beantwortung von Fragen).
 
-## 8. Quellen
+### 8. Quellen

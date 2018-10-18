@@ -3,7 +3,7 @@
 # status 17.10.18 // egel
 
 # required packages
-pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "here")
+pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr")
 lapply(pack, function(x){do.call("library", list(x))})
 
 
@@ -48,7 +48,7 @@ df_2017 <- filter(df_7, !(duplicated(df_7$ccrs) & duplicated(df_7$transaction_id
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
 
 # delete some datasets
-rm(list = c("pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri", "nutri_wide_"))
+rm(list = c("pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))
 
 
 ######
