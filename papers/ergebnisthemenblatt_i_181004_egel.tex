@@ -92,10 +92,11 @@ vermehrt ressourcenleichte Gerichte zu wählen}
     \date{Oktober 2018}
 
 \usepackage{fancyhdr}
-\usepackage{placeins}
 \usepackage{setspace}
-\usepackage{chngcntr}
 \onehalfspacing
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[font=small,labelfont=bf]{caption}
 
 \begin{document}
 \maketitle
@@ -107,13 +108,16 @@ Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der
 Gastronomie. Im Jahr 2015 sind Fleischgerichte (20.3\%) mit den
 entsprechenden Beilagen (30.8\%) im Zusammenhang der
 Ausser-Haus-Verpflegung die meistkonsumierten Speisen in der Schweiz
-(GastroSuisse 2016). Gemäss der ersten in den Jahren 2014/2015
-durchgeführten nationalen Ernährungserhebung menuCH essen 70 \% der
-Bevölkerung zwischen 18 und 75 Jahren am Mittag auswärts (Bochud u.~a.
-2017). Daher rückt die Gastronomie als zentraler Akteur einer
-innovativen und nachhaltigen Ernährungswirtschaft ins Blickfeld. Welche
-Innovationen in der Gastronomie könnten dazu beitragen, den
-Pro-Kopf-Verbrauch an tierischen Nahrungsmitteln zu senken?
+(GastroSuisse
+\protect\hyperlink{ref-gastrosuisse_branchenspiegel_2016}{2016}). Gemäss
+der ersten in den Jahren 2014/2015 durchgeführten nationalen
+Ernährungserhebung menuCH essen 70 \% der Bevölkerung zwischen 18 und 75
+Jahren am Mittag auswärts (Bochud u.~a.
+\protect\hyperlink{ref-bochud_anthropometric_2017}{2017}). Daher rückt
+die Gastronomie als zentraler Akteur einer innovativen und nachhaltigen
+Ernährungswirtschaft ins Blickfeld. Welche Innovationen in der
+Gastronomie könnten dazu beitragen, den Pro-Kopf-Verbrauch an tierischen
+Nahrungsmitteln zu senken?
 
 \hypertarget{forschungsfragen-und-ziele}{%
 \subsubsection{2. Forschungsfragen und
@@ -125,7 +129,9 @@ vegetarische\footnote{vegetarisch = ovo-lakto-vegetarisch (inkl. Eier
   und Milch)} oder vegane\footnote{vegan = ausschliesslich pflanzliche
   Zustaten} Gerichte zu wählen. Die abgeleitete Forschungsfragen
 interessiert es wie das Menü-Angebot oder die Menü-Beschriftung die
-aggregierte Menü-Wahl beeinflusst?
+Menü-Wahl aller Mensabesucher beeinflusst?
+
+\newpage
 
 \hypertarget{theoretischer-hintergrund-und-methoden}{%
 \subsubsection{3. Theoretischer Hintergrund und
@@ -136,123 +142,320 @@ Facility Management einer Hochschule, wurde ein Quasi-Experiment
 vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgeführt
 wird. Konkret wird untersucht, wie die Gäste auf ein verändertes
 Menü-Angebot mit einem höheren Anteil an ressourcenschonenden
-vegetarischen oder veganen Gerichten reagieren. Das Quasi-Experiment
-findet im Herbstsemester 2017 während 12 Wochen (60 Tage) statt und
-bestand aus zwei Mensazyklen à 6 Wochen (siehe Abbildung
-\ref{fig:fig1}). Über den gesamten Untersuchungszeitraum werden
-insgesamt 93 verschiedene Gerichten angeboten. In den 6 Referenz- bzw.
-Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein
-vegetarisches Gericht angeboten. In den 6 Interventionswochen wurde das
-Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und
-ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot
-wurde zwischen eigenständige authenische Gerichte (z. B. Linsen-Dal) und
-vegane Gerichte mit Fleischsubstituten (z. B. Quornragout)
-unterschieden. Basis- und Interventionsangebote wechselten wöchentlich
-ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein
-Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten
-selber zusammenstellen.
+vegetarischen oder veganen Gerichten reagieren.
 
-\begin{figure}
-\includegraphics[width=1\linewidth]{design_eng_experiment_ohne datum_180426_03egel} \caption{\label{fig:fig1} Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwochen 40 bis 45).}\label{fig:unnamed-chunk-1}
+\par
+
+Das Quasi-Experiment findet im Herbstsemester (HS) 2017 während 12
+Wochen (60 Tage) statt und bestand aus zwei Mensazyklen à 6 Wochen
+(siehe Abbildung \ref{fig:fig1}). Über den gesamten
+Untersuchungszeitraum werden insgesamt 93 verschiedene Gerichten
+angeboten. In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder
+fischhaltige Gerichte und ein vegetarisches Gericht angeboten. In den 6
+Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein
+veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht
+angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische
+Gerichte (z. B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten
+(z. B. Quornragout) unterschieden. Basis- und Interventionsangebote
+wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die
+Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und
+kalten Komponenten selber zusammenstellen. Die nachfolgenden Analysen
+und Ergebnisse basieren auf Daten aus den Kassensystemen des Catering
+Unternehmens. Für die Analysen sind insgesamt mehr als 26'000
+Transaktionen resp. Kauf eines Gerichts während der Mittagszeit
+berücksichtigt worden.
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=0.8\linewidth]{design_eng_experiment_ohne datum_180426_03egel} 
+
+}
+
+\caption{\label{fig:fig1} Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwochen 40 bis 45).}\label{fig:unnamed-chunk-1}
 \end{figure}
+
+\newpage
 
 \hypertarget{ergebnisse}{%
 \subsubsection{4. Ergebnisse}\label{ergebnisse}}
 
-\hypertarget{section}{%
-\paragraph{4.1}\label{section}}
+\hypertarget{was-wurde-angeboten}{%
+\paragraph{4.1 Was wurde angeboten?}\label{was-wurde-angeboten}}
+
+Von insgesamt 93 verschiedenen Gerichten, welche über zwei
+Mensazyklen\footnote{ein Zyklus besteht aus 6 Wochen, danach wiederholen
+  sich die Gerichten} verteilt angeboten wurden, enthielten 48 Prozent
+(n = 45) der Gerichte Fleisch. Ein Drittel (n = 31) der Gerichte wurde
+vegetarisch und die restlichen 17 Prozent (n = 16) ausschliesslich
+pflanzlich angeboten.
+
+\par
+
+90 verschiedenen Mahlzeiten wurden pro Mensa und Mensazyklus auf drei
+Menü-Linien (Favorite, Kitchen und World) angeboten. Wird das gesamte
+Angebot (zwei Mensazyklen) auf beide Mensen und über alle Tage addiert,
+ergibt das ein geplantes Angebot von 360 Gerichten\footnote{90 Gerichte
+  x 2 Mensazyklen x 2 Mensen}. Aus betrieblichen Gründen kam es beim
+Catering Unternehmen des Öfteren zu Zusatzangeboten, welche das geplante
+Angebot zusätzlich vergrösserte. In den 12 Wochen wurden zu den total
+geplanten 360 Gerichten noch 120 Gerichten zusätzlich angeboten (siehe
+Abbildung \ref{fig:fig2}).
+
+\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{ergebnisthemenblatt_i_181004_egel_files/figure-latex/unnamed-chunk-3-1} 
+
+}
+
+\caption{\label{fig:fig2} Die Abbildung zeigt das geplante (480) und angebotene Angebot (600) für ein ganzes Herbstsemester (60 Tage) und zwei Hochschulmensen nach den fünf Menü-Inhalten}\label{fig:unnamed-chunk-3}
+\end{figure}
+
+Die Abbildung \ref{fig:fig2} zeigt für die Herbstemester die kalkulierte
+Planung von 2015 und 2016 als auch das geplante Angebot des
+Quasi-Experiments im HS 2017. Die dritte Säule zeigt die tatsächlich
+angebotene Auswahl für das HS 2017. Das geplante Angebot und das
+tatsächliche Angebot im HS 2017 unterscheiden sich in den
+Menü-Inhalten\footnote{Fleisch oder Fisch, Vegetarisch, Vegan
+  (authentisch) und Vegan (Fleischsubstitut)} nicht statisch
+(\(\chi^2\)(3) = 1.589, \emph{p} = 0.662). Auch beim näheren Betrachten
+unterschieden sich die geplanten und tatsächlichen Angeboten für das HS
+2017 in den Menü-Inhalten zwischen den Basis- (\(\chi^2\)(3) = 7.143,
+\emph{p} = 0.067) und Interventionswochen (\(\chi^2\)(3) = 5.984,
+\emph{p} = 0.112) nicht.
+
+\par
+
+Wird das tatsächliche Angebot näher beleuchtet, wurden in über alle
+Interventionenwochen (\emph{n} = 238) 40 Prozent fleischhaltige, knapp
+einem Drittel vegetarische und 27 Prozent vegane Gerichte angeboten. In
+den 12 Basiswochen (\emph{n} = 242) entiehlten \(\frac{2}{3}\) Prozent
+des Angebots Fleisch oder Fisch. Vegetarische Gerichte machten rund 29
+Prozent und vegane Gerichte knapp 1 Prozent aus.
+
+\par
+
+Im Vergleich zu den vergangenen Herbstsemestern 2015 \& 2016 wuchs das
+vegetarische und vegane Angebot im Herbstsemester 2017 von 40 Prozent
+auf knapp 47 Prozent, wobei das Hot and Cold-Buffet nicht als
+vegetarisches Angebot mitgezählt wurde. \newpage
+
+\hypertarget{was-wurde-verkauft}{%
+\paragraph{4.2 Was wurde verkauft?}\label{was-wurde-verkauft}}
+
+Die totalen Verkaufszahlen des Herbstsemesters 2017 haben sich im
+Vergleich zu den zwei HS 2015 \& 2016 nur marginal verändert. Die
+Abbildung \ref{fig:fig3} zeigt alle verkauften Gerichten nach
+Menü-Inhalt (vegan, vegetarisch, Fleisch und Buffet), welche während des
+Quasi-Experiments verkauft wurden.
+
+Der Abbildung \ref{fig:fig3} ist zu entnehmen, dass die wöchentlichen
+Verkaufszahlen sich statistisch nicht unterscheiden (\emph{F}(1,10) =
+284.209, \emph{p} \textless{} .001). Des Weiteren gab es Unterschiede in
+den Verkaufszahlen zwischen den Basis- und Interventionswochen
+(\emph{H}(7) = 42.56, \emph{p} \textless{} .001). Neben den schwankenden
+verkaufszahlen der Fleischgerichte, fällt es auf, dass vegane
+authentische Gerichte deutlich besser verkauft wurden als vegan
+fleischsubstitituierte Gerichte.
+
+\newpage
+
+\hypertarget{wurden-in-den-interventionswochen-auch-mehr-vegetarischen-gerichten-verkauft}{%
+\paragraph{4.3 Wurden in den Interventionswochen auch mehr vegetarischen
+Gerichten
+verkauft?}\label{wurden-in-den-interventionswochen-auch-mehr-vegetarischen-gerichten-verkauft}}
 
 Wird ein grösseres und vielfältigeres Angebot an attraktiven
 vegetarischen und veganen Gerichten von den Mensabesuchern häufiger
-gewählt? Von insgesamt 93 verschiedenen Gerichten, welche über zwei
-Mensazyklen verteilt angeboten wurden, enthielten 0 Prozent (n = 45) der
-Gerichte Fleisch. Ein Drittel (n = 31) der Gerichte wurde vegetarisch
-und die restlichen 0 Prozent (n = 16) ausschliesslich pflanzlich
-angeboten. Das Angebot in den Interventionenwochen war zu einem Drittel
-fleischhaltige, zu einem Drittel vegetarische und zu einem Drittel
-vegane Gerichte. In den Basiswochen waren 50 Prozent des Angebots
-fleischhaltige Gerichte. Vegetarische Gerichte machten rund 22 Prozent
-und vegane Gerichte knapp 3 Prozent aus. Extrapoliert man das Angebot
-auf beide Mensen und über alle Tage gibt das ein geplantes Angebot von
-480 Gerichten\footnote{60 Tage x 2 Mensen x 4 Menü-Inhalten}. Aus
-betrieblichen Gründen kam es beim des Catering Unternehmen zu
-Zusatzangeboten, welche das Angebot grundsätzlich vergrösserten. Von den
-geplanten 480 (pro Mensa) sind noch 120 Gerichten zusätzlich angeboten
-worden. Das Verhätnis blieb jedoch1im Anhang leichten Abweichungen
-hinsichtlich des ursprünglichen Versuchsdesigns. Die Abweichungen
-beeinflussten aber nicht das gesamte Angebot.
-
-Im Vergleich zu den vergangenen Jahren (2015 und 2016) wuchs das
-vegetarische und vegane Angebot im 2017 von 30 Prozent auf knapp 40
-Prozent, wobei das Hot and Cold-Buffet nicht als vegetarisches Angebot
-mitgezählt wurde. In der Abbildung \ref{fig:fig2} zeigt alle verkauften
-Gerichte nach Menü-Inhalt (vegan, vegetarisch, Fleisch und Buffet),
-welche während des Quasi-Experiments angeboten wurden.
-
-\begin{figure}
-\centering
-\includegraphics{ergebnisthemenblatt_i_181004_egel_files/figure-latex/unnamed-chunk-2-1.pdf}
-\caption{\label{fig:fig2} Die Abbildung 2 zeigt alle verkauften
-Gerichten (N = 26'234) aufgeteilt nach den fünf Menü-Inhalten über die
-12 Wochen}
-\end{figure}
-
-\begin{verbatim}
-FALSE Dunn (1964) Kruskal-Wallis multiple comparison
-\end{verbatim}
-
-\begin{verbatim}
-FALSE   p-values adjusted with the Benjamini-Hochberg method.
-\end{verbatim}
-
-Der Abbildung \ref{fig:fig2} ist zu entnehmen, dass die wöchentlichen
-Verkaufszahlen sich statistisch nicht unterscheiden (\emph{F}(1,10) =
-284.209, \emph{p} = 0). Des Weiteren gab es Unterschiede in den
-Verkaufszahlen zwischen den Interventions- und Basiswochen (\emph{H}(7)
-= 42.56, \emph{p} \textless{} 0.001).
-
-\begin{figure}
-\centering
-\includegraphics{ergebnisthemenblatt_i_181004_egel_files/figure-latex/unnamed-chunk-4-1.pdf}
-\caption{\label{fig:fig3} Die Abbildung 3 zeigt die verkauften Gerichten
-nach Menü-Inahlt und Bedingung (Intervention- und Basiswochen)}
-\end{figure}
-
-Die Abbildung \ref{fig:fig3} zeigt, dass es keine statistischen
+gewählt? Die Abbildung \ref{fig:fig4} zeigt, dass es keine statistischen
 Unterschiede in den Verkaufszahlen beim Hot and Cold und im
-vegetarischen Angebot zwischen den beiden Bedingungen gab (Basis- und
-Intervention). Auffallend sind die Unterschiede im Verkauf von
+vegetarischen Angebot zwischen den beiden Bedingungen Basis \&
+Intervention gab. Auffallend sind die Unterschiede im Verkauf von
 Fleischgerichten, welche deutlich seltener in den Interventionswochen
 als in den Basiswochen verkauft wurden. Dass sich mehr vegane Gerichte
 in den Interventionswochen gekauft wurden lag daran, dass es in den
-Basiswochen ein kleines veganes Angebot gab.
+Basiswochen lediglich ein kleines veganes Angebot gab.
+
+\begin{figure}[H]
+
+{\centering \includegraphics{ergebnisthemenblatt_i_181004_egel_files/figure-latex/unnamed-chunk-6-1} 
+
+}
+
+\caption{\label{fig:fig4} Die Abbildung 4 zeigt die verkauften Gerichten nach Menü-Inahlt und Bedingung (Intervention- und Basiswochen)}\label{fig:unnamed-chunk-6}
+\end{figure}
+
+In der Abbildung \ref{fig:fig4} kann zudem entnommen werden, dass in den
+Interventionswochen im Verkauf von veganen (authentisch) und veganen
+(Fleischsubstitut) Gerichten Unterschiede gibt. Auf aggregierter Ebene
+scheinen die authentischen veganen Gerichten sich deutlich besser zu
+verkaufen als die veganen Gerichten mit Fleischsubstitute.
+
+\hypertarget{lassen-sich-vegetarische-gerichte-auch-teuerer-verkaufen}{%
+\paragraph{4.4 Lassen sich vegetarische Gerichte auch teuerer
+verkaufen?}\label{lassen-sich-vegetarische-gerichte-auch-teuerer-verkaufen}}
 
 Sind die aktuellen Menü-Linien tatsächlich ein veraltetes Konzept? Nebst
 der Änderung im Angebot, war eine weitere Intervention die Gerichte über
 neutrale Menü-Gefässe sog. Menü-Linien zu vertreiben. Für das
 Quasi-Experiment wurde die Menü-Linie Green zu World unbenannt. Die
 Menü-Inhalte wurden randomisiert über diese drei Menü-Linien angeboten.
-Die Abbildung \ref{fig:fig4} vergleicht die Verkaufszahlen gemessen an
-den Menü-Linien über die Jahren 2015, 2016 und 2017.
+Die Abbildung \ref{fig:fig5} vergleicht die Verkaufszahlen gemessen an
+den Menü-Linien der Jahren 2015, 2016 und 2017.
 
-\begin{figure}
-\centering
-\includegraphics{ergebnisthemenblatt_i_181004_egel_files/figure-latex/unnamed-chunk-5-1.pdf}
-\caption{\label{fig:fig4} Die Abbildung 4 zeigt die verkauften Gerichten
-nach Menü-Linien im Vergleich (2015, 2016 und 2017)}
+\begin{figure}[H]
+
+{\centering \includegraphics{ergebnisthemenblatt_i_181004_egel_files/figure-latex/unnamed-chunk-7-1} 
+
+}
+
+\caption{\label{fig:fig5} Die Abbildung 5 zeigt die verkauften Gerichten nach Menü-Linien im Vergleich (2015, 2016 und 2017)}\label{fig:unnamed-chunk-7}
 \end{figure}
 
-Die Abbildung \ref {fig:fig4}
+Die Abbildung \ref {fig:fig5} zeigt, dass es zwischen den drei
+Herbstsemestern klare Unterschiede in den Verkauszahlen zwischen den
+Menü-Linien gab. Die Grafik zwar lässt keine Schlüsse über deren
+Menü-Inhalt zu, aber die randomisierte Ausgabe der Gerichte konnte
+aufzeigen, dass es einen Einfluss auf die Menü-Wahl genommen hat. So
+wurden auch vegetarischen Gerichte auf der teureren Menü-Linie «Kitchen»
+problemlos von den Gästen gekauft.
 
-\hypertarget{diskussion-inkl.-einordnung-der-ergebnisse-in-die-internationale-forschung}{%
-\subsubsection{5. Diskussion (inkl. Einordnung der Ergebnisse in die
-internationale
-Forschung)}\label{diskussion-inkl.-einordnung-der-ergebnisse-in-die-internationale-forschung}}
+\newpage
 
-\hypertarget{schlussfolgerungen-mit-empfehlungenimplikationen-fur-praxis-und-politik}{%
-\subsubsection{6. Schlussfolgerungen mit Empfehlungen/Implikationen für
-Praxis und
-Politik}\label{schlussfolgerungen-mit-empfehlungenimplikationen-fur-praxis-und-politik}}
+\hypertarget{diskussion}{%
+\subsubsection{5. Diskussion}\label{diskussion}}
+
+Nach unserem Wissen wurde noch kein Real-Labor-Experiment durchgeführt,
+welches die Reaktion der Gäste auf ein ressourcenschonenderes Angebot
+aufzeichnete. Es gibt einige Untersuchungen wobei mittels
+Quasi-Experimenten getestet wurde wie die Mensagäste auf bestimmte
+Labels (z. B. zu gesunder Ernährung oder umweltfreundlichen Gerichten)
+(Hoefkens u.~a. \protect\hyperlink{ref-hoefkens_what_2012}{2012};
+Spaargaren u.~a. \protect\hyperlink{ref-spaargaren_consumer_2013}{2013};
+Thorndike u.~a. \protect\hyperlink{ref-thorndike_2-phase_2012}{2012}),
+auf Präsentationen oder Positionierung von Nahrungsmitteln (Wansink und
+Hanks \protect\hyperlink{ref-wansink_slim_2013}{2013}; Kleef, Otten, und
+Trijp \protect\hyperlink{ref-van_kleef_healthy_2012}{2012}) oder auf
+soziale oder injuktive Normen (Collins u.~a.
+\protect\hyperlink{ref-collins_two_2019}{2019}) reagierten.
+
+\par
+
+Zusammengefasst zeigen die Ergebnisse dieser Studie, dass eine Erhöhung
+des vegetarischen und veganen Angebots in Kombination mit neutralen
+Menü-Lienien und einer randomisierten Ausgabe des Menü-Inahlts zu einer
+Senkung des Fleischkonsums führen könnten. Ob nun die randomisierte
+Ausgabe, die neutralen Menü-Linien oder die quantitative Erhöhung von
+vegetarische und vegane Gerichten für diesen Effekt zuständig ist,
+bedarf es an weiteren Untersuchungen. Ein weiterer Einflussfaktor könnte
+das vergrösserte Angebot, welches durch das Caternig Unternehmen
+generiert wurde, darstellen. Weiter konnte in diesem Quasi-Experiment
+die qualitative Gleichwertigkeit der täglich angebotenen Gerichte nicht
+überprüft werden, was gegebenenfalls bei dem Kauf eines Gerichts einen
+Einfluss nehmen könnte. Zudem basieren die gezeigten Ergebnisse auf
+aggregierte Verkaufszahlen.
+
+\par
+
+Gemäss früheren Studien (siehe Blanchette und Brug
+\protect\hyperlink{ref-blanchette_determinants_2005}{2005};
+Neumark-sztainer u.~a.
+\protect\hyperlink{ref-neumark-sztainer_factors_1999}{1999}; Kleef,
+Broek, und Trijp \protect\hyperlink{ref-van_kleef_exploiting_2015}{2015}
+evtl noch buch aufführen von @rozin\_1\_2007) führt eine höhere
+Verfügbarkeit, z. B. von gesundem Essen, auch zu einem Einfluss auf das
+Ernährungsverhalten. Auch in neuren Studien (Ensaff u.~a.
+\protect\hyperlink{ref-ensaff_food_2015}{2015}) scheint die
+Verfügbarkeit als Nudging-Strategie eine Veränderung im Kaufverhalten
+von pflanzenbasierten Nahrungsmitteln hervorzurufen. Auf unser
+Quasi-Experiment angewendet, konnte eine Erhöhung von
+ressourcenleichteren Gerichten resp. eine erhöhte Verfügbarkeit davon,
+einen ähnlichen Effekt hervorrufen, dass mehr vegetarische und vegane
+Gerichte resp. weniger fleischhaltige Gerichte verkauft wurden. Eine
+weitere Erklärung unserer Erbegnissen könnte die Erhöhung der Auswahl
+von Menü-Inhalten sein. Aschemann-Witzel und Kollegen
+(\protect\hyperlink{ref-aschemann-witzel_effects_2013}{2013}) fanden
+heraus, dass eine Erhöhung der Auswahlmenge einen Einfluss auf das
+gesunde Wahlverhalten nimmt. Eine Kaufentscheidung zu verstehen und
+demnach zu beeinflussen ist sehr komplex, denn wir fällen wir über 200
+Essensentscheide pro Tag (Wansink und Sobal
+\protect\hyperlink{ref-wansink_mindless_2007}{2007}). Es zeigt sich aber
+immer mehr, dass die meisten Entscheide anhand einfachen Heuristiken
+sog. Faustregeln gefällt werden (siehe Scheibehenne, Miesler, und Todd
+\protect\hyperlink{ref-scheibehenne_fast_2007}{2007}). Inwiefern die
+Intervention auch tatsächlich einen Einfluss auf das Wahl-Verhalten
+nimmt, wird in einem separaten Ergebnisthemenblatt untersucht (siehe
+Egeler \& Baur, 2018b).
+
+\par
+
+Ein weiteres spannendes Ergebniss dieses Quasi-Experiment war, dass in
+den Interventionswochen die veganen authentische Gerichte sich besser
+verkauften, als die veganen Gerichte mit Fleischsubstituten. Frühere
+Studien zeigten, dass der Gerichte-Kontext (z. B. Ingredienzen) einen
+starken Einfluss auf den Konsum von Fleischsubstituten nimmt (Elzerman
+u.~a. \protect\hyperlink{ref-elzerman_consumer_2011}{2011}). Zudem ist
+die Akzeptanz von Fleischsubstituten immernoch relativ klein (siehe Hoek
+\protect\hyperlink{ref-hoek_will_2010}{2010}; Boer und Aiking
+\protect\hyperlink{ref-de_boer_merits_2011}{2011}).
+
+\par
+
+Obwohl die Menü-Linien resp. Menü-Labels oftmals für die Gästeführung
+eingeführt werden, konnte im Quasi-Experiment aufgezeigt werden, dass
+durch die Wahl von neutralen Menü-Linien und eine randomisierte Ausgabe
+der Gerichte auch teurere vegetarische und vegane Gerichte von den
+Mensabesucher gekauft werden. Auch in der Literatur wird kontrovers
+disskutiert, ob Labels überhaupt einen Einfluss auf die Menü-Wahl nehmen
+(siehe Spaargaren u.~a.
+\protect\hyperlink{ref-spaargaren_consumer_2013}{2013}; Kiszko u.~a.
+\protect\hyperlink{ref-kiszko_influence_2014}{2014}; Aschemann-Witzel
+u.~a. \protect\hyperlink{ref-aschemann-witzel_effects_2013}{2013}).
+
+\hypertarget{schlussfolgerungen}{%
+\subsubsection{6. Schlussfolgerungen}\label{schlussfolgerungen}}
+
+Eine Erhöhung von Anzahl und Anteil an vegetarischen und veganen
+Gerichten in Kombination mit neutralen Menü-Linien und randomisierter
+Ausgabe der drei Menü-Inhalten (Fleisch oder Fisch, vegetarisch und
+vegan), scheint den Konsum von Fleischgerichten zu reduzieren. An diesem
+Punkt ist es wichtig zu erwähnen, dass die vegetarischen und veganen
+Gerichte diskret neben anderen Inhaltsstoffen deklarieren und nicht
+angepriesen werden sollten. Um den Gast vermehrt dazu führen, sich mit
+dem Menü-Inahlt auseinanderzusetzten, alte Gewohnheiten fallen zu lassen
+und Neophobie zu verkleienrn, sollten die Gerichte unabhängig von
+Menü-Inahlt randomisierung über alle Menü-Linien anbegoten werden.
+
+\par
+
+Wenn es um den einzelnen Verkauf von Gerichten geht, scheinen
+authentische Gerichte besser als Gerichte mit Fleischsubstitute
+abzuschneiden. Daher nicht nur Fleischsubstitute anbieten und wenn
+Fleischsubstitute angeboten werden, sollte auf den Menü-Kontext geachten
+werden. Zudem zeigte sich, dass auch vegetarische und vegane Gerichte
+auf der teureren Menü-Linie ``Kitchen'' ebenfalls von den Gästen
+akzeptiert und gekauft wurden.
+
+\par
+
+In diesem Quasi-Experiment konnte nicht die qualitative Gleichwertigkeit
+der angebotenen Gerichte berücksichtigt werden. Wird zum Beispiel ein
+Fleischburger mit Pommes und ein vegetarisches Linsen-Dahl von den
+Mensabesuchern resp. von Koch-Experten als gleichwertig wahrgenommen?
+Bei einem weiteren Mensa-Experiment sollte die Gleichwertigkeit der
+Gerichte bei der Angebotsentwicklung mittels Fachleuten oder
+Koch-Experten berücksichtigt werden.
+
+\par
+
+Mit diesem Quasi-Experiment konnte gezeigt werden, dass sich die
+Verkaufszahlen über die Zeit durch eine Erhöhung des vegetarischen und
+veganen Angebots nicht zurückgegangen sind. Das speziellen Setting und
+die spezielle Stichprobe haben bestimmt dafür beigetragen,
+nichtsdestotrotz wären weitere Pilotstudien an anderen Kantinen mit
+anderen Stichproben resp. Mensabesuchern wünschenswert.
+
+Weitere Informationen zum Projekt können auf unserer
+\href{novanimal.ch}{Webpage} gefunden werden.
 
 \hypertarget{danksagung}{%
 \subsubsection{7. Danksagung}\label{danksagung}}
@@ -262,20 +465,144 @@ Verantwortlichen (Area- und Restaurantmanager und Küchenteam) für die
 hilfsbereite und unkomplizierte Unterstützung (Lieferung von Daten,
 Rezepturen, Beantwortung von Fragen).
 
+\hypertarget{hinweise-des-autors}{%
+\subsubsection{8. Hinweise des Autors}\label{hinweise-des-autors}}
+
+Alle Skripte für diesen Bericht sind auf
+\href{https://github.com/GAEgeler/tilldata_2017}{github} verfügbar.
+
 \hypertarget{quellen}{%
-\subsubsection*{8. Quellen}\label{quellen}}
-\addcontentsline{toc}{subsubsection}{8. Quellen}
+\subsubsection*{9. Quellen}\label{quellen}}
+\addcontentsline{toc}{subsubsection}{9. Quellen}
 
 \hypertarget{refs}{}
+\leavevmode\hypertarget{ref-aschemann-witzel_effects_2013}{}%
+Aschemann-Witzel, Jessica, Klaus G. Grunert, Hans C. M. van Trijp,
+Svetlana Bialkova, Monique M. Raats, Charo Hodgkins, Grazyna
+Wasowicz-Kirylo, und Joerg Koenigstorfer. 2013. „Effects of nutrition
+label format and product assortment on the healthfulness of food
+choice``. \emph{Appetite} 71 (Dezember):63--74.
+\url{https://doi.org/10.1016/j.appet.2013.07.004}.
+
+\leavevmode\hypertarget{ref-blanchette_determinants_2005}{}%
+Blanchette, L., und J. Brug. 2005. „Determinants of fruit and vegetable
+consumption among 6--12-year-old children and effective interventions to
+increase consumption``. \emph{Journal of Human Nutrition and Dietetics}
+18 (6):431--43. \url{https://doi.org/10.1111/j.1365-277X.2005.00648.x}.
+
 \leavevmode\hypertarget{ref-bochud_anthropometric_2017}{}%
 Bochud, Murielle, Angéline Chatelan, Juan-Manuel Blanco, und Sigrid
 Beer-Borst. 2017. „Anthropometric characteristics and indicators of
 eating and physical activity behaviors in the Swiss adult population``.
 \url{https://www.blv.admin.ch/dam/blv/de/dokumente/lebensmittel-und-ernaehrung/ernaehrung/menuch-bericht.pdf.download.pdf/menuch-bericht.pdf}.
 
+\leavevmode\hypertarget{ref-de_boer_merits_2011}{}%
+Boer, Joop de, und Harry Aiking. 2011. „On the merits of plant-based
+proteins for global food security: Marrying macro and micro
+perspectives``. \emph{Ecological Economics}, Special Section: Ecological
+Economics and Environmental History, 70 (7):1259--65.
+\url{https://doi.org/10.1016/j.ecolecon.2011.03.001}.
+
+\leavevmode\hypertarget{ref-collins_two_2019}{}%
+Collins, Emily I. M., Jason M. Thomas, Eric Robinson, Paul Aveyard,
+Susan A. Jebb, C. Peter Herman, und Suzanne Higgs. 2019. „Two
+observational studies examining the effect of a social norm and a health
+message on the purchase of vegetables in student canteen settings``.
+\emph{Appetite} 132 (Januar):122--30.
+\url{https://doi.org/10.1016/j.appet.2018.09.024}.
+
+\leavevmode\hypertarget{ref-elzerman_consumer_2011}{}%
+Elzerman, Johanna E., Annet C. Hoek, Martinus A. J. S. van Boekel, und
+Pieternel A. Luning. 2011. „Consumer acceptance and appropriateness of
+meat substitutes in a meal context``. \emph{Food Quality and Preference}
+22 (3):233--40. \url{https://doi.org/10.1016/j.foodqual.2010.10.006}.
+
+\leavevmode\hypertarget{ref-ensaff_food_2015}{}%
+Ensaff, Hannah, Matt Homer, Pinki Sahota, Debbie Braybrook, Susan Coan,
+Helen McLeod, Hannah Ensaff, u.~a. 2015. „Food Choice Architecture: An
+Intervention in a Secondary School and its Impact on Students'
+Plant-based Food Choices``. \emph{Nutrients} 7 (6):4426--37.
+\url{https://doi.org/10.3390/nu7064426}.
+
 \leavevmode\hypertarget{ref-gastrosuisse_branchenspiegel_2016}{}%
 GastroSuisse. 2016. „Branchenspiegel 2016: Entwicklung von Angebot und
 Nachfrage``. Powerpoint.
+
+\leavevmode\hypertarget{ref-hoefkens_what_2012}{}%
+Hoefkens, Christine, Prakashan Chellattan Veettil, Guido Van
+Huylenbroeck, John Van Camp, und Wim Verbeke. 2012. „What nutrition
+label to use in a catering environment? A discrete choice experiment``.
+\emph{Food Policy} 37 (6):741--50.
+\url{https://doi.org/10.1016/j.foodpol.2012.08.004}.
+
+\leavevmode\hypertarget{ref-hoek_will_2010}{}%
+Hoek, Annet C. 2010. \emph{Will novel protein foods beat meat? Consumer
+acceptance of meat substitutes ; a multidisciplinary research approach}.
+
+\leavevmode\hypertarget{ref-kiszko_influence_2014}{}%
+Kiszko, Kamila M., Olivia D. Martinez, Courtney Abrams, und Brian Elbel.
+2014. „The Influence of Calorie Labeling on Food Orders and Consumption:
+A Review of the Literature``. \emph{Journal of Community Health} 39
+(6):1248--69. \url{https://doi.org/10.1007/s10900-014-9876-0}.
+
+\leavevmode\hypertarget{ref-van_kleef_exploiting_2015}{}%
+Kleef, Ellen van, Oriana van den Broek, und Hans C.M. van Trijp. 2015.
+„Exploiting the Spur of the Moment to Enhance Healthy Consumption:
+Verbal Prompting to Increase Fruit Choices in a Self-Service
+Restaurant``. \emph{Applied Psychology: Health and Well-Being} 7
+(2):149--66. \url{https://doi.org/10.1111/aphw.12042}.
+
+\leavevmode\hypertarget{ref-van_kleef_healthy_2012}{}%
+Kleef, Ellen van, Kai Otten, und Hans CM van Trijp. 2012. „Healthy
+snacks at the checkout counter: A lab and field study on the impact of
+shelf arrangement and assortment structure on consumer choices``.
+\emph{BMC Public Health} 12 (1):1072.
+\url{https://doi.org/10.1186/1471-2458-12-1072}.
+
+\leavevmode\hypertarget{ref-neumark-sztainer_factors_1999}{}%
+Neumark-sztainer, DIANNE, MARY Story, CHERYL Perry, und MARY ANNE Casey.
+1999. „Factors Influencing Food Choices of Adolescents: Findings from
+Focus-Group Discussions with Adolescents``. \emph{Journal of the
+American Dietetic Association} 99 (8):929--37.
+\url{https://doi.org/10.1016/S0002-8223(99)00222-9}.
+
+\leavevmode\hypertarget{ref-rozin_1_2007}{}%
+Rozin, P. 2007. „1 - Food choice: an introduction``. In
+\emph{Understanding Consumers of Food Products}, herausgegeben von Lynn
+Frewer und Hans van Trijp, 3--29. Woodhead Publishing Series in Food
+Science, Technology and Nutrition. Woodhead Publishing.
+\url{https://doi.org/10.1533/9781845692506.1.3}.
+
+\leavevmode\hypertarget{ref-scheibehenne_fast_2007}{}%
+Scheibehenne, Benjamin, Linda Miesler, und Peter M. Todd. 2007. „Fast
+and frugal food choices: Uncovering individual decision heuristics``.
+\emph{Appetite} 49 (3):578--89.
+\url{https://doi.org/10.1016/j.appet.2007.03.224}.
+
+\leavevmode\hypertarget{ref-spaargaren_consumer_2013}{}%
+Spaargaren, Gert, C. S. A. (Kris) van Koppen, Anke M. Janssen, Astrid
+Hendriksen, und Corine J. Kolfschoten. 2013. „Consumer Responses to the
+Carbon Labelling of Food: A Real Life Experiment in a Canteen
+Practice``. \emph{Sociologia Ruralis} 53 (4):432--53.
+\url{https://doi.org/10.1111/soru.12009}.
+
+\leavevmode\hypertarget{ref-thorndike_2-phase_2012}{}%
+Thorndike, Anne N., Lillian Sonnenberg, Jason Riis, Susan Barraclough,
+und Douglas E. Levy. 2012. „A 2-Phase Labeling and Choice Architecture
+Intervention to Improve Healthy Food and Beverage Choices``.
+\emph{American Journal of Public Health} 102 (3):527--33.
+\url{https://doi.org/10.2105/AJPH.2011.300391}.
+
+\leavevmode\hypertarget{ref-wansink_slim_2013}{}%
+Wansink, Brian, und Andrew S. Hanks. 2013. „Slim by Design: Serving
+Healthy Foods First in Buffet Lines Improves Overall Meal Selection``.
+Herausgegeben von Xiaoxi Zhuang. \emph{PLoS ONE} 8 (10):e77055.
+\url{https://doi.org/10.1371/journal.pone.0077055}.
+
+\leavevmode\hypertarget{ref-wansink_mindless_2007}{}%
+Wansink, Brian, und Jeffery Sobal. 2007. „Mindless Eating: The 200 Daily
+Food Decisions We Overlook``. \emph{Environment and Behavior} 39
+(1):106--23. \url{https://doi.org/10.1177/0013916506295573}.
 
 
 \end{document}

@@ -236,7 +236,7 @@ rm(list=c("Hot_Cold_v","Hot_Cold_g","Fleisch_v","Fleisch_g","Vegetarisch_v","Veg
 
 
 
-######
+###### (Attention, load firstup function from above first)
 # data from 2015 & 2016 calculate sellings per meal_line------
 dat_hs_tot <- read_delim("raw data/verkaufsdaten täglich HS 15-16 180731.csv", 
                          delim = ';',

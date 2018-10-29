@@ -2,7 +2,7 @@
 lang: de-DE
 title: |
     | Ergebnisthemenblätter NOVANIMAL
-    | Wer wählt welches Menü? Ernährungsmuster in einer Hochschulmensa
+    | Quasi-Experiment in zwei Hochschulmensen: Auswertung des Verkaufsverhaltens
 author: "Gian-Andrea Egeler, Priska Baur"
 date: "`r format(Sys.Date(), '%B %Y')`"
 output:
@@ -50,7 +50,7 @@ Versuchspläne, bei denen auf eine Interventionsphase wieder eine Basisphase folg
 Dieser ABABAB-Umkehrplan (oder Design) wurde gewählt, weil die Mensabesucher per Definition Einzelfälle darstellen. In unserem Quasi-Experiment dient dieses Design zu überprüfen, ob das veränderte Menü-Angebot einen Einfluss auf das Wahlverhalten der Mensabesucher nimmt. <br>
 Die Gerichte wurden über drei vorgegebene Menü-Linien: Favorite, Kitchen, World während des ersten Mensazyklus randomisiert angeboten wurden. Ziel einer randomisierten Ausgabe der Gerichte war es, einerseits die Mensagäste zu «desorientieren» und andererseits Übungs- oder Gewöhnungseffekten zu unterbinden. Übungs- oder Gewöhnungseffekten (engl. Testing effect or habituation) können jedoch die interne Validität bedrohen. Eine weitere Massnahme dem entgegenzuwirken war, dass wir im zweiten Mensazyklus das Design zu einem BABABA-Design änderten.
 <br>
-
+Die nachfolgenden Analysen und Ergebnisse basieren auf zusammengeführte Daten aus dem Kassensysten des Catering Unternehmens und dem System der Hochschule. Diese Verkaufsdaten stellen somit einen Proxy für das Wahlverhalten(oder so / oder ist mehr als nur eine Intention für ein Wahlverhalten, sondern eher ein Proxy für das tatsächliche Wahlverhalten, evtl Literatur). Für die Analysen sind insgesamt mehr als 22'000 Transaktionen resp. Käufe von Gerichten während der Mittagszeit berücksichtigt worden.
 
 ###	4. Ergebnisse
 
@@ -58,7 +58,18 @@ Die Gerichte wurden über drei vorgegebene Menü-Linien: Favorite, Kitchen, World 
 
 ###	5. Diskussion (inkl.  Einordnung der Ergebnisse in die internationale Forschung)
 
+price studie evtl reinnehmen
+siehe buch von lynn fewer 2007
+
+choice sets erhöhen!! thaler_nudge:_2008 => per definition ein nudge. Der entscheidende Einfluss der Erweiterung des Wahlsets unterstreicht die Idee, die Verbraucher durch einfache Veränderungen der Umwelt zu günstigen Entscheidungen anzuregen.
+
 ###	6. Schlussfolgerungen mit Empfehlungen/Implikationen für Praxis und Politik
+
+Gründe für Menü-Wahl sind heterogen (siehe bakker/dagevous 2012)
+Fokus auf Flexitarier (siehe Bakker und Dagevous 2012)
+Fokus auf Frauen (siehe Ruby und heine 2011)
+
+Dank der CampusCard, einer Smard-Card Technologie konnten die Ernährungsweisen einzelner Personen ohne den Datenschutz zu verletzten, aufgezeichnet werden. Bei einer Änderung des Angebots muss zuerst die Besucher eruiert werden und was die essen, etc [siehe @lambert_using_2005].
 
 ###	7. Danksagung
 
