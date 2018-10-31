@@ -218,3 +218,43 @@ ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unknown","Pfla
     geom_text(aes(label=ifelse(tot>4,tot,"")), size = 8, position = position_stack(vjust = 0.5))+ #omit numbers to be shown smaller than 190
     annotate("text",x=1:3,y=500,label=c(text$label2[1],text$label2[1],text$label2[2]), size=8)+
     mytheme
+
+# age, member and gender------
+# see 06_script where sample and population is compared
+
+
+# visiter frequency --------
+canteen <- df_2017 %>%
+    group_by(ccrs, shop_description) %>%
+    summarise(visit = n())
+    
+canteen2 <- canteen %>% 
+    mutate(category=cut(visit, breaks = c(-Inf, 2, 12, 24, 36, 48, 60, Inf), labels = c("einmaliger Besuch", "max. 1x\n pro Woche","max. 2x\n pro Woche","max. 3x\n pro Woche","max. 4x\n pro Woche", "max. 5x\n pro Woche","mehr als 5x\n pro Woche"))) %>%
+    group_by(shop_description, category) %>% 
+    summarise(visit_counts=n()) %>% # count how hoften a visit occurs, e.g. oneday visitors occur 200 times 
+    mutate(pct=visit_counts/sum(visit_counts))
+
+# plot
+canteen2 %>% filter(visit_counts > 2) %>%
+ggplot(aes(x=category,y=pct, fill=shop_description)) +
+    geom_bar(stat="identity",colour=NA, position = "dodge", width = .6)+
+    scale_fill_manual(values =  c("#fad60d","#c5b87c"))+
+    scale_y_continuous(labels=scales::percent) +
+    # scale_alpha_discrete(range = c(0.6, .8), guide=F)+
+    # scale_alpha_manual(values=c(0.5, 1), guide=F)+
+    xlab("\nDurchschnittliche Mensabesuche pro Woche") +
+    ylab("Anteil Mensabesucher")+
+    # ggtitle("Anmerkung: 23'446 Transaktionen wurden berücksichtigt")+
+    guides(fill= guide_legend(title = "Mensa-Standort"))+
+    #         geom_text(aes(
+    #             label = paste0(round(visit3$pct,digits = 0)), vjust =-.2
+    #         ),colour = "#000000",position = position_dodge(width = .8), size= 8) +
+    mytheme
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/visit_freq_181031_egel.pdf",
+       height = 10,
+       width = 24,
+       dpi = 200,
+       device = cairo_pdf)
+

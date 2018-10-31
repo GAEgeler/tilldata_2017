@@ -41,8 +41,9 @@ info_ <- select(info_compl, date,article_description,label_content,cycle,meal_na
 df_7 <- left_join(df_17, info, by = c("shop_description","date","article_description","cycle"))
 df_7_ <- left_join(df_17,info_, by = c("shop_description","date","article_description","cycle"))
 
-# dataset without double entries: check script yy_plausibility
-df_2017 <- filter(df_7, !(duplicated(df_7$ccrs) & duplicated(df_7$transaction_id) & duplicated(df_7$trans_date) & total_amount == prop_price))
+# dataset without double entries: check script yy_plausibility for more information
+df_2017 <- filter(df_7, !(total_amount > prop_price & duplicated(transaction_id))) # delete 436 entries
+df_2017 <- filter(df_2017, !(duplicated(df_2017$ccrs) & duplicated(df_2017$transaction_id) & duplicated(df_2017$trans_date) & total_amount == prop_price)) # delete 265 entries
 
 # load aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
