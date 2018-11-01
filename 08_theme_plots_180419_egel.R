@@ -12,7 +12,7 @@ library(ggplot2)
 # loadfonts() # takes a while for loading all fonts
 # somehow, not working with postscript
 
-### MY Theme 1: for regular plots -------------------
+### MY Theme 0: for regular plots -------------------
 
 mytheme <- theme_bw()+ # definve theme for plot
     theme(plot.title = element_text(size = 20, face = "bold"),
@@ -26,7 +26,23 @@ mytheme <- theme_bw()+ # definve theme for plot
           plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
 
 
-### MY Theme 2: for more information in plot ----------------------
+### MY Theme 1: for plots in presentations -------------------
+
+mytheme1 <- theme_bw()+ # definve theme for plot
+    theme(plot.title = element_text(size = 30, face = "bold"),
+          axis.text.x = element_text(size=28),
+          axis.text.y = element_text(size=30, face = "plain"),
+          legend.text = element_text(size = 35),
+          legend.title = element_text(size =35),
+          axis.title.y = element_text(size = 40, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 40,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          plot.subtitle=element_text(margin=margin(b=15),size = 20),
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+
+
+
+## MY Theme 2: for more information in plot ----------------------
+## MY Theme 2: for more information in plot ----------------------
 
 mytheme2 <- theme_bw()+ # definve theme for plot
     theme(plot.title = element_text(size = 20, face = "bold"),
