@@ -105,55 +105,6 @@ CrossTable(canteen$gender, canteen$member, chisq = T)
 # check influence of age => makes no sense
 summary.lm(aov(age ~ gender + member, data = canteen))
 
-# another way => build age groups
-canteen2 <- canteen %>% 
-    filter(age != 117) %>%
-    mutate(age_group = cut(age,breaks=c(-Inf, 25, 35, 50, 65, Inf), # menuCH age groups
-                       labels=c("16 bis 25-jährig","26 bis 34-jährig","35 bis 49-jährig","50 bis 64-jährig","keine Angaben")))
-CrossTable(canteen2$age_group, canteen2$member)    
-
-# best way, visualize data 
-# age and gender
-df <- group_by(canteen2, age, gender) %>%
-    summarise(tot = n())
-
-ggplot(df, aes(x = age,y = tot, color = gender)) + 
-    geom_point(stat="identity", size = 2) + 
-    geom_smooth(method = "loess", se = F, size = 1.3) + 
-    scale_color_manual(breaks = c("F","M"),
-                       values = c("F" = "#99f200","M" = "#008099"),
-                       labels = c("Frauen", "Männer")) +
-    guides(color = guide_legend(title = "Geschlecht")) +
-    labs(x = "Alter in Jahren", y = "Häufigkeit") + #, caption = "Daten: Kassendaten SV und ZHAW"
-    mytheme
-
-# save for presentation agrifoodsystems
-ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/age_gender_181031_egel.pdf",
-       height = 10,
-       width = 18,
-       dpi = 200,
-       device = cairo_pdf)
-
-#plot member and age
-df <- group_by(canteen2, age, member) %>%
-    summarise(tot = n())
-
-ggplot(df, aes(x = age,y = tot, color = member)) + 
-           geom_point(stat="identity", size = 2) + 
-           geom_smooth(method = "loess", se = F, size = 1.3) + 
-           scale_color_manual(breaks = c("Mitarbeitende","Studierende"),
-                              values = c("Mitarbeitende" = "#6619e6","Studierende" = "#80ccff")) +
-           guides(color = guide_legend(title = "Hochschulzugehörigkeit")) +
-           labs(x = "Alter in Jahren", y = "Häufigkeit") + #, caption = "Daten: Kassendaten SV und ZHAW"
-           mytheme
-
-# save for presentation agrifoodsystems
-ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/age_member_181031_egel.pdf",
-       height = 10,
-       width = 24,
-       dpi = 200,
-       device = cairo_pdf)
-
 
 # visiter frequency --------
 canteen <- df_2017 %>%

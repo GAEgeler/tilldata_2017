@@ -130,7 +130,7 @@ test <- filter(df_17, qty_weight > 1)
 # 2. 436 cases => dont know, how i came up with 900, probabiliy 436 * 2
 # delete these cases
 test <- filter(df_17, total_amount > prop_price & duplicated(transaction_id))
-test1_ <- df_17[duplicated(df_17),] # one case different
+test1_ <- df_17[duplicated(df_17),] # one case differs
 
 # 3. 70 cases, all the same, however two different meals => take the first out of the data
 test1 <- filter(df_17, duplicated(df_17$ccrs) & duplicated(df_17$transaction_id) & duplicated(df_17$trans_date) & total_amount == prop_price) # 265 cases

@@ -1,8 +1,8 @@
 ---
 lang: de-DE
 title: |
-    | Ergebnisthemenblätter NOVANIMAL
-    | Quasi-Experiment in zwei Hochschulmensen: Auswertungen der Menü-Verkäufe
+    | Kurzberichte NOVANIMAL
+    | Transdisziplinäres Experiment in zwei Hochschulmensen: Auswertungen der Menü-Verkäufe
 author: "Gian-Andrea Egeler, Priska Baur"
 date: "`r format(Sys.Date(), '%B %Y')`"
 output:
@@ -18,15 +18,26 @@ header-includes:
 - \usepackage{graphicx} # for graphics
 - \usepackage[font=small,labelfont=bf]{caption} # for caption content small and bold Figure
 
-bibliography: biblio_181004.bib # apa style is not working, reasons?
+- \usepackage{apacite} # for apa style in citation and bibliography, however not working
+- \bibliographystyle{apacite}
+- \bibliography{biblio_181004.bib}
 
-link-citations: true # for linking the citations in text
+# bibliography:  biblio_181004.bib# apa style is not working, reasons?
+
+# link-citations: true # for linking the citations in text
 ---
 
-```{r setup, include=FALSE}
+<!-- check papaja package for papers!! -->
+
+```{r setup, include=FALSE, message=F, warning=F}
 knitr::opts_chunk$set(echo = F, warning = F, error = F, message = F, fig.align='center', fig.pos ='H')
 
 library(apa) # for reporting apa style for e.g. chisquare test
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(stringr)
+library(ggplot2)
 
 #rmarkdown::render("papers/ergebnisthemenblatt_i_181004_egel.Rmd", output_format = "pdf_document", encoding="LATIN1") # here is the code to knitr the rmd file in the environment (takes data already load, otherwise many errors occur)
 
@@ -43,151 +54,30 @@ Die zentrale Bedeutung tierischer Produkte spiegelt sich im Angebot der Gastrono
 
 ###	2. Forschungsfragen und Ziele
 
-Die übergeordnete Forschungsfrage dieses Arbeitspackets WPIII.1 war es, die Gäste in Mensen dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die abgeleitete Forschungsfragen interessiert es wie das Menü-Angebot oder die Menü-Beschriftung die Menü-Wahl aller Mensabesucher beeinflusst?
+Die übergeordnete Forschungsfrage dieses Arbeitspackets WPIII.1 war es, die Gäste in Mensen dazu zu bewegen, häufiger ressourcenschonende vegetarische^[vegetarisch = ovo-lakto-vegetarisch (inkl. Eier und Milch)] oder vegane^[vegan = ausschliesslich pflanzliche Zustaten] Gerichte zu wählen. Die daraus abgeleiteten Forschungsfragen sind wie das Menü-Angebot und die Menü-Beschriftung die Menü-Wahl der Mensabesucher beeinflusst?
 
 \newpage
 
 ###	3. Theoretischer Hintergrund und Methoden 
 
-Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Quasi-Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgeführt wird. Konkret wird untersucht, wie die Gäste auf ein verändertes Menü-Angebot mit einem höheren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
+Zusammen mit den Praxispartnern, einem Catering Unternehmen und dem Facility Management einer Hochschule, wurde ein Experiment vorbereitet, das als Pilotversuch in zwei Hochschulmensen durchgeführt wird. Konkret wird untersucht, wie die Gäste auf ein verändertes Menü-Angebot mit einem höheren Anteil an ressourcenschonenden vegetarischen oder veganen Gerichten reagieren. 
 \par
-Das Quasi-Experiment findet im Herbstsemester (HS) 2017 während 12 Wochen statt und bestand aus zwei Mensazyklen à 6 Wochen (siehe Abbildung \ref{fig:fig1}). In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein vegetarisches Gericht angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische Gerichte (z. B. Linsen-Dal) und vegane Gerichte mit Fleischsubstituten (z. B. Quornragout) unterschieden. Basis- und Interventionsangebote wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
+Das Experiment findet im Herbstsemester (HS) 2017 während 12 Wochen statt und bestand aus zwei Mensazyklen à 6 Wochen (siehe Abbildung \ref{fig:fig1}). In den 6 Referenz- bzw. Basiswochen wurden zwei fleisch- oder fischhaltige Gerichte und ein vegetarisches Gericht angeboten. In den 6 Interventionswochen wurde das Verhältnis umgekehrt und es wurden ein veganes, ein vegetarisches und ein fleisch- oder fischhaltiges Gericht angeboten. Beim veganen Angebot wurde zwischen eigenständige authenische Gerichte^[Gerichte, welche ausschliesslich aus pflanzlichen Zutaten bestehen z. B. Linsen-Dal] und vegane Gerichte mit Fleischsubstituten^[Gerichte, welche neben pflanzlichen Zutaten auch noch Fleischsubstitute beinhalteten z. B. Tofu-Burger] unterschieden. Basis- und Interventionsangebote wechselten wöchentlich ab. Während der gesamten 12 Wochen konnten die Gäste jeweils auf ein Buffet ausweichen und ihre Mahlzeit aus warmen und kalten Komponenten selber zusammenstellen. 
 \par
-Die nachfolgenden Analysen und Ergebnisse basieren auf Daten aus den Kassensystemen des Catering Unternehmens. Für die Analysen sind insgesamt mehr als 26'000 Transaktionen ( resp. Menü-Käufe) während der Mittagszeit berücksichtigt worden.
+Die nachfolgenden Analysen und Ergebnisse basieren auf Daten aus den Kassensystemen des Catering Unternehmens. Für die Analysen sind mehr als 26'000 Menü-Verkäufe resp. Transaktionen während der Mittagszeit berücksichtigt worden.
 
-```{r, fig.cap="\\label{fig:fig1} Die Abbildung 1 zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwochen 40 bis 45).", out.width = '100%', dpi=200}
+```{r, fig.cap="\\label{fig:fig1} Die Abbildung zeigt das Versuchsdesign der ersten 6 Experimentwochen (Kalenderwochen 40 bis 45).", out.width = '100%', dpi=200}
 knitr::include_graphics("design_eng_experiment_ohne datum_180426_03egel.png")
 ```
 
 ###	4. Ergebnisse
+#### 4.1 Verkaufszahlen über alle 12 Wochen
 
-#### 4.1 Was wurde angeboten?
-
-Von insgesamt 93 verschiedenen Gerichten, welche über zwei Mensazyklen^[ein Zyklus besteht aus 6 Wochen, danach wiederholen sich die Gerichten] verteilt angeboten wurden, enthielten `r round((45/93)*100, digits = 0)` Prozent (*n* = 45) der Gerichte Fleisch. Ein Drittel (*n* = 31) der Gerichte wurde vegetarisch und die restlichen `r round((16/93)*100, digits = 0)` Prozent (*n* = 16) ausschliesslich pflanzlich angeboten.
+Im Vergleich zu den vergangenen HS 2015 und 2016 wuchs das vegetarische und vegane Angebot im HS 2017 von `r ((30*.2)+30)/90*100` Prozent auf knapp 47 Prozent, wobei das Hot and Cold-Buffet nicht als vegetarisches Angebot mitgezählt wurde. 
 \par
-90 verschiedenen Mahlzeiten wurden pro Mensa und Mensazyklus auf drei Menü-Linien (Favorite, Kitchen und World) angeboten. Wird das gesamte Angebot (zwei Mensazyklen) auf beide Mensen und über alle Tage addiert, ergibt das ein geplantes Angebot von 360 Gerichten^[90 Gerichte x 2 Mensazyklen x 2 Mensen]. Aus betrieblichen Gründen kam es beim Catering Unternehmen des Öfteren zu Zusatzangeboten, welche das geplante Angebot zusätzlich vergrösserte. In den 12 Wochen wurden zu den total geplanten 360 Gerichten noch 120 Gerichten zusätzlich angeboten (siehe Abbildung \ref{fig:fig2}).
+Die totalen Verkaufszahlen des HS 2017 haben sich im Vergleich zu den zwei HS 2015 und 2016 nur marginal verändert. Die Abbildung \ref{fig:fig2} zeigt alle verkauften Gerichten nach Menü-Inhalt, welche während des Experiments verkauft wurden.
 
-```{r, results='hide'}
-# show aggregated total meal offer (N = 480 or 596 without NA's)
-# exclude hot and cold
-t0 <- filter(info_orig, !grepl("Hot and Cold", info_orig$label_content)) %>% group_by(label_content, condit) %>% summarise(tot = n()) %>% ungroup() %>% group_by(condit) %>% mutate(pct = tot/sum(tot))  
-
-# show aggregated offer without locals (N = 360)
-p0 <- filter(info_orig, !grepl("Local ", info_orig$article_description) & !grepl("Hot and Cold", info_orig$label_content)) %>% group_by(label_content, condit) %>% summarise(tot = n()) %>% ungroup() %>% group_by(condit) %>% mutate(pct = tot/sum(tot))
-
-# chi-square to compare if the two meals offer (total meal and planed meal offer) differs
-# drop unknown meal offers for chi_square test
-t <- drop_na(t0) %>% group_by(label_content) %>% summarise(tot = sum(tot)) %>% mutate(pct = tot/sum(tot)) 
-p <- group_by(p0, label_content) %>% summarise(tot = sum(tot)) %>% mutate(pct = tot/sum(tot))
-
-tp <- tibble(label = unique(t$label_content), t$tot, p$tot)
-
-# chisquare not significant
-chi_s <- chisq.test(t$tot, p = p$pct) # test against expected probability (= which is the planed meal offer)
-fisher.test(tp[ ,2:3]) # exact p-value via fisher.test
-
-# chi-square to compare if the two meals offer differ accodring condition 
-# start code from the start again
-tp0 <- drop_na(t0) %>% select(-pct) %>% bind_cols(., p0[c("tot")]) %>% rename( real_offer = tot, planed_offer = tot1)
-
-# basis
-tp1 <- filter(tp0, condit == "Basis") %>% mutate(pct_exp = planed_offer / sum(planed_offer), 
-                                               pct_real = real_offer / sum(real_offer))
-
-chi_s2 <- chisq.test(tp1$real_offer, p = tp1$pct_exp) # check if expected frequencies are over 5
-fisher.test(tp1[ ,3:4]) # for exact p-value, it differs strongly form the p-value from chi-square 
-
-#interventionswochen
-tp1 <- filter(tp0, condit == "Intervention") %>% mutate(pct_exp = planed_offer / sum(planed_offer), pct_real = real_offer / sum(real_offer))
-chi_s3 <- chisq.test(tp1$real_offer, p = tp1$pct_exp) # check if expected frequencies are over 5
-fisher.test(tp1[ ,3:4]) # for exact p-value, it differs strongly form the p-value from 
-
-```
-
-```{r, fig.cap="\\label{fig:fig2} Die Abbildung zeigt das geplante (*n* = 480) und angebotene Angebot (*n* = 600) für ein ganzes Herbstsemester (60 Tage) und zwei Hochschulmensen nach den fünf Menü-Inhalten", fig.height=10, fig.width=14}
-# plot real and planed offer
-##prepare data
-# target for 2015 and 2016 and 2017 for both canteens (per canteen 120 meals) and for both cycles: 480 melas in total
-# per canten and cycle: meat:54 (30 + 30*.8), vegetarian:36, hot and cold: 30
-
-df_plan_56 <- tibble(year = rep(2015, times=360, each=1),
-                     label_content = rep(c("Fleisch","Vegetarisch"), times=c((120 + 120*.8),(120 + 120*.2))),
-                     offer = "Geplant")
-
-# plan for intervention:: per canten and cycle: meat: 45, vegetarian: 30, hot and cold: 30, vegan: 7, vegan+: 8
-# plan for basis:: per canteen and cycle: meat: 60, vegetarian: 30, hot and cold: 30
-
-df_plan_7 <- tibble(year = rep(2017, times=360),
-                    label_content = rep(c("Fleisch","Vegetarisch","Pflanzlich","Pflanzlich+"), times=c(180,120,28,32)),
-                    offer= "Geplant")
-
-# Actual: Locals are included
-# use documentation for that (not selling data)
-# exclude hot and cold (only using filter() is deleting missing cases!)
-df_actual_7 <- info_orig %>% filter(!grepl("Hot and Cold", info_orig$label_content)) %>% mutate(offer = "Angebot", year = year(date)) %>% dplyr::select(year,label_content,offer)
-    
-# Merge data frames
-df_t= bind_rows(df_plan_56, df_plan_7, df_actual_7)
-
-# Group data frame
-df_ <- df_t %>%
-    group_by(year,label_content, offer) %>%
-    summarise(tot=n()) %>%
-    ungroup() # otherwise dataframe is still grouped
-
-# define some variables
-df_$xlab <- paste(df_$year,df_$offer, sep = "\n")
-df_$xlab <- str_replace(df_$xlab,"2015\nGeplant","2015 - 2016\nGeplant")
-df_$label_content <- ifelse(is.na(df_$label_content),"Unbekannt",df_$label_content)
-
-# define text for annotation
-text <- group_by(df_, year, offer) %>%
-    summarise(tot=sum(tot)) %>%
-    mutate(label = "n") %>%
-    mutate(label2=paste(label,tot,sep=" = "))
-
-## check if the background color is dark or not
-# see mytheme for function
-# my colors for the plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich"="grey90", "Pflanzlich+"="#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
-
-df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
-                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
-
-
-#plot in de
-ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unknown","Pflanzlich","Pflanzlich+","Vegetarisch","Fleisch","Hot and Cold")), color=label_color)) +
-    geom_bar(stat="identity", position = "stack", color=NA, width = .5) +
-    xlab("\nGeplante und angebotene Menü-Optionen während") + #"\nGeplante und angebotene Menü-Optionen während Herbstsemester (Kalenderwochen 40 bis 51)"
-    ylab("Geplante und angebotene Menü-Optionen")+ # title: 
-    #     ggtitle("note: locals are not included
-    #          selling time between 9 a.m. until 3 p.m.
-    #          locals meals in total: 2602")+
-    guides(fill=F,
-           color=F)+
-    # scale_y_continuous(labels = scales::percent)+
-    scale_fill_manual(values = ColsPerCat,
-                      breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischsubstitut)","Pflanzlich (authentisch)","Vegetarisch","Fleisch oder Fisch", "Hot and Cold"))+
-    scale_color_manual(values = levels(df_$label_color))+
-    scale_x_discrete(limits=c("2015 - 2016\nGeplant","2017\nGeplant","2017\nAngebot"))+
-    geom_text(aes(label=ifelse(tot>4,tot,"")), size = 8, position = position_stack(vjust = 0.5))+ #omit numbers to be shown smaller than 190
-    annotate("text",x=1:3,y=500,label=c(text$label2[1],text$label2[1],text$label2[2]), size=8)+
-    mytheme
-```
-
-Die Abbildung \ref{fig:fig2} zeigt für die Herbstemester die kalkulierte Planung von 2015 und 2016 als auch das geplante Angebot des Quasi-Experiments im HS 2017. Die dritte Säule zeigt die tatsächlich angebotene Auswahl für das HS 2017.
-Das geplante Angebot und das tatsächliche Angebot im HS 2017 unterscheiden sich in den Menü-Inhalten^[Fleisch oder Fisch, Vegetarisch, Vegan (authentisch) und Vegan (Fleischsubstitut)] nicht statisch ( `r apa(chi_s`) ($\chi^2$(3) = `r round(chi_s$statistic[[1]], digits = 3)`, *p* = `r round(chi_s$p.value[[1]], digits = 3)`). Auch beim näheren Betrachten unterschieden sich die geplanten und tatsächlichen Angeboten für das HS 2017 in den Menü-Inhalten zwischen den Basis- (`r apa(chi_s2)`) ($\chi^2$(3) = `r round(chi_s2$statistic[[1]], digits = 3)`, *p* = `r round(chi_s2$p.value[[1]], digits = 3)`) und Interventionswochen (`r apa(chi_s3`) ($\chi^2$(3) = `r round(chi_s3$statistic[[1]], digits = 3)`, *p* = `r round(chi_s3$p.value[[1]], digits = 3)`) nicht. 
-\par
-Wird das tatsächliche Angebot näher beleuchtet, wurden in über alle Interventionenwochen (*n* = 238) 40 Prozent fleischhaltige, knapp einem Drittel vegetarische und 27 Prozent vegane Gerichte angeboten. In den 12 Basiswochen (*n* = `r 480-238`) entiehlten $\frac{2}{3}$ Prozent des Angebots Fleisch oder Fisch. Vegetarische Gerichte machten rund 29 Prozent und vegane Gerichte knapp 1 Prozent aus. Im Vergleich zu den vergangenen Herbstsemestern 2015 & 2016 wuchs das vegetarische und vegane Angebot im Herbstsemester 2017 von `r ((30*.2)+30)/90*100` Prozent auf knapp 47 Prozent, wobei das Hot and Cold-Buffet nicht als vegetarisches Angebot mitgezählt wurde. 
-<!-- überprüfe nochmals ob das so stimmt -->
-\newpage
-
-#### 4.2 Was wurde verkauft?
-
-Die totalen Verkaufszahlen des Herbstsemesters 2017 haben sich im Vergleich zu den zwei HS 2015 & 2016 nur marginal verändert. Die Abbildung \ref{fig:fig3} zeigt alle verkauften Gerichten nach Menü-Inhalt, welche während des Quasi-Experiments verkauft wurden.
-
-```{r fig.cap="\\label{fig:fig3} Die Abbildung zeigt alle verkauften Gerichten (*N* = 26'234) aufgeteilt nach den fünf Menü-Inhalten über die 12 Wochen", fig.height=18, fig.width=25, dpi=200, out.width='100%'}
+```{r fig.cap="\\label{fig:fig2} Die Abbildung zeigt alle verkauften Gerichten (\\textit{N} = 26'234) aufgeteilt nach den fünf Menü-Inhalten über die 12 Wochen.", fig.height=18, fig.width=25, dpi=200, out.width='100%'}
 
 # to load data first execture 04_load_data
 #prepare data for plot: aggregated data => locals are included
@@ -253,9 +143,9 @@ sell_dat <- df_agg %>%
     group_by(semwk, condit) %>%
     summarise(tot_sold=n())
 
-ao=(aov(sell_dat$tot_sold ~ sell_dat$condit)) 
+ao1=(aov(sell_dat$tot_sold ~ sell_dat$condit)) 
 t.test(sell_dat$tot_sold ~ sell_dat$condit) # same as aov
-summary(ao)
+summary(ao1)
 
 # test if meal content differ statistically
 sell_dat <- df_agg %>%
@@ -266,34 +156,165 @@ sell_dat <- df_agg %>%
     na.omit()  # omit NA, another better way is drop_na()
     #filter(!label_content2 == "Hot and Cold")
 
-ao <- aov(sell_dat$tot_sold ~ sell_dat$label_content2: sell_dat$condit) # anova only with interaction between label_content and condit
+ao2 <- aov(sell_dat$tot_sold ~ sell_dat$label_content2 * sell_dat$condit) # anova only with interaction between label_content and condit (tried with log10, however dont look good at al on the model diagnostics)
 library(ggfortify)
-autoplot(ao) # dont look very nice, however i would accept it :)
-summary(ao) # display anova
-TukeyHSD(ao) #post-hoc test
+autoplot(ao2) # dont look very nice, however i would accept it :)
+summary.lm(ao2) # display anova
+TukeyHSD(ao2) #post-hoc test
 
 
-#kruskal wallis test: a robust alternative to anova, however has also requirements
-sell_dat$label_content2 <- factor(sell_dat$label_content2, levels = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold")) # define independent variable as factor
-kr <- kruskal.test(tot_sold ~ interaction(label_content2,condit), data = sell_dat) # it looks like a sign difference between selling melas and interaction label_content and condition
-library(FSA)
-dunnTest(tot_sold ~ interaction(label_content2,condit), data=sell_dat, # post-hoc-test for kruskal tests
-              method="bh") # Benjamini-Hochberg method for correction
-
-# only fleisch.basis and fleisch.intervention are sig different, most of the difference is because hot and cold sellings are low (basis and intervention) compared to the other two
+# otherwise Welch test would be appropriate as well (one.test())
 
 ```
 
-Der Abbildung \ref{fig:fig3} ist zu entnehmen, dass die wöchentlichen Verkaufszahlen im HS 2017 sich statistisch nicht unterscheiden (*F*(1,10) = `r round(summary(ao)[[1]][["F value"]][1], digits = 3)`, *p* < .001). Des Weiteren gab es Unterschiede in den Verkaufszahlen zwischen den Basis- und Interventionswochen (*H*(7) = `r round(kr$statistic[[1]], digits = 2)`, *p* < .001). Neben den schwankenden verkaufszahlen der Fleischgerichte, fällt es auf, dass vegane authentische Gerichte deutlich besser verkauft wurden als vegan fleischsubstitituierte Gerichte.   
+Der Abbildung \ref{fig:fig2} ist zu entnehmen, dass die wöchentlichen Verkaufszahlen im HS 2017 sich statistisch nicht unterscheiden (*F*(1,10) = `r round(summary(ao1)[[1]][["F value"]][1], digits = 3)`, *p* < .001). Des Weiteren gab es Unterschiede in den Verkaufszahlen zwischen den Basis- und Interventionswochen (*F*(7, 39) = `r round(summary(ao2)[[1]][["F value"]][1], digits = 2)`, *p* < .001). Neben den schwankenden verkaufszahlen der Fleischgerichte, fällt es auf, dass vegane authentische Gerichte deutlich besser verkauft wurden als vegan fleischsubstitituierte Gerichte.   
 
-\newpage
 
-#### 4.3 Wurden in den Interventionswochen auch mehr vegetarischen Gerichten verkauft?
+#### 4.2 Menü-Optionen
 
-Wird ein grösseres und vielfältigeres Angebot an attraktiven vegetarischen und veganen
-Gerichten von den Mensabesuchern häufiger gewählt? Die Abbildung \ref{fig:fig4} zeigt, dass es keine statistischen Unterschiede in den Verkaufszahlen beim Hot and Cold und im vegetarischen Angebot zwischen den beiden Bedingungen Basis & Intervention gab. Auffallend sind die Unterschiede im Verkauf von Fleischgerichten, welche deutlich seltener in den Interventionswochen als in den Basiswochen verkauft wurden. Dass sich mehr vegane Gerichte in den Interventionswochen gekauft wurden lag daran, dass es in den Basiswochen lediglich ein kleines veganes Angebot gab.
+Von insgesamt 93 verschiedenen Gerichten, welche über zwei Mensazyklen^[ein Zyklus besteht aus 6 Wochen, danach wiederholen sich die Gerichten] verteilt angeboten wurden, enthielten `r round((45/93)*100, digits = 0)` Prozent (*n* = 45) der Gerichte Fleisch. Ein Drittel (*n* = 31) der Gerichte wurde vegetarisch und die restlichen `r round((16/93)*100, digits = 0)` Prozent (*n* = 16) ausschliesslich pflanzlich angeboten.
+\par
+Neunzig verschiedenen Mahlzeiten wurden pro Mensa und Mensazyklus auf drei Menü-Linien (Favorite, Kitchen und World) angeboten. Wird das gesamte Angebot auf beide Mensen und über alle Tage addiert, ergibt das ein geplantes Angebot von 360 Gerichten^[90 Gerichte x 2 Mensazyklen x 2 Mensen]. Aus betrieblichen Gründen kam es beim Catering Unternehmen des Öfteren zu Zusatzangeboten, welche das geplante Angebot zusätzlich vergrösserte. In den 12 Wochen wurden zu den total geplanten 360 Gerichten noch 120 Gerichten zusätzlich angeboten (siehe Abbildung \ref{fig:fig3}).
 
-```{r, fig.cap="\\label{fig:fig4} Die Abbildung zeigt die verkauften Gerichten nach Menü-Inahlt und Bedingung (Intervention- und Basiswochen)", fig.height=10, fig.width=14}
+```{r, results='hide'}
+# show aggregated total meal offer (N = 480 or 596 without NA's)
+# exclude hot and cold
+t0 <- filter(info_orig, !grepl("Hot and Cold", info_orig$label_content)) %>% group_by(label_content, condit) %>% summarise(tot = n()) %>% ungroup() %>% group_by(condit) %>% mutate(pct = tot/sum(tot))  
+
+# show aggregated offer without locals (N = 360)
+p0 <- filter(info_orig, !grepl("Local ", info_orig$article_description) & !grepl("Hot and Cold", info_orig$label_content)) %>% group_by(label_content, condit) %>% summarise(tot = n()) %>% ungroup() %>% group_by(condit) %>% mutate(pct = tot/sum(tot))
+
+# chi-square to compare if the two meals offer (total meal and planed meal offer) differs
+# drop unknown meal offers for chi_square test
+t <- drop_na(t0) %>% group_by(label_content) %>% summarise(tot = sum(tot)) %>% mutate(pct = tot/sum(tot)) 
+p <- group_by(p0, label_content) %>% summarise(tot = sum(tot)) %>% mutate(pct = tot/sum(tot))
+
+tp <- tibble(label = unique(t$label_content), t$tot, p$tot)
+
+# chisquare not significant
+chi_s <- chisq.test(t$tot, p = p$pct) # test against expected probability (= which is the planed meal offer)
+fisher.test(tp[ ,2:3]) # exact p-value via fisher.test
+
+# chi-square to compare if the two meals offer differ accodring condition 
+# start code from the start again
+tp0 <- drop_na(t0) %>% select(-pct) %>% bind_cols(., p0[c("tot")]) %>% rename( real_offer = tot, planed_offer = tot1)
+
+# basis
+tp1 <- filter(tp0, condit == "Basis") %>% mutate(pct_exp = planed_offer / sum(planed_offer), 
+                                               pct_real = real_offer / sum(real_offer))
+
+chi_s2 <- chisq.test(tp1$real_offer, p = tp1$pct_exp) # check if expected frequencies are over 5
+fisher.test(tp1[ ,3:4]) # for exact p-value, it differs strongly form the p-value from chi-square => is also another test with two factors in comparison of the chi-square with only one factor!
+
+#interventionswochen
+tp1 <- filter(tp0, condit == "Intervention") %>% mutate(pct_exp = planed_offer / sum(planed_offer), pct_real = real_offer / sum(real_offer))
+chi_s3 <- chisq.test(tp1$real_offer, p = tp1$pct_exp) # check if expected frequencies are over 5
+fisher.test(tp1[ ,3:4]) # for exact p-value, it differs strongly form the p-value from 
+
+```
+
+```{r, fig.cap="\\label{fig:fig3} Die Abbildung zeigt das geplante (\\textit{n} = 480) und angebotene Angebot (\\textit{n} = 600) für ein ganzes Herbstsemester (60 Tage) und zwei Hochschulmensen nach den fünf Menü-Inhalten.", out.width='100%' , fig.height=10, fig.width=14}
+# plot real and planed offer
+##prepare data
+# target for 2015 and 2016 and 2017 for both canteens (per canteen 120 meals) and for both cycles: 480 melas in total
+# per canten and cycle: meat:54 (30 + 30*.8), vegetarian:36, hot and cold: 30
+
+df_plan_56 <- tibble(year = rep(2015, times=360, each=1),
+                     label_content = rep(c("Fleisch","Vegetarisch"), times=c((120 + 120*.8),(120 + 120*.2))),
+                     offer = "Geplant")
+
+# plan for intervention:: per canten and cycle: meat: 45, vegetarian: 30, hot and cold: 30, vegan: 7, vegan+: 8
+# plan for basis:: per canteen and cycle: meat: 60, vegetarian: 30, hot and cold: 30
+
+df_plan_7 <- tibble(year = rep(2017, times=360),
+                    label_content = rep(c("Fleisch","Vegetarisch","Pflanzlich","Pflanzlich+"), times=c(180,120,28,32)),
+                    offer= "Geplant")
+
+# Actual: Locals are included
+# use documentation for that (not selling data)
+# exclude hot and cold (only using filter() is deleting missing cases!)
+df_actual_7 <- info_orig %>% filter(!grepl("Hot and Cold", info_orig$label_content)) %>% mutate(offer = "Angeboten", year = year(date)) %>% dplyr::select(year,label_content,offer)
+    
+# Merge data frames
+df_t= bind_rows(df_plan_56, df_plan_7, df_actual_7)
+
+# Group data frame
+df_ <- df_t %>%
+    group_by(year,label_content, offer) %>%
+    summarise(tot=n()) %>%
+    ungroup() # otherwise dataframe is still grouped
+
+# define some variables
+df_$xlab <- paste(df_$year,df_$offer, sep = "\n")
+df_$xlab <- str_replace(df_$xlab,"2015\nGeplant","2015 - 2016\nGeplant")
+df_$label_content <- ifelse(is.na(df_$label_content),"Unbekannt",df_$label_content)
+
+# define text for annotation
+text <- group_by(df_, year, offer) %>%
+    summarise(tot=sum(tot)) %>%
+    mutate(label = "n") %>%
+    mutate(label2=paste(label,tot,sep=" = "))
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unbekannt" = "black","Pflanzlich"="grey90", "Pflanzlich+"="#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+
+#plot in de
+ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unbekannt","Pflanzlich","Pflanzlich+","Vegetarisch","Fleisch","Hot and Cold")), color=label_color)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .5) +
+    xlab("") + #"\nGeplante und angebotene Menü-Optionen während Herbstsemester (Kalenderwochen 40 bis 51)"
+    ylab("Geplante und angebotene Menü-Optionen")+ # title: 
+    #     ggtitle("note: locals are not included
+    #          selling time between 9 a.m. until 3 p.m.
+    #          locals meals in total: 2602")+
+    guides(fill= guide_legend("Menü-Inhalt"),
+           color=F)+
+    # scale_y_continuous(labels = scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","Vegan (Fleischsubstitut)","Vegan (authentisch)","Vegetarisch","Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    scale_x_discrete(limits=c("2015 - 2016\nGeplant","2017\nGeplant","2017\nAngeboten"))+
+    geom_text(aes(label=ifelse(tot>4,tot, "")), size = 8, position = position_stack(vjust = 0.5))+ 
+    annotate("text",x=1:3,y=500,label=c(text$label2[1],text$label2[1],text$label2[2]), size=8)+
+    mytheme
+```
+
+Die Abbildung \ref{fig:fig3} zeigt für die Herbstemester die kalkulierte Planung von 2015 und 2016 als auch das geplante Angebot des Experiments im HS 2017. Die dritte Säule zeigt die tatsächlich angebotene Auswahl für das HS 2017.
+Das geplante Angebot und das tatsächliche Angebot im HS 2017 unterscheiden sich in den Menü-Inhalten^[Fleisch oder Fisch, Vegetarisch, Vegan (authentisch) und Vegan (Fleischsubstitut)] nicht statisch (`r apa(chi_s)`). Auch beim näheren Betrachten unterschieden sich die geplanten und tatsächlichen Angeboten für das HS 2017 in den Menü-Inhalten zwischen den Basis- (`r apa(chi_s2)`) und Interventionswochen (`r apa(chi_s3)`) nicht. 
+\par
+Wird das tatsächliche Angebot näher beleuchtet, wurden in den Interventionenwochen (*n* = 238) 40 Prozent fleischhaltige, knapp einem Drittel vegetarische und 27 Prozent vegane Gerichte angeboten. In den 12 Basiswochen (*n* = `r 480-238`) entiehlten $\frac{2}{3}$ Prozent des Angebots Fleisch oder Fisch. Vegetarische Gerichte machten rund 29 Prozent und vegane Gerichte knapp ein Prozent aus. 
+<!-- überprüfe nochmals ob das so stimmt -->
+
+
+
+#### 4.3 Einfluss Menü-Angebot
+```{r, echo=F, results="hide", include=FALSE, message=F}
+# calculate anova with interaction
+
+df <- df_agg %>% group_by(condit, week, label_content) %>%
+    summarise(tot = n())
+
+aov1 <- aov(tot ~ condit*label_content, data = df)
+summary(aov1)
+
+autoplot(aov1) # dont see that bad
+
+TukeyHSD(aov1, ordered = T)
+
+```
+
+
+Wird ein grösseres und vielfältigeres Angebot an attraktiven vegetarischen und veganen Gerichten von den Mensabesuchern häufiger gewählt? Es zeigten sich Unterschiede in den Verkaufszahlen zwischen den Versuchsbedingungen un den Menü-Inhalten. Post-hoc-Analysen (nach Tukey) zeigten, dass es keine statistischen Unterschiede in den Verkaufszahlen beim Hot and Cold und im vegetarischen Angebot zwischen den beiden Versuchsbedingungen "Basis" und "Intervention" gab. Auffallend sind die signifikanten Unterschiede im Verkauf von Fleischgerichten, welche deutlich seltener in den Interventionswochen als in den Basiswochen verkauft wurden. Dass sich mehr vegane Gerichte in den Interventionswochen gekauft wurden lag daran, dass es in den Basiswochen lediglich ein kleines veganes Angebot gab (siehe Abbildung \ref{fig:fig4}).
+
+
+
+```{r, fig.cap="\\label{fig:fig4} Die Abbildung zeigt die verkauften Gerichten nach Menü-Inhalt und Bedingung (Intervention- und Basiswochen).", out.width='100%',  fig.height=10, fig.width=14}
 
 # visualize findings from above
 m_sell <- na.omit(sell_dat) %>% group_by(condit,label_content2) %>% summarise(val = mean(tot_sold)) # calculate means (per what) of the label_content per condition
@@ -308,11 +329,11 @@ ggplot(sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, shape 
 ```
 
 
-#### 4.4 Lassen sich vegetarische Gerichte auch teuerer verkaufen?
+#### 4.4 Einfluss Menü-Linien
 
-Sind die aktuellen Menü-Linien tatsächlich ein veraltetes Konzept? Nebst der Änderung im Angebot, war eine weitere Intervention die Gerichte über neutrale Menü-Gefässe sog. Menü-Linien zu vertreiben. Für das Quasi-Experiment wurde die Menü-Linie Green zu World unbenannt. Die Menü-Inhalte wurden randomisiert über diese drei Menü-Linien angeboten. Die Abbildung \ref{fig:fig5} vergleicht die Verkaufszahlen gemessen an den Menü-Linien der Jahren 2015, 2016 und 2017.
+Sind die aktuellen Menü-Linien tatsächlich ein veraltetes Konzept? Nebst der Änderung im Angebot, war eine weitere Intervention die Gerichte über neutrale Menü-Gefässe sog. Menü-Linien zu vertreiben. Für das Experiment wurde die Menü-Linie Green zu World unbenannt, damit die Menü-Inhalte randomisiert über diese drei Menü-Linien angeboten werden konnten. Die Abbildung \ref{fig:fig5} vergleicht die Verkaufszahlen gemessen an den Menü-Linien der Jahren 2015, 2016 und 2017.
 
-```{r, fig.cap="\\label{fig:fig5} Die Abbildung zeigt die verkauften Gerichten nach Menü-Linien im Vergleich (2015, 2016 und 2017)", fig.height=10, fig.width=14}
+```{r, fig.cap="\\label{fig:fig5} Die Abbildung zeigt die verkauften Gerichten nach Menü-Linien im Vergleich (2015, 2016 und 2017).", fig.height=8, fig.width=14}
 
 # prepare data
 df <- menu_tot %>%
@@ -367,33 +388,34 @@ ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_description,lev
 ```
 
 
-Die Abbildung \ref {fig:fig5} zeigt, dass es zwischen den drei Herbstsemestern klare Unterschiede in den Verkauszahlen zwischen den Menü-Linien gab. Die Grafik zwar lässt keine Schlüsse über deren Menü-Inhalt zu, aber die randomisierte Ausgabe der Gerichte konnte aufzeigen, dass es einen Einfluss auf die Menü-Wahl genommen hat. So wurden auch vegetarischen Gerichte auf der teureren Menü-Linie «Kitchen» problemlos von den Gästen gekauft.
+Die Abbildung \ref {fig:fig5} zeigt, dass es zwischen den drei Herbstsemestern klare Unterschiede in den Verkauszahlen zwischen den Menü-Linien gab. Die Grafik zwar lässt keine Schlüsse über deren Menü-Inhalt zu, aber die randomisierte Ausgabe der Gerichte konnte aufzeigen, dass es einen Einfluss auf die Menü-Wahl genommen hat. So wurden beispielsweise auch vegetarischen Gerichte auf der teureren Menü-Linie «Kitchen» problemlos von den Gästen gekauft.
 
 \newpage
 
 ###	5. Diskussion
 
-Nach unserem Wissen wurde noch kein Real-Labor-Experiment durchgeführt, welches die Reaktion der Gäste auf ein ressourcenschonenderes Angebot aufzeichnete. Es gibt einige Untersuchungen wobei mittels Quasi-Experimenten getestet wurde wie die Mensagäste auf bestimmte Labels (z. B. zu gesunder Ernährung oder umweltfreundlichen Gerichten) [@hoefkens_what_2012; @spaargaren_consumer_2013; @thorndike_2-phase_2012], auf Präsentationen oder Positionierung von Nahrungsmitteln [@wansink_slim_2013; @van_kleef_healthy_2012] oder auf soziale oder injuktive Normen [@collins_two_2019] reagierten.
+Nach unserem Wissen wurde noch kein Real-Labor-Experiment durchgeführt, welches die Reaktion der Gäste auf ein ressourcenschonenderes Angebot aufzeichnete. Es gibt einige Untersuchungen wobei mittels Experimenten getestet wurde wie die Mensagäste auf bestimmte Labels (z. B. zu gesunder Ernährung oder umweltfreundlichen Gerichten) [@hoefkens_what_2012; @spaargaren_consumer_2013; @thorndike_2-phase_2012], auf Präsentationen oder Positionierung von Nahrungsmitteln [@wansink_slim_2013; @van_kleef_healthy_2012; @Bucher el at.] oder auf soziale oder injuktive Normen [@collins_two_2019] reagierten.
 \par
-Zusammengefasst zeigen die Ergebnisse dieser Studie, dass eine Erhöhung des vegetarischen und veganen Angebots in Kombination mit neutralen Menü-Lienien und einer randomisierten Ausgabe des Menü-Inahlts zu einer Senkung des Fleischkonsums führen könnten. Ob nun die randomisierte Ausgabe, die neutralen Menü-Linien oder die quantitative Erhöhung von vegetarische und vegane Gerichten für diesen Effekt zuständig ist, bedarf es an weiteren Untersuchungen. Ein weiterer Einflussfaktor könnte das vergrösserte Angebot, welches durch das Caternig Unternehmen generiert wurde, darstellen. Weiter konnte in diesem Quasi-Experiment die qualitative Gleichwertigkeit der täglich angebotenen Gerichte nicht überprüft werden, was gegebenenfalls bei dem Kauf eines Gerichts einen Einfluss nehmen könnte. Zudem basieren die gezeigten Ergebnisse auf aggregierte Verkaufszahlen. 
+Zusammengefasst zeigen die Ergebnisse dieser Studie, dass eine Erhöhung des vegetarischen und veganen Angebots in Kombination mit neutralen Menü-Lienien und einer randomisierten Ausgabe des Menü-Inahlts zu einer Senkung des Fleischkonsums führen könnten.  
+Eine mögliche Erklärung für die Senkung des Fleischkonsums ist die Erhöhung der Verfügbarkeit der vegetarischen und veganen Gerichten. Gemäss früheren Studien [siehe @blanchette_determinants_2005; @neumark-sztainer_factors_1999; @van_kleef_exploiting_2015] führt eine höhere Verfügbarkeit, z. B. von gesundem Essen, auch zu einem Einfluss auf das Ernährungsverhalten. Ensaff und Kollegen [-@ensaff_food_2015] konnten in ihrer Studie aufzeigen, dass die Verfügbarkeit als Nudging-Strategie eine Veränderung im Kaufverhalten von pflanzenbasierten Nahrungsmitteln hervorgerufen hat. Ein weiterer Einflussfaktor könnte das vergrösserte Angebot, welches durch das Caternig Unternehmen generiert wurde, darstellen. Denn Aschemann-Witzel und Kollegen [-@aschemann-witzel_effects_2013] fanden in ihrer Studie heraus, dass eine Erhöhung der Auswahlmenge einen Einfluss auf das gesunde Wahlverhalten nimmt.
 \par
-Gemäss früheren Studien [siehe @blanchette_determinants_2005; @neumark-sztainer_factors_1999; @van_kleef_exploiting_2015 evtl noch buch aufführen von @rozin_1_2007] führt eine höhere Verfügbarkeit, z. B. von gesundem Essen, auch zu einem Einfluss auf das Ernährungsverhalten. Auch in neuren Studien [@ensaff_food_2015] scheint die Verfügbarkeit als Nudging-Strategie eine Veränderung im Kaufverhalten von pflanzenbasierten Nahrungsmitteln hervorzurufen. Auf unser Quasi-Experiment angewendet, konnte eine Erhöhung von ressourcenleichteren Gerichten resp. eine erhöhte Verfügbarkeit davon, einen ähnlichen Effekt hervorrufen, dass mehr vegetarische und vegane Gerichte resp. weniger fleischhaltige Gerichte verkauft wurden. Eine weitere Erklärung unserer Erbegnissen könnte die Erhöhung der Auswahl von Menü-Inhalten sein. Aschemann-Witzel und Kollegen [-@aschemann-witzel_effects_2013] fanden heraus, dass eine Erhöhung der Auswahlmenge einen Einfluss auf das gesunde Wahlverhalten nimmt. Eine Kaufentscheidung zu verstehen und demnach zu beeinflussen ist sehr komplex, denn wir fällen wir über 200 Essensentscheide pro Tag [@wansink_mindless_2007]. Es zeigt sich aber immer mehr, dass die meisten Entscheide anhand einfachen Heuristiken sog. Faustregeln gefällt werden [siehe @scheibehenne_fast_2007]. Inwiefern die Intervention auch tatsächlich einen Einfluss auf das Wahl-Verhalten nimmt, wird in einem separaten Ergebnisthemenblatt untersucht (siehe Egeler & Baur, 2018b). 
+In den Interventionswochen liessen sich die veganen authentische Gerichte besser verkauften als die veganen Gerichte mit Fleischsubstituten. Dieses Ergebnis unserer Studie geht im Einklang mit Ergebnis früherer Studien, welche zeigten, dass die Akzeptanz von Fleischsubstituten immernoch relativ klein ist [siehe @hoek_will_2010; @de_boer_merits_2011]. Zudem fanden Elzerman und Kollegen [-@elzerman_consumer_2011] heraus, dass der Gerichte-Kontext (z. B. Ingredienzen) einen starken Einfluss auf den Konsum von Fleischsubstituten nimmt. 
 \par
-Ein weiteres spannendes Ergebniss dieses Quasi-Experiment war, dass in den Interventionswochen die veganen authentische Gerichte sich besser verkauften, als die veganen Gerichte mit Fleischsubstituten. Frühere Studien zeigten, dass der Gerichte-Kontext (z. B. Ingredienzen) einen starken Einfluss auf den Konsum von Fleischsubstituten nimmt [@elzerman_consumer_2011]. Zudem ist die Akzeptanz von Fleischsubstituten immernoch relativ klein [siehe @hoek_will_2010; @de_boer_merits_2011].
+Obwohl die Menü-Linien resp. Menü-Labels oftmals für die Gästeführung eingeführt werden, konnte im Experiment aufgezeigt werden, dass durch die Wahl von neutralen Menü-Linien und eine randomisierte Ausgabe der Gerichte auch teurere vegetarische und vegane Gerichte von den Mensabesucher gekauft werden. Auch in der Literatur wird kontrovers disskutiert, ob Labels überhaupt einen Einfluss auf die Menü-Wahl nehmen [siehe @spaargaren_consumer_2013; @kiszko_influence_2014; @aschemann-witzel_effects_2013].
 \par
-Obwohl die Menü-Linien resp. Menü-Labels oftmals für die Gästeführung eingeführt werden, konnte im Quasi-Experiment aufgezeigt werden, dass durch die Wahl von neutralen Menü-Linien und eine randomisierte Ausgabe der Gerichte auch teurere vegetarische und vegane Gerichte von den Mensabesucher gekauft werden. Auch in der Literatur wird kontrovers disskutiert, ob Labels überhaupt einen Einfluss auf die Menü-Wahl nehmen [siehe @spaargaren_consumer_2013; @kiszko_influence_2014; @aschemann-witzel_effects_2013].
-
-
+Ob nun die randomisierte Ausgabe, die neutralen Menü-Linien, die quantitative Erhöhung von vegetarische und vegane Gerichten oder die Kombination dieser Interventionen für die Senkung des Fleischkonsums zuständig ist, bedarf es an weiteren Untersuchungen. Weiter konnte in diesem Experiment die qualitative Gleichwertigkeit der täglich angebotenen Gerichte nicht überprüft werden, was gegebenenfalls bei dem Kauf eines Gerichts einen Einfluss nehmen könnte [siehe @myung 2008]. Zudem basieren die gezeigten Ergebnisse lediglich auf aggregierte Verkaufszahlen, was keine Schlüsse auf kausale Zusammenhänge zulassen.
+\par
+Eine Kaufentscheidung zu verstehen und demnach zu beeinflussen ist sehr komplex, denn wir fällen über 200 Essensentscheide pro Tag [@wansink_mindless_2007]. Es zeigt sich aber immer mehr, dass die meisten Entscheide anhand einfachen Heuristiken sog. Faustregeln gefällt werden [siehe @scheibehenne_fast_2007]. Inwiefern die Intervention auch tatsächlich einen Einfluss auf das individuelle Wahlverhalten nimmt, wird in einem separaten Kurzbericht thematisiert (siehe Egeler & Baur, 2018b). 
 
 ###	6. Schlussfolgerungen
 
-Eine Erhöhung von Anzahl und Anteil an vegetarischen und veganen Gerichten in Kombination mit neutralen Menü-Linien und randomisierter Ausgabe der drei Menü-Inhalten (Fleisch oder Fisch, vegetarisch und vegan), scheint den Konsum von Fleischgerichten zu reduzieren. An diesem Punkt ist es wichtig zu erwähnen, dass die vegetarischen und veganen Gerichte diskret neben anderen Inhaltsstoffen deklarieren und nicht angepriesen werden sollten. Um den Gast vermehrt dazu führen, sich mit dem Menü-Inahlt auseinanderzusetzten, alte Gewohnheiten fallen zu lassen und Neophobie zu verkleienrn, sollten die Gerichte unabhängig von Menü-Inahlt randomisierung über alle Menü-Linien anbegoten werden.
+Eine Erhöhung von Anzahl und Anteil an vegetarischen und veganen Gerichten in Kombination mit neutralen Menü-Linien und randomisierter Ausgabe der drei Menü-Inhalten (Fleisch oder Fisch, vegetarisch und vegan), scheint den Konsum von Fleischgerichten zu reduzieren. An diesem Punkt ist es wichtig zu erwähnen, dass die vegetarischen und veganen Gerichte diskret neben anderen Inhaltsstoffen deklariert und nicht angepriesen wurden. Ziel war es mit diesen Interventionen den Gast vermehrt dazu führen, sich mit dem Menü-Inhalt auseinanderzusetzten, alte Gewohnheiten fallen zu lassen und die Neophobie zu verkleinern.
 \par
-Wenn es um den einzelnen Verkauf von Gerichten geht, scheinen authentische Gerichte besser als Gerichte mit Fleischsubstitute abzuschneiden. Daher nicht nur Fleischsubstitute anbieten und wenn Fleischsubstitute angeboten werden, sollte auf den Menü-Kontext geachten werden. Zudem zeigte sich, dass auch vegetarische und vegane Gerichte auf der teureren Menü-Linie "Kitchen" ebenfalls von den Gästen akzeptiert und gekauft wurden. 
+Wenn es um den einzelnen Verkauf von veganen Gerichten geht, scheinen authentische Gerichte besser als Gerichte mit Fleischsubstitute abzuschneiden. Daher nicht nur Fleischsubstitute anbieten und wenn Fleischsubstitute angeboten werden, sollte auf den Menü-Kontext geachten werden. Zudem zeigte sich, dass auch vegetarische und vegane Gerichte auf der teureren Menü-Linie "Kitchen" ebenfalls von den Gästen akzeptiert und gekauft wurden. 
 \par
-In diesem Quasi-Experiment konnte nicht die qualitative Gleichwertigkeit der angebotenen Gerichte berücksichtigt werden. Wird zum Beispiel ein Fleischburger mit Pommes und ein vegetarisches Linsen-Dahl von den Mensabesuchern resp. von Koch-Experten als gleichwertig wahrgenommen? Bei einem weiteren Mensa-Experiment sollte die Gleichwertigkeit der Gerichte bei der Angebotsentwicklung mittels Fachleuten oder Koch-Experten berücksichtigt werden.
+In diesem Experiment konnte die qualitative Gleichwertigkeit der angebotenen Gerichte nicht berücksichtigt werden. Bei einem weiteren Mensa-Experiment sollte die Gleichwertigkeit der Gerichte bei der Angebotsentwicklung mittels Fachleuten oder Koch-Experten berücksichtigt werden.
 \par
-Mit diesem Quasi-Experiment konnte gezeigt werden, dass sich die Verkaufszahlen über die Zeit durch eine Erhöhung des vegetarischen und veganen Angebots nicht zurückgegangen sind. Das speziellen Setting und die spezielle Stichprobe haben bestimmt dafür beigetragen, nichtsdestotrotz wären weitere Pilotstudien an anderen Kantinen mit anderen Stichproben resp. Mensabesuchern wünschenswert.
+Mit diesem Experiment konnte gezeigt werden, dass sich die Verkaufszahlen über die Zeit durch eine Erhöhung des vegetarischen und veganen Angebots nicht zurückgegangen sind. Das spezielle Setting und die spezielle Stichprobe haben bestimmt dafür beigetragen, nichtsdestotrotz wären weitere Pilotstudien an anderen Kantinen wünschenswert.
 
 Weitere Informationen zum Projekt können auf unserer [Webpage](novanimal.ch) gefunden werden. 
 
@@ -403,6 +425,6 @@ Wir bedanken uns bei der SV Schweiz und insbesondere bei den konkreten Verantwor
 
 ### 8. Hinweise des Autors
 
-Alle Skripte für diesen Bericht sind auf [github](https://github.com/GAEgeler/tilldata_2017) verfügbar.
+Dieser Bericht mit allen Berechnungen sind auf [github](https://github.com/GAEgeler/tilldata_2017) verfügbar.
 
 ### 9. Quellen
