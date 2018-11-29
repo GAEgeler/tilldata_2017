@@ -23,8 +23,9 @@ mytheme <- theme_bw()+ # definve theme for plot
           axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
           axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
           plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20),
+          legend.key = element_rect(color = NA, fill = NA), # see for that part the funktion draw_key_ploygon3
+          legend.key.size = unit(.5, "cm"))
 
 ### MY Theme 1: for plots in presentations -------------------
 

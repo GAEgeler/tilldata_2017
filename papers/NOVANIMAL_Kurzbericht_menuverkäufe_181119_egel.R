@@ -1,5 +1,5 @@
 # R-Skript for NOVANIMAL_Kurzbericht_menuverkäufe_181119_egel
-# Status: 20.11.2018
+# Status: 23.11.2018
 
 
 # required packages
@@ -13,7 +13,7 @@ library(ggplot2)
 source(file = "04_load_data_180802_egel.R")
 # to load themes
 source(file = "08_theme_plots_180419_egel.R")
-
+# warnings can be ignored
 
 
 # plot sellings hs 2017 overall (chapter 3.1)------
@@ -50,6 +50,27 @@ isDark <- function(color) {
 df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
+# function to increase vertical spacing between legend keys
+# source: https://github.com/tidyverse/ggplot2/issues/2844
+draw_key_polygon3 <- function(data, params, size) {
+    lwd <- min(data$size, min(size) / 4)
+    
+    grid::rectGrob(
+        width = grid::unit(0.6, "npc"),
+        height = grid::unit(0.6, "npc"),
+        gp = grid::gpar(
+            col = data$colour,
+            fill = alpha(data$fill, data$alpha),
+            lty = data$linetype,
+            lwd = lwd * .pt,
+            linejoin = "mitre"
+        ))
+}
+
+# register new key drawing function, 
+# the effect is global & persistent throughout the R session
+GeomBar$draw_key = draw_key_polygon3
+
 # barplot
 p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
@@ -66,7 +87,19 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c
     geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
         "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    mytheme # see skript 08_theme_plots
+    theme_bw()+ # see skript 08_theme_plots
+    theme(legend.key = element_rect(color = NA, fill = NA),
+          legend.key.size = unit(1.5, "cm"), 
+          legend.text = element_text(size = 30), 
+          legend.title = element_text(size = 30),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.text.x = element_text(size=20),
+          axis.text.y = element_text(size=20, face = "plain"),
+          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          plot.subtitle=element_text(margin=margin(b=15),size = 20),
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
@@ -75,6 +108,7 @@ ggsave("plots/selling_HS_17_egel.pdf",p,
        height = 15,
        dpi = 600,
        device = cairo_pdf)
+
 
 # test if week sellings statistically differ (chapter 3.1)-----
 
@@ -93,6 +127,7 @@ summary.lm(ao1)
 # test if meal content differ statistically
 sell_dat <- df_agg %>%
     mutate(label_content2 = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan")) %>% # change name 
+    # mutate(label_content2 = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan_plus")) %>% # to check if the sellings in the intervention week differs between vegan and vegan plus
     mutate(label_content2 = str_replace(.$label_content2, "Pflanzlich", "Vegan")) %>% # change name
     group_by(semwk, condit, label_content2) %>%
     summarise(tot_sold=n()) %>%
@@ -106,6 +141,7 @@ autoplot(ao2) # dont look very nice, however i would accept it :)
 summary.lm(ao2) # display anova
 TukeyHSD(ao2) #post-hoc test
 # otherwise Welch test would be appropriate as well (one.test())
+
 
 
 # test difference in meal options (chapter 3.2)----
@@ -144,18 +180,63 @@ chi_s3 <- chisq.test(tp1$real_offer, p = tp1$pct_exp) # check if expected freque
 fisher.test(tp1[ ,3:4]) # for exact p-value, it differs strongly form the p-value from 
 
 
+
+
+# count cases, where our design was not taken into account--------
+# calculate daily meal offers (in counts and pecentage)
+# for basis
+df_angebot_b <- info_orig %>%
+    mutate(label_content = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan")) %>% # change name 
+    mutate(label_content = str_replace(.$label_content, "Pflanzlich", "Vegan")) %>%
+    filter(condit == "Basis" & !grepl("Hot and Cold",info_orig$label_content)) %>%
+    dcast(formula = date+shop_description ~ label_content, value.var = "label_content", fun.aggregate = length) %>%
+    rename(unbekannt = `NA`) %>% 
+    mutate(fleisch_pct = .$Fleisch / rowSums(df_angebot_b[, c(3:6)]),
+           vegetarisch_pct = .$Vegetarisch / rowSums(df_angebot_b[, c(3:6)]),
+           vegan_pct = .$Vegan / rowSums(df_angebot_b[, c(3:6)]))
+
+# for intervention
+df_angebot_i <- info_orig %>%
+    mutate(label_content = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan")) %>% # change name 
+    mutate(label_content = str_replace(.$label_content, "Pflanzlich", "Vegan")) %>%
+    filter(condit == "Intervention" & !grepl("Hot and Cold",info_orig$label_content)) %>%
+    dcast(formula = date+shop_description ~ label_content, value.var = "label_content", fun.aggregate = length) %>%
+    mutate(fleisch_pct = .$Fleisch / rowSums(df_angebot_i[, c(3:5)]),
+           vegetarisch_pct = .$Vegetarisch / rowSums(df_angebot_i[, c(3:5)]),
+           vegan_pct = .$Vegan / rowSums(df_angebot_i[, c(3:5)]))
+
+# count for deviation
+# basis, plan was 2/3 meat and 1/3 vegetarian
+# df_angebot_b$design <- ifelse(df_angebot_b$fleisch_pct == 2/3 & rowSums(df_angebot_b[ ,8:9]) == 1/3, T, ifelse())
+# table(df_angebot_b$design)
+df_angebot_b$design <- ifelse(df_angebot_b$fleisch_pct == 2/3 & rowSums(df_angebot_b[ ,8:9]) == 1/3, "exp_design", 
+                              ifelse(df_angebot_b$fleisch_pct == 1/2 & rowSums(df_angebot_b[ ,8:9]) == 1/2, "equal",
+                                ifelse(df_angebot_b$fleisch_pct > 2/3, "more_meat","less_meat")))
+
+# check for differences between canteens                            
+table(df_angebot_b$design)
+library(gmodels)
+CrossTable(df_angebot_b$design, df_angebot_b$shop_description)
+
+
+# intervention: plan was 1/3 meat and 1/3 vegetarian and 1/3 vegan
+df_angebot_i$design <- ifelse(df_angebot_i$fleisch_pct == 1/3 & df_angebot_i$vegetarisch_pct == 1/3 & df_angebot_i$vegan_pct == 1/3, "exp_design",
+                              ifelse(df_angebot_i$fleisch_pct < 1/3 & rowSums(df_angebot_i[ ,7:8]) > 2/3,"less_meat",
+                                     ifelse(df_angebot_i$fleisch_pct == 1/2 & rowSums(df_angebot_i[ ,7:8]) == 1/2, "equal","more_meat")))
+table(df_angebot_i$design)
+CrossTable(df_angebot_i$design, df_angebot_i$shop_description)
+
+
 # plot real and planed offer (chanpter 3.2)----------
 ##prepare data
 # target for 2015 and 2016 and 2017 for both canteens (per canteen 120 meals) and for both cycles: 480 melas in total
 # per canten and cycle: meat:54 (30 + 30*.8), vegetarian:36, hot and cold: 30
-
 df_plan_56 <- tibble(year = rep(2015, times=360, each=1),
                      label_content = rep(c("Fleisch","Vegetarisch"), times=c((120 + 120*.8),(120 + 120*.2))),
                      offer = "Geplant")
 
 # plan for intervention:: per canten and cycle: meat: 45, vegetarian: 30, hot and cold: 30, vegan: 7, vegan+: 8
 # plan for basis:: per canteen and cycle: meat: 60, vegetarian: 30, hot and cold: 30
-
 df_plan_7 <- tibble(year = rep(2017, times=360),
                     label_content = rep(c("Fleisch","Vegetarisch","Pflanzlich","Pflanzlich+"), times=c(180,120,28,32)),
                     offer= "Geplant")
@@ -214,7 +295,19 @@ p <- ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unbekannt
     scale_x_discrete(limits=c("2015 - 2016\nGeplant","2017\nGeplant","2017\nAngeboten"))+
     geom_text(aes(label=ifelse(tot>4,tot, "")), size = 8, position = position_stack(vjust = 0.5))+ 
     annotate("text",x=1:3,y=500,label=c(text$label2[1],text$label2[1],text$label2[2]), size=8)+
-    mytheme
+    theme_bw()+ # see skript 08_theme_plots
+    theme(legend.key = element_rect(color = NA, fill = NA),
+          legend.key.size = unit(1.5, "cm"), 
+          legend.text = element_text(size = 30), 
+          legend.title = element_text(size = 30),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.text.x = element_text(size=20),
+          axis.text.y = element_text(size=20, face = "plain"),
+          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          plot.subtitle=element_text(margin=margin(b=15),size = 20),
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+
 
 p + labs(caption = "Daten: ZHAW (2017)")
 
@@ -224,6 +317,7 @@ ggsave("plots/meal_offer_HS15_17.pdf",
        width = 14,
        dpi = 600,
        device = cairo_pdf)
+
 
 
 # test if meal content and condition has influence on sellings --------------
@@ -242,16 +336,28 @@ TukeyHSD(aov1, ordered = T)
 
 # plot interaction condition and meal content----------
 # visualize findings from above
-# see line 91
+# see line 128 for sell_dat
 m_sell <- na.omit(sell_dat) %>% group_by(condit,label_content2) %>% summarise(val = mean(tot_sold)) # calculate means (per what) of the label_content per condition
 
 p <- ggplot(sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, shape = label_content2)) + 
     geom_point(data = m_sell, aes(y = val), size = 4) +
     geom_line(data = m_sell, aes(y = val, group = label_content2), size = 2) + 
     labs(y = "Durchschnittlich verkaufte Gerichte pro Woche", x = "Bedingungen") + 
-    guides(shape = guide_legend(title = "Menü-Inhalt"), linetype = F)+
+    guides(shape = guide_legend(title = "Menü-Inhalt\n"), linetype = F)+
     scale_y_continuous(breaks = seq(0,1400,200), limits = c(0, 1400)) +
-    mytheme
+    theme_bw()+ # see skript 08_theme_plots
+    theme(legend.key = element_rect(color = NA, fill = NA),
+          legend.key.size = unit(1.5, "cm"), 
+          legend.text = element_text(size = 30), 
+          legend.title = element_text(size = 30),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.text.x = element_text(size=20),
+          axis.text.y = element_text(size=20, face = "plain"),
+          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          plot.subtitle=element_text(margin=margin(b=15),size = 20),
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
@@ -265,7 +371,8 @@ ggsave("plots/content_condition_HS17.pdf",
 
 
 
-## test meal line differences between years-----------
+
+# test meal line differences between years-----------
 
 df <- menu_tot 
 
@@ -286,7 +393,8 @@ autoplot(aov2) # see model diagnostics
 summary.lm(aov2)
 TukeyHSD(aov2, ordered = T)
 
-## plot meal line-----------
+
+# plot meal line-----------
 # prepare data
 df <- menu_tot %>%
     group_by(article_description, year) %>%
@@ -334,7 +442,19 @@ p <- ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_descriptio
     scale_color_manual(values = levels(df$label_color))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 6, position = position_stack(vjust = 0.5))+ # omit 1% annotation
     annotate("text",x = 1:3, y = 27500, label = text$label2, size=6)+
-    mytheme
+    theme_bw()+ # see skript 08_theme_plots
+    theme(legend.key = element_rect(color = NA, fill = NA),
+          legend.key.size = unit(1.5, "cm"), 
+          legend.text = element_text(size = 30), 
+          legend.title = element_text(size = 30),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.text.x = element_text(size=20),
+          axis.text.y = element_text(size=20, face = "plain"),
+          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          plot.subtitle=element_text(margin=margin(b=15),size = 20),
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
@@ -345,3 +465,135 @@ ggsave("plots/meal_line_hs17.pdf",
        dpi = 600, 
        device = cairo_pdf)
 
+
+
+# summary kitchen content----
+kitchen <- df_agg %>% 
+    filter(grepl("+Kitchen", df_agg$article_description)) %>% # inklude locals
+    group_by(label_content, week) %>% 
+    summarise(tot = n()) %>% 
+    mutate(pct = tot / sum(tot)) %>%
+    drop_na() # drop NA's
+
+kitchen_offer <- info_orig %>% # summary kitchen offer
+    filter(grepl("+Kitchen", info_orig$article_description)) %>% 
+    group_by(label_content, week) %>% 
+    summarise(offer = n())
+
+
+kitchen$offer <- kitchen_offer$offer
+kitchen[grep("\\Pflanzlich", kitchen$label_content), ]$label_content <- "Vegetarisch" # only between meat and vegetarian
+t <- group_by(kitchen, label_content) %>%
+    summarise(tot = sum(tot), offer = sum(offer)) %>%
+    mutate(kitchen_mean = tot/offer) # compare sellings per meal offer between meat and vegetarian content
+
+# summary favorite content----
+favorite <- df_agg %>% 
+    filter(article_description == "Favorite") %>% 
+    group_by(label_content) %>% 
+    summarise(tot = n()) %>% 
+    mutate(pct = tot / sum(tot))
+
+
+# plot local content-----
+local <- df_agg %>%
+    filter(grepl("Local+", df_agg$article_description)) %>%
+    group_by(article_description) %>%
+    summarise(tot = n()) %>% 
+    mutate(pct = tot/sum(tot),
+           pct_all = tot/nrow(df_agg))
+
+# define annotation
+text <- group_by(df, year) %>% summarise(tot=sum(tot_sold)) %>%
+    mutate(tot2=format(tot, big.mark = "'", scientific = F)) %>% # add thousand seperator
+    mutate(label = "n") %>%
+    mutate(label2=paste(label,tot2,sep=" = "))
+
+# plot data
+p <- ggplot(local, aes(y=tot,x=article_description, fill = label_content)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .6) +
+    #ggtitle("Verkaufte Men?s: 3. + 4. HSW\n") +
+    xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
+    ylab("Verkaufte Gerichte pro Herbstsemester")+
+    guides(fill= guide_legend(title = "Menü-Linien"), 
+           color=F)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$names,
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot and Cold"))+
+    scale_color_manual(values = levels(df$label_color))+
+    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 6, position = position_stack(vjust = 0.5))+ # omit 1% annotation
+    annotate("text",x = 1:3, y = 27500, label = text$label2, size=6)+
+    mytheme
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+
+# plot meal lines over 12 weeks and condition-----
+
+
+meal <- df_agg
+meal$article_description <- gsub("Local ","", meal$article_description)
+meal <- meal %>% 
+    group_by(condit, week, article_description) %>% 
+    summarise(tot_sold = n())
+
+df_ <- meal %>% 
+    group_by(week,condit) %>% # give in variable, you want to calculate percentage
+    mutate(pct=(tot_sold/sum(tot_sold)))
+
+# annotation for selling per week
+text <- group_by(df_agg, week) %>% summarise(tot = n()) %>%
+    mutate(label = "italic(n)") %>%
+    mutate(label2 = paste(label, tot, sep="=="))
+
+# define x-lab for plot
+df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Local/Zusatzangebot" = "black", "Kitchen" = "#008099", "World" = "#fad60d","Favorite"="#c5b87c","Hot and Cold"="#4c4848")
+# detects dark color: for labelling the bars
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$article_description], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+
+
+
+# barplot
+p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(article_description, levels=c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
+    ylab("\nVerkaufte Gerichte in Prozent")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
+           color = F)+
+    scale_y_continuous(labels=scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    annotate( 
+        "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
+    theme_bw()+ # see skript 08_theme_plots
+    theme(legend.key = element_rect(color = NA, fill = NA),
+          legend.key.size = unit(1.5, "cm"), 
+          legend.text = element_text(size = 30), 
+          legend.title = element_text(size = 30),
+          plot.title = element_text(size = 20, face = "bold"),
+          axis.text.x = element_text(size=20),
+          axis.text.y = element_text(size=20, face = "plain"),
+          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
+          plot.subtitle=element_text(margin=margin(b=15),size = 20),
+          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+ggsave("plots/meal_line_single_HS_17_egel.pdf",p,
+       width = 26,
+       height = 15,
+       dpi = 600,
+       device = cairo_pdf)
