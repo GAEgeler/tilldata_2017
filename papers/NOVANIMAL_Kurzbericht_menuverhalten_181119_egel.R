@@ -5,6 +5,7 @@
 source(file = "04_load_data_180802_egel.R")
 # to load themes
 source(file = "08_theme_plots_180419_egel.R")
+# warnings can be ignored => due to rm() command
 
 # check for NA's----
 library(Amelia)
@@ -41,10 +42,13 @@ which(canteen$age == 117) # 58 cases has age 117 => impute or not?
 
 
 # visiter frequency--------
-
 visiter <- df_2017 %>%
     group_by(ccrs, shop_description) %>%
     summarise(visit = n())
+
+check_cases <- filter(visiter, visit > 60) %>% select(ccrs)
+check_cases <- filter(df_2017, ccrs %in% check_cases$ccrs)
+    
 
 mean(visiter$visit)
 
@@ -64,18 +68,15 @@ fisher.test(df, simulate.p.value = T, B = 100000) # seems to have differences
 
 visiter_freq %>% filter(visit_counts > 2) %>%
     ggplot(aes(x=category,y=pct, fill=shop_description)) +
-    geom_bar(stat="identity",colour=NA, position = "dodge", width = .6)+
+    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
     scale_fill_manual(values =  c("#fad60d","#c5b87c"))+
     scale_y_continuous(labels=scales::percent) +
     # scale_alpha_discrete(range = c(0.6, .8), guide=F)+
     # scale_alpha_manual(values=c(0.5, 1), guide=F)+
     xlab("\nDurchschnittliche Mensabesuche pro Woche") +
     ylab("Anteil Mensabesucher")+
-    # ggtitle("Anmerkung: 23'446 Transaktionen wurden berücksichtigt")+
     guides(fill= guide_legend(title = "Mensa-Standort"))+
-    #         geom_text(aes(
-    #             label = paste0(round(visit3$pct,digits = 0)), vjust =-.2
-    #         ),colour = "#000000",position = position_dodge(width = .8), size= 8) +
+    geom_text(aes(label = scales::percent(round(pct,2))), colour = "#000000", position = position_dodge(width = .6), size= 8) +
     theme_bw()+ # see skript 08_theme_plots
     theme(legend.key = element_rect(color = NA, fill = NA),
           legend.key.size = unit(1.5, "cm"), 
@@ -97,43 +98,84 @@ ggsave("plots/visit_freq_181128_egel.pdf",
        dpi = 200,
        device = cairo_pdf)
 
-# for further analyses exclude some Na's---------
-# check for NA's----
-library(Amelia)
-missmap(df_2017) # missings in meal_content, gender, label_content
 
-# drop column, meal name
-df_2017 <- select(df_2017, -meal_name)
+# turnover analysis-------
+# turnover: payed meal price
 
-# drop missing in label_content
-df_2017 <- drop_na(df_2017, label_content) #116 cases
+# group data
+df_ <- group_by(df_2017, condit , week, price_article) %>%
+    summarise(tot_sold = n()) %>% 
+    mutate(tot_turn = tot_sold * price_article) %>% 
+    ungroup() %>% 
+    group_by(condit, week) %>% 
+    summarise(tot_sold = sum(tot_sold),
+              tot_turn = sum(tot_turn)) %>% 
+    mutate(pct_turn = tot_turn/sum(tot_turn))
 
-# 836 cases missing gender
-# drop them?
-df_2017 <- drop_na(df_2017, gender)
+df_hnc <- df_2017 %>%
+    filter(article_description == "Hot and Cold") %>%
+    group_by(condit ,week, label_content, price_article)%>%
+    summarise(total = sum(price_article)) %>% 
+    mutate(article_description = "Hot and Cold") %>% 
+    ungroup() %>% 
+    group_by(week, condit, article_description) %>% 
+    summarise(total = sum(total))
 
-# check for age => 22 cases are 117 years old
-# impute them
-summary(df_2017$age) 
-df_2017$age <- ifelse(df_2017$age == 117, NA, df_2017$age)
+df_fav <- df_2017 %>% 
+    filter(grepl("+Favorite", df_2017$article_description)) %>%
+    group_by(condit ,week, label_content, price_article) %>% 
+    summarise(total = sum(price_article)) %>% 
+    mutate(article_description = "Favorite") %>% 
+    ungroup() %>% 
+    group_by(week, condit, article_description) %>% 
+    summarise(total = sum(total))
 
-# see https://www.linkedin.com/pulse/amelia-packager-missing-data-imputation-ramprakash-veluchamy
-# seems not to work
-test <- amelia(df_2017, idvars=c("ccrs","transaction_id","date","article_description", "art_code","gender","member","rab_descript","pay_descript","shop_description","condit","label_content"), p2s = 0)
+df_kit <- df_2017 %>% 
+    filter(grepl("+Kitchen", df_2017$article_description)) %>%
+    group_by(condit ,week, label_content, price_article) %>% 
+    summarise(total = sum(price_article)) %>% 
+    mutate(article_description = "Kitchen") %>%
+    ungroup() %>% 
+    group_by(week, condit, article_description) %>% 
+    summarise(total = sum(total))
+
+df_world <- df_2017 %>% 
+    filter(grepl("+World", df_2017$article_description)) %>%
+    group_by(condit ,week, label_content, price_article) %>% 
+    summarise(total = sum(price_article)) %>% 
+    mutate(article_description = "World") %>% 
+    ungroup() %>% 
+    group_by(week, condit, article_description) %>% 
+    summarise(total = sum(total))
+
+df_2 <- bind_rows(df_fav, df_hnc, df_kit, df_world) %>% 
+    group_by(week, article_description) %>% 
+    summarise(tot_turn = sum(total)) %>% 
+    mutate(year = 2017)
+
+# add data from 2015 and 2016
+df_3 <- df_tot %>% # see script 04_load_data from lines 244:266
+    group_by(article_description, year, week, Bruttobetrag) %>% 
+    summarise(tot_sold = sum(tot_sold)) %>% 
+    mutate(tot_turn = sum(Bruttobetrag)) %>% 
+    ungroup() %>% 
+    group_by(year, week, article_description) %>% 
+    summarise(tot_turn = sum(tot_turn))
+
+df_ <- bind_rows(df_2, df_3) # order of variable seems not to play a role ;)
+                                                                                      
+# plot => check sumbers of 2015 and 2016 again!!
+pl <- df_ %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
+
+ggplot(df_, aes(x = factor(week), y = tot_turn, fill = article_description)) + 
+    geom_bar(stat = "identity", width = .6) +
+    facet_wrap(~year)
+    geom_text(aes(label = scales::percent(round(pl$pct_turn,3))), position = position_dodge(width = .9), size = 8, color = "black")
+
+# compare with last two years??
 
 
-# fist of all check again, how are the choices distributed for more than 3 choices
-set.seed(17)
-t <- group_by(df_2017, ccrs) %>% summarise(tot = n()) %>% filter(tot >= 6) %>% sample_frac(.1) 
-t2 <- filter(df_2017, ccrs %in% t$ccrs) # 1203 card holders with more than 2 transactions
-ggplot(t2, aes(y=label_content, x = date, color = label_content)) + geom_point() + facet_wrap(~ccrs)
-
-
-# multinom analyses or logit regression with random intercept (ccrs and condit)
-# 
-- logit regression
-- multinom regression (eventually with glmer or brms possible) => https://stats.stackexchange.com/questions/319427/mixed-model-with-categorical-response-variable
-- brms tutorials https://bayesat.github.io/lund2018/slides/andrey_anikin_slides.pdf
 
 
 
@@ -205,22 +247,22 @@ flexi_meat <- canteen %>%
 df_2 <- bind_rows(one, some, buffet, meat_avoiders, meat_lovers, flexi_vegi, flexi_flex, flexi_meat)
 
 # plot all groups: mosaik plot-------
+# search for the right plot
 
-df <- diamonds %>%
-    group_by(cut, clarity) %>%
-    summarise(count = n()) %>%
-    mutate(cut.count = sum(count),
-           prop = count/sum(count)) %>%
+dat <- df_2 %>% 
+    group_by(cluster) %>% 
+    summarise(count = n()) %>% 
+    mutate(cluster.count = sum(count),
+           pct = count/sum(count)) %>% 
     ungroup()
 
-ggplot(df,
-       aes(x = cut, y = prop, width = cut.count, fill = clarity)) +
-    geom_bar(stat = "identity", position = "fill", colour = "black") +
-    # geom_text(aes(label = scales::percent(prop)), position = position_stack(vjust = 0.5)) + # if labels are desired
-    facet_grid(~cut, scales = "free_x", space = "free_x") +
-    scale_fill_brewer(palette = "RdYlGn") +
-    # theme(panel.spacing.x = unit(0, "npc")) + # if no spacing preferred between bars
-    theme_void() 
+# why not stacked, because fill and x are same variable
+ggplot(dat, aes(x = cluster, y = pct, fill = cluster)) +
+    geom_bar(stat = "identity", position = "stack", width = .6) +
+    scale_y_continuous(labels = scales::percent)+
+    geom_text(aes(label = scales::percent(round(pct,2))), position = position_stack(vjust = 0.5))  # if labels are desired
+    
+   
 
  
 # first group: one timers: 183----
@@ -265,25 +307,25 @@ pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], # takes
 
 # function to increase vertical spacing between legend keys
 # source: https://github.com/tidyverse/ggplot2/issues/2844
-draw_key_polygon3 <- function(data, params, size) {
-    lwd <- min(data$size, min(size) / 4)
+    draw_key_polygon3 <- function(data, params, size) {
+        lwd <- min(data$size, min(size) / 4)
+        
+        grid::rectGrob(
+            width = grid::unit(0.6, "npc"),
+            height = grid::unit(0.6, "npc"),
+            gp = grid::gpar(
+                col = data$colour,
+                fill = alpha(data$fill, data$alpha),
+                lty = data$linetype,
+                lwd = lwd * .pt,
+                linejoin = "mitre"
+            ))
+    }
     
-    grid::rectGrob(
-        width = grid::unit(0.6, "npc"),
-        height = grid::unit(0.6, "npc"),
-        gp = grid::gpar(
-            col = data$colour,
-            fill = alpha(data$fill, data$alpha),
-            lty = data$linetype,
-            lwd = lwd * .pt,
-            linejoin = "mitre"
-        ))
-}
-
-# register new key drawing function, 
-# the effect is global & persistent throughout the R session
-GeomBar$draw_key = draw_key_polygon3
-
+    # register new key drawing function, 
+    # the effect is global & persistent throughout the R session
+    GeomBar$draw_key = draw_key_polygon3
+    
 
 # plot member and gender
 p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
@@ -409,18 +451,32 @@ ggsave("plots/eating_some_timers_181129_egel.pdf",p,
        dpi = 600,
        device = cairo_pdf)
 
-# third group hot and colders 18 --------
+
+# third group: canteen people----
+# cluster hot and colders 18 --------
 buffetarians <- filter(df_2, cluster == "buffet")
 
 # describe group
 Hmisc::describe(buffetarians$gender)
-describe(buffetarians[buffetarians$age<100,]$age)
+psych::describe(buffetarians[buffetarians$age<100,]$age)
 Hmisc::describe(buffetarians$member)
 mean(buffetarians$tot_buy)
 
 # plot eventually gender and member
+dat <- filter(df_2017, ccrs %in% buffetarians$ccrs) # check what dos 333 person consumed during the experiement
+pl <- dat %>% 
+    group_by(label_content, gender) %>% 
+    summarise(tot_sold = n()) %>% 
+    ungroup() %>% 
+    group_by(gender) %>%
+    mutate(pct = tot_sold/sum(tot_sold)) %>% 
+    ungroup() %>% 
+    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
+           gender = recode(.$gender, "F" = "Frauen", "M" = "Männer"), # attention the order of those 2 code lines matter
+           gender = ifelse(is.na(.$gender),"Spezialkarten", gender))
 
-# forth group: canteen people----
+
+
 # cluster meat avoiders: 21, no hot and cold----
 meat_avoiders <- filter(df_2, cluster == "avoiders")
 
@@ -431,6 +487,41 @@ Hmisc::describe(meat_avoiders$member)
 mean(meat_avoiders$tot_buy)
 
 # plot eventually gender and member
+dat <- filter(df_2017, ccrs %in% meat_avoiders$ccrs) # check what dos 333 person consumed during the experiement
+pl <- dat %>% 
+    group_by(label_content, gender) %>% 
+    summarise(tot_sold = n()) %>% 
+    ungroup() %>% 
+    group_by(gender) %>%
+    mutate(pct = tot_sold/sum(tot_sold)) %>% 
+    ungroup() %>% 
+    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
+           gender = recode(.$gender, "F" = "Frauen", "M" = "Männer"), # attention the order of those 2 code lines matter
+           gender = ifelse(is.na(.$gender),"Spezialkarten", gender))
+
+# cluster meat lovers: 16 persons => realistic??----
+meat_lovers <- filter(df_2, cluster == "lovers")
+
+
+## describe this cluster
+Hmisc::describe(meat_lovers$gender) # gender distribution
+psych::describe(meat_lovers[meat_lovers$age<100,]$age) # mean of age
+Hmisc::describe(meat_lovers$member) # member distribution
+mean(meat_lovers$tot_buy) # mean of visit days
+
+
+#plot maybe gender and member
+dat <- filter(df_2017, ccrs %in% meat_lovers$ccrs) # check what dos 333 person consumed during the experiement
+pl <- dat %>% 
+    group_by(label_content, gender) %>% 
+    summarise(tot_sold = n()) %>% 
+    ungroup() %>% 
+    group_by(gender) %>%
+    mutate(pct = tot_sold/sum(tot_sold)) %>% 
+    ungroup() %>% 
+    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
+           gender = recode(.$gender, "F" = "Frauen", "M" = "Männer"), # attention the order of those 2 code lines matter
+           gender = ifelse(is.na(.$gender),"Spezialkarten", gender))
 
 # cluster vegi flexitarians: 1-33% meat consumtion (330)----------
 flexi_vegi <- filter(df_2, cluster == "vegi flexies")
@@ -522,10 +613,9 @@ ggsave("plots/eating_flexi_veg_181129_egel.pdf",p,
 # cluster flexi flexitarians: 34-66% meat consumption (352)-------
 flexi_flex <- filter(df_2, cluster == "flexi flexies")
 
-
 # describe this cluster
 Hmisc::describe(flexi_flex$gender)
-describe(flexi_flex[flexi_flex$age<100,]$age)
+psych::describe(flexi_flex[flexi_flex$age<100,]$age)
 Hmisc::describe(flexi_flex$member)
 mean(flexi_flex$tot_buy)
 
@@ -548,7 +638,7 @@ text <- group_by(dat, gender) %>% summarise(tot = n()) %>%
     mutate(label2 = paste(label, tot, sep="=="))
 
 # add xlab
-pl <- flexi_vegi %>% group_by(gender) %>% 
+pl <- flexi_flex %>% group_by(gender) %>% 
     summarise(tot = n()) %>% 
     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
@@ -607,14 +697,12 @@ ggsave("plots/eating_flexi_flex_181129_egel.pdf",p,
        dpi = 600,
        device = cairo_pdf)
 
-
-
 # cluster meat flexitarians: over 67% meat consumption (311)--------
 flexi_meat <- filter(df_2, cluster == "meat flexies")
 
 # describe this cluster
 Hmisc::describe(flexi_meat$gender)
-describe(flexi_meat[flexi_meat$age<100,]$age)
+psych::describe(flexi_meat[flexi_meat$age<100,]$age)
 Hmisc::describe(flexi_meat$member)
 mean(flexi_meat$tot_buy)
 
@@ -637,14 +725,14 @@ text <- group_by(dat, gender) %>% summarise(tot = n()) %>%
     mutate(label2 = paste(label, tot, sep="=="))
 
 # add xlab
-pl <- flexi_vegi %>% group_by(gender) %>% 
+pl <- flexi_meat %>% group_by(gender) %>% 
     summarise(tot = n()) %>% 
     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
     inner_join(.,pl, by = "gender") %>% 
     ungroup() %>% 
     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab0 = paste("(",tot,")"),
+    mutate(xlab0 = paste("(",.$tot,")"),
            xlab = paste(gender, xlab0, sep = "\n"))
 
 
@@ -696,67 +784,45 @@ ggsave("plots/eating_flexi_meat_181129_egel.pdf",p,
        dpi = 600,
        device = cairo_pdf)
 
+# for further analyses exclude some Na's---------
+# check for NA's
+library(Amelia)
+missmap(df_2017) # missings in meal_content, gender, label_content
+
+# drop column, meal name
+df_2017 <- select(df_2017, -meal_name)
+
+# drop missing in label_content
+df_2017 <- drop_na(df_2017, label_content) #116 cases
+
+# 836 cases missing gender
+# drop them?
+df_2017 <- drop_na(df_2017, gender)
+
+# check for age => 22 cases are 117 years old
+# impute them
+summary(df_2017$age) 
+df_2017$age <- ifelse(df_2017$age == 117, NA, df_2017$age)
+
+# see https://www.linkedin.com/pulse/amelia-packager-missing-data-imputation-ramprakash-veluchamy
+# seems not to work
+test <- amelia(df_2017, idvars=c("ccrs","transaction_id","date","article_description", "art_code","gender","member","rab_descript","pay_descript","shop_description","condit","label_content"), p2s = 0)
 
 
-# cluster meat lovers: 16 persons => realistic??----
-meat_lovers <- filter(df_2, cluster == "lovers")
+# fist of all check again, how are the choices distributed for more than 3 choices
+set.seed(17)
+t <- group_by(df_2017, ccrs) %>% summarise(tot = n()) %>% filter(tot >= 6) %>% sample_frac(.1) 
+t2 <- filter(df_2017, ccrs %in% t$ccrs) # 1203 card holders with more than 2 transactions
+ggplot(t2, aes(y=label_content, x = date, color = label_content)) + geom_point() + facet_wrap(~ccrs)
 
+# change variable to
 
-## describe this cluster
-Hmisc::describe(meat_lovers$gender) # gender distribution
-describe(meat_lovers[meat_lovers$age<100,]$age) # mean of age
-Hmisc::describe(meat_lovers$member) # member distribution
-mean(meat_lovers$tot_buy) # mean of visit days
+# logit regression with random intercept (ccrs and condit)-----
+library(lme4)
+mod <- glmer(meat ~ family = "binomial")
 
+# multinom regression (eventually with glmer or brms possible) => https://stats.stackexchange.com/questions/319427/mixed-model-with-categorical-response-variable
+library(brms)
+mod0 <- brms::brm()
 
-#plot maybe gender and member
-pl <- meat_lovers %>%  
-    group_by(gender, member) %>% 
-    summarise(tot = n()) %>% 
-    ungroup() %>% 
-    mutate(gender = ifelse(is.na(gender), "NA", gender)) %>% 
-    mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer", "NA" = "Spezialkarten")) %>% 
-    group_by(gender)%>% 
-    mutate(pct = tot/sum(tot)) 
-
-# add annotation
-pl <- group_by(pl, gender) %>% 
-    summarise(tot = sum(tot)) %>% 
-    mutate(xlab0 = paste("(", tot, ")"),
-           xlab = paste(gender, xlab0, sep = "\n")) %>% 
-    ungroup() %>% 
-    inner_join(., pl, by = "gender")
-
-# plot member and gender
-p <- ggplot(pl, aes(x = xlab, y = pct, fill = member)) + 
-    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
-    xlab("") +
-    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
-    ylab("\nHochschulzugehörigkeit in Prozent")+
-    guides(fill = guide_legend("Hochschulzugehörigkeit\n"))+
-    scale_y_continuous(labels=scales::percent)+
-    scale_fill_manual(values = c("Mitarbeitende" = "#99f200", "Studierende" = "#6619e6", "Spezialkarten" = "grey40"),
-                      breaks = c("Mitarbeitende" ,"Studierende", "Spezialkarten"),
-                      labels = c("Mitarbeitende" ,"Studierende", "Spezialkarten"))+
-    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
-
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
-
-ggsave("plots/gender_meat_lovers_181129_egel.pdf",p,
-       width = 12,
-       height = 10,
-       dpi = 600,
-       device = cairo_pdf)
+brms tutorials https://bayesat.github.io/lund2018/slides/andrey_anikin_slides.pdf

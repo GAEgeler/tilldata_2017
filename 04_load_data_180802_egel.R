@@ -44,6 +44,8 @@ df_7_ <- left_join(df_17,info_, by = c("shop_description","date","article_descri
 # dataset without double entries: check script yy_plausibility for more information
 df_2017 <- filter(df_7, !(total_amount > prop_price & duplicated(transaction_id))) # delete 436 entries
 df_2017 <- filter(df_2017, !(duplicated(df_2017$ccrs) & duplicated(df_2017$transaction_id) & duplicated(df_2017$trans_date) & total_amount == prop_price)) # delete 265 entries
+df_2017 <- filter(df_2017, !qty_weight > 1) # delete 70 entries, which payed more than one meal (qty bigger than 1)
+df_2017 <- filter(df_2017, ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=1000610019)# exclude 3 cases (which has more than one transaction per day)
 
 # load aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
@@ -247,7 +249,7 @@ dat_hs_tot <- read_delim("raw data/verkaufsdaten täglich HS 15-16 180731.csv",
     mutate(week=strftime(date, format= "%V")) %>% # might get an error
     filter(week >= 40 & week <= 51) %>% # select only between week 40 and 51
     mutate(date = parse_date(date)) %>%
-    select(date, article_description, year, week, shop_description, tot_sold)
+    select(date, article_description, year, week, shop_description, tot_sold, Bruttobetrag)
 
 dat_hs_tot$week <- as.numeric(dat_hs_tot$week) # change character to numeric
 dat_hs_tot$cycle <- ifelse(dat_hs_tot$week >=40 & dat_hs_tot$week <= 45, 1, 2) 
