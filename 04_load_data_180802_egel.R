@@ -253,7 +253,7 @@ dat_hs_tot <- read_delim("raw data/verkaufsdaten täglich HS 15-16 180731.csv",
 
 dat_hs_tot$week <- as.numeric(dat_hs_tot$week) # change character to numeric
 dat_hs_tot$cycle <- ifelse(dat_hs_tot$week >=40 & dat_hs_tot$week <= 45, 1, 2) 
-dat_hs_tot$condit <- ifelse(dat_hs_tot$week %%2 == 0 & dat_hs_tot$cycle == 1,"Basis",ifelse(dat_hs_tot$week %%2 == 1 & dat_hs_tot$cycle == 2,"Basis","Intervention")) 
+dat_hs_tot$condit <- ifelse(dat_hs_tot$week %%2 == 0 & dat_hs_tot$cycle == 1, "Basis",ifelse(dat_hs_tot$week %%2 == 1 & dat_hs_tot$cycle == 2,"Basis","Intervention")) 
 
 df_tot <- droplevels(dat_hs_tot)
 
@@ -267,10 +267,10 @@ df_tot$shop_description <- firstup(df_tot$shop_description) # see function above
 
 # group data 2017 according meal line----
 menu_tot7 <- df_agg %>%
-    group_by(article_description, date, week, year, cycle, shop_description, condit) %>% 
+    group_by(article_description, date, week, year, cycle, shop_description, condit, price_article) %>% 
     summarise(tot_sold=n()) %>% # group it again, for merge with other data, no condit variable
     ungroup() %>%
-    select(date, article_description, year, week, cycle, shop_description, condit, tot_sold)
+    select(date, article_description, year, week, cycle, shop_description, condit, tot_sold, price_article)
 
 # merge with data 2017
 menu_tot <- bind_rows(df_tot, menu_tot7)

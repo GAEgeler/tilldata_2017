@@ -50,26 +50,6 @@ isDark <- function(color) {
 df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
-# function to increase vertical spacing between legend keys
-# source: https://github.com/tidyverse/ggplot2/issues/2844
-draw_key_polygon3 <- function(data, params, size) {
-    lwd <- min(data$size, min(size) / 4)
-    
-    grid::rectGrob(
-        width = grid::unit(0.6, "npc"),
-        height = grid::unit(0.6, "npc"),
-        gp = grid::gpar(
-            col = data$colour,
-            fill = alpha(data$fill, data$alpha),
-            lty = data$linetype,
-            lwd = lwd * .pt,
-            linejoin = "mitre"
-        ))
-}
-
-# register new key drawing function, 
-# the effect is global & persistent throughout the R session
-GeomBar$draw_key = draw_key_polygon3
 
 # barplot
 p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
@@ -87,7 +67,7 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c
     geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
         "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    theme_bw()+ # see skript 08_theme_plots
+    mytheme # see skript 08_theme_plots
     theme(legend.key = element_rect(color = NA, fill = NA),
           legend.key.size = unit(1.5, "cm"), 
           legend.text = element_text(size = 30), 
@@ -295,19 +275,7 @@ p <- ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unbekannt
     scale_x_discrete(limits=c("2015 - 2016\nGeplant","2017\nGeplant","2017\nAngeboten"))+
     geom_text(aes(label=ifelse(tot>4,tot, "")), size = 8, position = position_stack(vjust = 0.5))+ 
     annotate("text",x=1:3,y=500,label=c(text$label2[1],text$label2[1],text$label2[2]), size=8)+
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
+    mytheme # see skript 08_theme_plots
 
 p + labs(caption = "Daten: ZHAW (2017)")
 
@@ -442,19 +410,7 @@ p <- ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_descriptio
     scale_color_manual(values = levels(df$label_color))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 6, position = position_stack(vjust = 0.5))+ # omit 1% annotation
     annotate("text",x = 1:3, y = 27500, label = text$label2, size=6)+
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
+    mytheme # see skript 08_theme_plots
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
@@ -567,33 +523,198 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(article_descript
     xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
     ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Inhalt\n"),
+    guides(fill = guide_legend("Menü-Linie\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot and Cold"))+
+                      labels = c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot & Cold (Buffet)"))+
     scale_color_manual(values = levels(df_$label_color))+
     geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
         "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+    mytheme # see skript 08_theme_plots
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
 ggsave("plots/meal_line_single_HS_17_egel.pdf",p,
        width = 26,
        height = 15,
+       dpi = 600,
+       device = cairo_pdf)
+
+# turnover analysis-------
+# turnover: payed meal price
+# load data from 2015/2016: see script 04_load_data lines:244 - 266
+dat_1516 <- df_tot %>%  
+    mutate(article_description = gsub("Green", "Green/World", .$article_description)) %>% # change green to green/world due to merge
+    group_by(article_description, week, year) %>% 
+    summarise(tot = sum(tot_sold), turnover = sum(Bruttobetrag, na.rm = T)) %>% 
+    ungroup() 
+
+# group data 2017
+dat_17 <- df_agg %>% 
+    mutate(article_description = gsub("Local ", "", df_agg$article_description)) %>% # change local to "normal" menu line
+    mutate(article_description = gsub("World", "Green/World", .$article_description)) %>% # change green to green/world due to merge))
+    group_by(article_description, week, year, price_article) %>%
+    summarise(tot = n()) %>% 
+    mutate(turnover = tot * price_article) %>% 
+    ungroup() %>% 
+    group_by(article_description, week, year) %>% 
+    summarise(tot = sum(tot),
+              turnover = sum(turnover))
+
+# merge with data 2017
+menu_tot <- bind_rows(dat_1516, dat_17) %>% 
+    mutate(avg_price = turnover / tot) #calculate average price
+
+
+# test if turnover differs statistically-----
+
+ggplot(menu_tot, aes(y = turnover, x = factor(year))) + geom_boxplot()
+summary.lm(aov(menu_tot$turnover~as.factor(menu_tot$year)))
+
+ggplot(menu_tot[menu_tot$year == 2017,], aes(y = turnover, x = factor(week))) + geom_boxplot()
+summary.lm(aov(menu_tot[menu_tot$year == 2017,]$turnover~as.factor(menu_tot[menu_tot$year == 2017,]$week)))
+
+
+# df_hnc <- df_2017 %>%
+#     filter(article_description == "Hot and Cold") %>%
+#     group_by(condit ,week, label_content, price_article)%>%
+#     summarise(total = sum(price_article)) %>% 
+#     mutate(article_description = "Hot and Cold") %>% 
+#     ungroup() %>% 
+#     group_by(week, condit, article_description) %>% 
+#     summarise(total = sum(total))
+# 
+# df_fav <- df_2017 %>% 
+#     filter(grepl("+Favorite", df_2017$article_description)) %>%
+#     group_by(condit ,week, label_content, price_article) %>% 
+#     summarise(total = sum(price_article)) %>% 
+#     mutate(article_description = "Favorite") %>% 
+#     ungroup() %>% 
+#     group_by(week, condit, article_description) %>% 
+#     summarise(total = sum(total))
+# 
+# df_kit <- df_2017 %>% 
+#     filter(grepl("+Kitchen", df_2017$article_description)) %>%
+#     group_by(condit ,week, label_content, price_article) %>% 
+#     summarise(total = sum(price_article)) %>% 
+#     mutate(article_description = "Kitchen") %>%
+#     ungroup() %>% 
+#     group_by(week, condit, article_description) %>% 
+#     summarise(total = sum(total))
+# 
+# df_world <- df_2017 %>% 
+#     filter(grepl("+World", df_2017$article_description)) %>%
+#     group_by(condit ,week, label_content, price_article) %>% 
+#     summarise(total = sum(price_article)) %>% 
+#     mutate(article_description = "World") %>% 
+#     ungroup() %>% 
+#     group_by(week, condit, article_description) %>% 
+#     summarise(total = sum(total))
+# 
+# df_2 <- bind_rows(df_fav, df_hnc, df_kit, df_world) %>% 
+#     group_by(week, article_description) %>% 
+#     summarise(tot_turn = sum(total)) %>% 
+#     mutate(year = 2017)
+
+# add colors
+ColsPerCat=c("Local/Zusatzangebot" = "black", "Kitchen" = "#008099", "Green/World" = "#fad60d","Favorite"="#c5b87c","Hot and Cold"="#4c4848")
+# detects dark color: for labelling the bars
+menu_tot$label_color <- as.factor(sapply(unlist(ColsPerCat)[menu_tot$article_description], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+
+# plot for 2017
+pl <- menu_tot %>% 
+    group_by(year, week) %>% 
+    mutate(pct_turn = turnover/sum(turnover)) %>% 
+    ungroup() %>% 
+    mutate(cycle = ifelse(.$week >=40 & .$week <= 45, 1, 2)) %>% 
+    mutate(condit = ifelse(.$week %%2 == 0 & .$cycle == 1, "Basis",
+                           ifelse(.$week %%2 == 1 & .$cycle == 2,"Basis","Intervention"))) %>%  
+    filter(year == 2017) %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
+
+# test to annotate
+anno_txt <- menu_tot %>% 
+    group_by(week, year) %>% 
+    summarise(tot_turn = sum(turnover)) %>% 
+    mutate(tot_turn = round(tot_turn, 2)) %>%  # seems not to work why?
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>% 
+    filter(year == 2017)
+
+# to annotate median => check other plot for futher details (gesundheit ebp)
+# is not working
+pl <- group_by(pl, article_description) %>% 
+    summarise(med = median(turnover)) %>% 
+    left_join(pl, ., by= "article_description")
+
+p <- ggplot(pl, aes(x = xlab, y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", color = NA, position = position_stack(), width = .6) +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    ylab("\nUmsatz in Prozent")+
+    guides(fill = guide_legend("Menü-Linie\n"),
+           color = F)+
+    scale_y_continuous(label = scales::percent) +
+    scale_color_manual(values = levels(pl$label_color))+
+    geom_text(aes(label = scales::percent(round(pct_turn,2))), size = 8, position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot & Cold (Buffet)"))+
+    annotate("text", x = 1:12, y = 1.05, label = anno_txt$txt, size = 8)+
+    mytheme # check script 08_mythemes
+
+#some how not working!
+#p + geom_errorbar(x = 41, xend = 52, y = pl$med, yend = pl$med)
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+ggsave("plots/meal_line_turnover17_181203_egel.pdf",p,
+       width = 26,
+       height = 15,
+       dpi = 600,
+       device = cairo_pdf)
+
+
+# plot over years
+pl <- menu_tot %>% 
+    group_by(year, week) %>% 
+    mutate(pct_turn = turnover/sum(turnover))
+
+# test to annotate
+pl2 <- menu_tot %>% 
+    group_by(week, year) %>% 
+    summarise(tot_turn = sum(turnover)) %>% 
+    mutate(tot_turn = round(tot_turn, 2)) %>%  # seems not to work why?
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>% 
+    left_join(pl, ., by = c("week", "year")) %>% 
+    ungroup()
+
+p <- ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", color = NA, position = position_stack(), width = .7) +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    ylab("\nUmsatz in Prozent")+
+    scale_y_continuous(label = scales::percent) +
+    guides(fill = guide_legend("Menü-Linie\n"),
+           color = F)+
+    scale_color_manual(values = levels(pl$label_color)) +
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot and Cold"))+
+    facet_wrap(~year)+
+    geom_text(aes(label = scales::percent(round(pct_turn,2))), position = position_stack(vjust = .5), size = 8) +
+    mytheme # check script 08_mythemes
+
+# causes some problems with overlayers?? however only for 2015 and 2016
+p1 <- p + geom_text(aes(x = factor(week), y = 1.05, label = pl2$txt), size = 5, color = "black")
+ 
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+# save
+ggsave("plots/meal_line_turnover_181203_egel.pdf",p1,
+       width = 36,
+       height = 20,
        dpi = 600,
        device = cairo_pdf)
