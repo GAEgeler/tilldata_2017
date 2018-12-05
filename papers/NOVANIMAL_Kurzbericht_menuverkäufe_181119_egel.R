@@ -550,7 +550,8 @@ dat_1516 <- df_tot %>%
     mutate(article_description = gsub("Green", "Green/World", .$article_description)) %>% # change green to green/world due to merge
     group_by(article_description, week, year) %>% 
     summarise(tot = sum(tot_sold), turnover = sum(Bruttobetrag, na.rm = T)) %>% 
-    ungroup() 
+    ungroup() %>% 
+    arrange(year)
 
 # group data 2017
 dat_17 <- df_agg %>% 
@@ -578,53 +579,11 @@ ggplot(menu_tot[menu_tot$year == 2017,], aes(y = turnover, x = factor(week))) + 
 summary.lm(aov(menu_tot[menu_tot$year == 2017,]$turnover~as.factor(menu_tot[menu_tot$year == 2017,]$week)))
 
 
-# df_hnc <- df_2017 %>%
-#     filter(article_description == "Hot and Cold") %>%
-#     group_by(condit ,week, label_content, price_article)%>%
-#     summarise(total = sum(price_article)) %>% 
-#     mutate(article_description = "Hot and Cold") %>% 
-#     ungroup() %>% 
-#     group_by(week, condit, article_description) %>% 
-#     summarise(total = sum(total))
-# 
-# df_fav <- df_2017 %>% 
-#     filter(grepl("+Favorite", df_2017$article_description)) %>%
-#     group_by(condit ,week, label_content, price_article) %>% 
-#     summarise(total = sum(price_article)) %>% 
-#     mutate(article_description = "Favorite") %>% 
-#     ungroup() %>% 
-#     group_by(week, condit, article_description) %>% 
-#     summarise(total = sum(total))
-# 
-# df_kit <- df_2017 %>% 
-#     filter(grepl("+Kitchen", df_2017$article_description)) %>%
-#     group_by(condit ,week, label_content, price_article) %>% 
-#     summarise(total = sum(price_article)) %>% 
-#     mutate(article_description = "Kitchen") %>%
-#     ungroup() %>% 
-#     group_by(week, condit, article_description) %>% 
-#     summarise(total = sum(total))
-# 
-# df_world <- df_2017 %>% 
-#     filter(grepl("+World", df_2017$article_description)) %>%
-#     group_by(condit ,week, label_content, price_article) %>% 
-#     summarise(total = sum(price_article)) %>% 
-#     mutate(article_description = "World") %>% 
-#     ungroup() %>% 
-#     group_by(week, condit, article_description) %>% 
-#     summarise(total = sum(total))
-# 
-# df_2 <- bind_rows(df_fav, df_hnc, df_kit, df_world) %>% 
-#     group_by(week, article_description) %>% 
-#     summarise(tot_turn = sum(total)) %>% 
-#     mutate(year = 2017)
-
 # add colors
 ColsPerCat=c("Local/Zusatzangebot" = "black", "Kitchen" = "#008099", "Green/World" = "#fad60d","Favorite"="#c5b87c","Hot and Cold"="#4c4848")
 # detects dark color: for labelling the bars
 menu_tot$label_color <- as.factor(sapply(unlist(ColsPerCat)[menu_tot$article_description], # takes every label and their belonged color
                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
-
 
 # plot for 2017
 pl <- menu_tot %>% 
@@ -681,40 +640,47 @@ ggsave("plots/meal_line_turnover17_181203_egel.pdf",p,
 # plot over years
 pl <- menu_tot %>% 
     group_by(year, week) %>% 
-    mutate(pct_turn = turnover/sum(turnover))
+    mutate(pct_turn = turnover/sum(turnover)) %>% 
+    ungroup() %>% 
+    mutate(cycle = ifelse(.$week >=40 & .$week <= 45, 1, 2)) %>% 
+    mutate(condit = ifelse(.$week %%2 == 0 & .$cycle == 1, "Bs",
+                           ifelse(.$week %%2 == 1 & .$cycle == 2,"Bs","In"))) 
+    
 
 # test to annotate
 pl2 <- menu_tot %>% 
     group_by(week, year) %>% 
     summarise(tot_turn = sum(turnover)) %>% 
-    mutate(tot_turn = round(tot_turn, 2)) %>%  # seems not to work why?
-    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>% 
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>%
+    ungroup() %>% 
     left_join(pl, ., by = c("week", "year")) %>% 
-    ungroup()
+    ungroup() %>% 
+    mutate(year = factor(year, levels = c("2015", "2016", "2017"))) %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
 
-p <- ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+p <-ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", color = NA, position = position_stack(), width = .7) +
     xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
     ylab("\nUmsatz in Prozent")+
     scale_y_continuous(label = scales::percent) +
+    # scale_x_discrete(label=abbreviate)+
     guides(fill = guide_legend("Menü-Linie\n"),
            color = F)+
     scale_color_manual(values = levels(pl$label_color)) +
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot and Cold"))+
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot & Cold (Buffet)"))+
     facet_wrap(~year)+
-    geom_text(aes(label = scales::percent(round(pct_turn,2))), position = position_stack(vjust = .5), size = 8) +
+    geom_text(aes(label = scales::percent(round(pl2$pct_turn,2))), position = position_stack(vjust = .5), size = 8) +
+    geom_text(aes(x = factor(week), y = 1.05, label = pl2$txt), size = 5, color = "black")+
+    #some problems adding the text with overlappings, seems to take the info from 2015 for 2016
     mytheme # check script 08_mythemes
 
-# causes some problems with overlayers?? however only for 2015 and 2016
-p1 <- p + geom_text(aes(x = factor(week), y = 1.05, label = pl2$txt), size = 5, color = "black")
- 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
 # save
-ggsave("plots/meal_line_turnover_181203_egel.pdf",p1,
-       width = 36,
+ggsave("plots/meal_line_turnover_181203_egel.pdf",p,
+       width = 32,
        height = 20,
        dpi = 600,
        device = cairo_pdf)

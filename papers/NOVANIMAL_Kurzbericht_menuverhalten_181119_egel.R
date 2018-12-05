@@ -66,8 +66,7 @@ fisher.test(df, simulate.p.value = T, B = 100000) # seems to have differences
 
 # plot frequency of visitors between canteens
 
-visiter_freq %>% filter(visit_counts > 2) %>%
-    ggplot(aes(x=category,y=pct, fill=shop_description)) +
+ggplot(visiter_freq,aes(x=category,y=pct, fill=shop_description)) +
     geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
     scale_fill_manual(values =  c("#fad60d","#c5b87c"))+
     scale_y_continuous(labels=scales::percent) +
@@ -76,7 +75,7 @@ visiter_freq %>% filter(visit_counts > 2) %>%
     xlab("\nDurchschnittliche Mensabesuche pro Woche") +
     ylab("Anteil Mensabesucher")+
     guides(fill= guide_legend(title = "Mensa-Standort"))+
-    geom_text(aes(label = scales::percent(round(pct,2))), colour = "#000000", position = position_dodge(width = .6), size= 8) +
+    geom_text(aes(label = scales::percent(round(pct,2))), colour = "#000000", position = position_dodge(width = .6), size= 9) +
     mytheme # see skript 08_theme_plots
     
 # save for presentation agrifoodsystems
@@ -138,12 +137,12 @@ canteen <-  df_ %>%
 
 # subgroup vegi flexies
 flexi_vegi <- canteen %>% 
-    filter(meaty >= 0 & meaty <= 1/3 & hnc >= 0) %>% 
+    filter(meaty >= 0 & meaty < 1/3 & hnc >= 0) %>% 
     mutate(cluster = "vegi flexies")
 
 # subgroup flexi flexies
 flexi_flex <- canteen %>%
-    filter(meaty > 1/3 & meaty <= 2/3 & hnc >= 0) %>% 
+    filter(meaty >= 1/3 & meaty <= 2/3 & hnc >= 0) %>% 
     mutate(cluster = "flexi flexies")
 
 # subgroup meat flexies
@@ -160,6 +159,7 @@ df_2 <- bind_rows(one, some, buffet, meat_avoiders, meat_lovers, flexi_vegi, fle
 library(treemap)
 library(RColorBrewer) # color palettes
 
+set.seed(17)
 pal <- brewer.pal(n = 8, name = "Set2")
 
 dat <- df_2 %>% 
@@ -169,17 +169,20 @@ dat <- df_2 %>%
     ungroup() %>% 
     mutate(cluster = recode(cluster, "one" = "one timers", "some" = "some timers", 
                             "avoiders" = "meat avoiders", "lovers" = "meat lovers", 
-                            "vegi flexies" = "flexitarians (veg)", "meat flexies" = "flexitarians (meat)",
-                            "flexi flexies" = "flexitarians", "buffet" = "buffetarians")) %>% # rename clusters
+                            "vegi flexies" = " (veg) flexitarians\n< 1/3 Fleisch", "meat flexies" = "(meat) flexitarians\n> 2/3 Fleisch",
+                            "flexi flexies" = "(flexi) flexitarians \n \u2265 1/3 bis \u2264 2/3 Fleisch", "buffet" = "buffetarians")) %>% # rename clusters
     mutate(label = paste(cluster, paste(round(pct*100, 1), "%", sep = " "), sep = "\n"))
 
+# get order in treeplot
+# did not work
 dat$test <- vector()
 dat[grepl("one", dat$cluster), ]$test <- 2
 dat[grepl("some", dat$cluster), ]$test <- 1
 dat$test <- ifelse(dat$test != 1 & dat$test !=2, 3,dat$test)
 
 # open pdf device
-pdf("plots/treemap_cluster_181203_egel.pdf", width = 20, height = 20)
+# problems with extra signs
+cairo_pdf("plots/treemap_cluster_181203_egel.pdf", width = 20, height = 20)
 
 treemap(dat, #Your data frame object
         index=c("label"),  #A list of your categorical variables
@@ -190,7 +193,7 @@ treemap(dat, #Your data frame object
         title = "", # Change the name of the plot
         fontsize.labels = 30,
         algorithm = "pivotSize",
-        sortID = order(dat$test))
+        # sortID = order(dat$test))
         aspRatio = 50/50, # Change font of the labels
         fontfamily.labels = "sans")
 
@@ -221,34 +224,33 @@ mean(one$tot_buy) # mean of visit days
 dat <- filter(df_2017, ccrs %in% one$ccrs) # to get other variables out of the data
 
 pl <- dat %>%  
-    group_by(gender, label_content) %>% 
+    group_by(gender, label_content, condit) %>% 
     summarise(tot = n()) %>% 
     ungroup() %>% 
     mutate(gender = ifelse(is.na(gender), "NA", gender),
            label_content = ifelse(is.na(label_content), "Unbekannt",label_content)) %>% 
     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer", "NA" = "Spezialkarten")) %>% 
-    group_by(gender)%>% 
-    mutate(pct = tot/sum(tot)) 
+    group_by(gender, condit)%>% 
+    mutate(pct = tot/sum(tot)) %>% 
+    mutate(xlab = paste(gender,condit, sep = "\n"))
 
 # add annotation
-pl <- group_by(pl, gender) %>% 
-    summarise(tot = sum(tot)) %>% 
-    mutate(xlab0 = paste("(", tot, ")"),
-           xlab = paste(gender, xlab0, sep = "\n")) %>% 
-    ungroup() %>% 
-    inner_join(., pl, by = "gender")
+txt <- group_by(pl, gender, condit) %>% 
+    summarise(tot = sum(tot))
 
 # detects dark color: for labelling the bars
 isDark <- function(color) {
     (sum(grDevices::col2rgb(color) *c(299, 587,114))/1000 < 123)
 }
 
+ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
 pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], # takes every label and their belonged color
                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
 
 # plot member and gender
-p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(pl, aes(y = pct, x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
@@ -258,16 +260,17 @@ p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt"
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
     scale_color_manual(values = levels(pl$label_color))+
-    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    geom_text(aes(label = ifelse(pl$pct<.021,"", scales::percent(round(pct,2)))),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    annotate("text", x = 1:6, y = 1.03, label = txt$tot, size = 8) +
     mytheme # see skript 08_theme_plots
     
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
 
 ggsave("plots/eating_one_timers_181129_egel.pdf",p,
-       width = 12,
+       width = 18,
        height = 10,
        dpi = 600,
        device = cairo_pdf)
@@ -286,30 +289,37 @@ mean(some$tot_buy)
 # how do they eat -> plot eating behavior
 dat <- filter(df_2017, ccrs %in% some$ccrs) # check what dos 333 person consumed during the experiement
 pl <- dat %>% 
-    group_by(label_content, gender) %>% 
+    group_by(label_content, gender, condit) %>% 
     summarise(tot_sold = n()) %>% 
     ungroup() %>% 
-    group_by(gender) %>%
+    group_by(gender, condit) %>%
     mutate(pct = tot_sold/sum(tot_sold)) %>% 
     ungroup() %>% 
     mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
            gender = recode(.$gender, "F" = "Frauen", "M" = "Männer"), # attention the order of those 2 code lines matter
            gender = ifelse(is.na(.$gender),"Spezialkarten", gender))
 
+
+
+
 # add annotation
-text <- group_by(dat, gender) %>% summarise(tot = n()) %>%
+text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
     mutate(label = "italic(n)") %>%
     mutate(label2 = paste(label, tot, sep="=="))
 
 # add xlab
-pl <- some %>% group_by(gender) %>% 
+pl <- dat %>% 
+    filter(!duplicated(ccrs)) %>% 
+    group_by(gender, condit) %>% 
     summarise(tot_member = n()) %>% 
+    ungroup() %>% 
     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender)) %>% 
-    inner_join(.,pl, by = "gender") %>% 
+    inner_join(.,pl, by = c("gender","condit")) %>% 
     ungroup() %>% 
     mutate(xlab0 = paste("(",tot_member,")"),
-           xlab = paste(gender, xlab0, sep = "\n"))
+           xlab = paste(gender, xlab0, sep = "\n"),
+           xlab = paste(xlab, condit, sep = "\n"))
 
 
 ## check if the background color is dark or not
@@ -333,29 +343,17 @@ p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt"
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
     scale_color_manual(values = levels(pl$label_color))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
-        "text",x = 1:3, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
+        "text",x = 1:6, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
+    mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
 
 ggsave("plots/eating_some_timers_181129_egel.pdf",p,
-       width = 12,
+       width = 18,
        height = 10,
        dpi = 600,
        device = cairo_pdf)
@@ -444,10 +442,10 @@ mean(flexi_vegi$tot_buy) # mean of visit days
 # plot difference in eating behavior an gender
 dat <- filter(df_2017, ccrs %in% flexi_vegi$ccrs)
 pl <- dat %>% 
-    group_by(label_content, gender) %>% 
+    group_by(label_content, gender, condit) %>% 
     summarise(tot_sold = n()) %>% 
     ungroup() %>% 
-    group_by(gender) %>%
+    group_by(gender, condit) %>%
     mutate(pct = tot_sold/sum(tot_sold)) %>% 
     ungroup() %>% 
     mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
@@ -455,23 +453,25 @@ pl <- dat %>%
            gender = recode(gender, "F" = "Frauen", "M" = "Männer"))
 
 # add annotation => is wrong
-text <- group_by(dat, gender) %>% summarise(tot = n()) %>%
+text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
     mutate(label = "italic(n)") %>%
     mutate(label2 = paste(label, tot, sep="=="))
 
 # add xlab
-pl <- flexi_vegi %>% group_by(gender) %>% 
-    summarise(tot = n()) %>% 
+pl <- dat %>%
+    filter(!duplicated(ccrs)) %>% 
+    group_by(gender, condit) %>% 
+    summarise(tot_member = n()) %>% 
+    ungroup() %>%
     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    inner_join(.,pl, by = "gender") %>% 
+    inner_join(.,pl, by = c("gender", "condit")) %>% 
     ungroup() %>% 
     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab0 = paste("(",tot,")"),
-           xlab = paste(gender, xlab0, sep = "\n"))
-
-
-
+    mutate(xlab0 = paste("(",tot_member,")"),
+           xlab = paste(gender, xlab0, sep = "\n"),
+           xlab1 = paste(xlab, condit, sep = "\n")) 
+  
 ## check if the background color is dark or not
 # my colors for the plot
 ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
@@ -481,8 +481,10 @@ pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], # takes
                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
 
-#plot
-p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+
+# plot
+# order is somehow not right => why?
+p <- ggplot(pl, aes(y = pct,x = factor(xlab1, levels = c("Frauen\n( 110 )\nBasis", "Frauen\n( 77 )\nIntervention" ,"Männer\n( 69 )\nBasis",  "Männer\n( 41 )\nIntervention", "Spezialkarten\n( 4 )\nBasis", "Spezialkarten\n( 5 )\nIntervention")), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
@@ -492,29 +494,18 @@ p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt"
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
     scale_color_manual(values = levels(pl$label_color))+
+    # scale_x_discrete(label = c("Frauen\n( 110 )\nBasis", "Frauen\n( 77 )\nIntervention" ,"Männer\n( 69 )\nBasis",  "Männer\n( 41 )\nIntervention", "Spezialkarten\n( 4 )\nBasis", "Spezialkarten\n( 5 )\nIntervention"))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
-        "text",x = 1:3, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
+        "text",x = 1:6, y = 1.03, label = text$label2, parse=T, size=9) + # why so big differences to the first version
+    mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
 
 ggsave("plots/eating_flexi_veg_181129_egel.pdf",p,
-       width = 12,
+       width = 18,
        height = 10,
        dpi = 600,
        device = cairo_pdf)
@@ -531,10 +522,10 @@ mean(flexi_flex$tot_buy)
 # plot difference in eating behavior an gender
 dat <- filter(df_2017, ccrs %in% flexi_flex$ccrs)
 pl <- dat %>% 
-    group_by(label_content, gender) %>% 
+    group_by(label_content, gender, condit) %>% 
     summarise(tot_sold = n()) %>% 
     ungroup() %>% 
-    group_by(gender) %>%
+    group_by(gender, condit) %>%
     mutate(pct = tot_sold/sum(tot_sold)) %>% 
     ungroup() %>% 
     mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
@@ -542,20 +533,24 @@ pl <- dat %>%
            gender = recode(gender, "F" = "Frauen", "M" = "Männer"))
 
 # add annotation => is wrong
-text <- group_by(dat, gender) %>% summarise(tot = n()) %>%
+text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
     mutate(label = "italic(n)") %>%
     mutate(label2 = paste(label, tot, sep="=="))
 
 # add xlab
-pl <- flexi_flex %>% group_by(gender) %>% 
-    summarise(tot = n()) %>% 
+pl <- dat %>% 
+    filter(!duplicated(ccrs)) %>%
+    group_by(gender, condit) %>% 
+    summarise(tot_member = n()) %>% 
+    ungroup() %>% 
     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    inner_join(.,pl, by = "gender") %>% 
+    inner_join(.,pl, by = c("gender", "condit")) %>% 
     ungroup() %>% 
     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab0 = paste("(",tot,")"),
-           xlab = paste(gender, xlab0, sep = "\n"))
+    mutate(xlab0 = paste("(",tot_member,")"),
+           xlab = paste(gender, xlab0, sep = "\n"),
+           xlab = paste(xlab, condit, sep = "\n"))
 
 
 
@@ -569,7 +564,7 @@ pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], # takes
 
 
 #plot
-p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(pl, aes(y = pct,x = factor(xlab, levels = c("Frauen\n( 73 )\nBasis", "Frauen\n( 76 )\nIntervention" ,"Männer\n( 127 )\nBasis",  "Männer\n( 78 )\nIntervention", "Spezialkarten\n( 9 )\nBasis", "Spezialkarten\n( 8 )\nIntervention")), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
@@ -579,29 +574,17 @@ p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt"
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
     scale_color_manual(values = levels(pl$label_color))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
-        "text",x = 1:3, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
-
+        "text",x = 1:6, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
+    mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
 
 ggsave("plots/eating_flexi_flex_181129_egel.pdf",p,
-       width = 12,
+       width = 18,
        height = 10,
        dpi = 600,
        device = cairo_pdf)
@@ -618,10 +601,10 @@ mean(flexi_meat$tot_buy)
 # plot difference in eating behavior an gender
 dat <- filter(df_2017, ccrs %in% flexi_meat$ccrs)
 pl <- dat %>% 
-    group_by(label_content, gender) %>% 
+    group_by(label_content, gender, condit) %>% 
     summarise(tot_sold = n()) %>% 
     ungroup() %>% 
-    group_by(gender) %>%
+    group_by(gender, condit) %>%
     mutate(pct = tot_sold/sum(tot_sold)) %>% 
     ungroup() %>% 
     mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
@@ -629,22 +612,24 @@ pl <- dat %>%
            gender = recode(gender, "F" = "Frauen", "M" = "Männer"))
 
 # add annotation => is wrong
-text <- group_by(dat, gender) %>% summarise(tot = n()) %>%
+text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
     mutate(label = "italic(n)") %>%
     mutate(label2 = paste(label, tot, sep="=="))
 
 # add xlab
-pl <- flexi_meat %>% group_by(gender) %>% 
-    summarise(tot = n()) %>% 
+pl <- dat %>% 
+    filter(!duplicated(ccrs)) %>% 
+    group_by(gender, condit) %>% 
+    summarise(tot_member = n()) %>% 
+    ungroup() %>% 
     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    inner_join(.,pl, by = "gender") %>% 
+    inner_join(.,pl, by = c("gender", "condit")) %>% 
     ungroup() %>% 
     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab0 = paste("(",.$tot,")"),
-           xlab = paste(gender, xlab0, sep = "\n"))
-
-
+    mutate(xlab0 = paste("(",.$tot_member,")"),
+           xlab = paste(gender, xlab0, sep = "\n"),
+           xlab1 = paste(xlab, condit, sep = "\n")) 
 
 ## check if the background color is dark or not
 # my colors for the plot
@@ -656,39 +641,27 @@ pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], # takes
 
 
 #plot
-p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(pl, aes(y = pct, x = factor(xlab1, levels = c("Frauen\n( 36 )\nBasis", "Frauen\n( 15 )\nIntervention" ,"Männer\n( 141 )\nBasis",  "Männer\n( 111 )\nIntervention", "Spezialkarten\n( 5 )\nBasis", "Spezialkarten\n( 2 )\nIntervention")), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
-    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
     ylab("\nVerkaufte Gerichte in Prozent")+
     guides(fill = guide_legend("Menü-Inhalt\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
     scale_color_manual(values = levels(pl$label_color))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
-        "text",x = 1:3, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
-    theme_bw()+ # see skript 08_theme_plots
-    theme(legend.key = element_rect(color = NA, fill = NA),
-          legend.key.size = unit(1.5, "cm"), 
-          legend.text = element_text(size = 30), 
-          legend.title = element_text(size = 30),
-          plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=20),
-          axis.text.y = element_text(size=20, face = "plain"),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)),
-          plot.subtitle=element_text(margin=margin(b=15),size = 20),
-          plot.caption=element_text(margin=margin(t=15), face="italic", size=20))
+        "text",x = 1:6, y = 1.03, label = text$label2,parse=T, size=9) + # why so big differences to the first version
+    mytheme
 
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
 
 ggsave("plots/eating_flexi_meat_181129_egel.pdf",p,
-       width = 12,
+       width = 18,
        height = 10,
        dpi = 600,
        device = cairo_pdf)
