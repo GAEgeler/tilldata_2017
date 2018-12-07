@@ -666,6 +666,80 @@ ggsave("plots/eating_flexi_meat_181129_egel.pdf",p,
        dpi = 600,
        device = cairo_pdf)
 
+# cluster analyses with only people in both conditions-------
+# cluster analysis of repeated measures--------
+df_ <- df_2017 %>% 
+    select(ccrs, label_content, gender, member, age, condit) %>% # select variable of interest
+    dcast(formula = ccrs + gender + age + member + condit ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
+    rename(Unknown = 'NA') %>% # rename NA to unknown
+    mutate(tot_buy = rowSums(.[,-c(1:5)])) %>% # exclude ccrs and information of person for sum of rows
+    mutate(meaty =.$Fleisch/.$tot_buy,
+           hnc = .$`Hot and Cold` / .$tot_buy)
+
+intervention <- filter(df_, duplicated(df_$ccrs)) # count all double entries (thus are these cases in both conditions)
+basis <- filter(df_, condit == "Basis") %>% 
+    filter(ccrs %in% doble$ccrs) # look for basis in the other dataset
+
+df_2 <- bind_rows(intervention, basis) # colapse them
+rest <- anti_join(df_,df_2, by = "ccrs") # 280 people where only in intervention or basis, however not both, most of them one or some timers
+# only 9 people choosed one specific week (i.e. always basis weeks)
+# exclude them for further analyses
+
+# pre defined groups (one timers, some timers, buffetarians, canteeners (with three subgroups according to meat consumption))
+# one timers: people went only once to the canteen 
+# have some problems to override cluster with existing content
+one <-  rest %>%  
+    filter(tot_buy == 1) %>% 
+    mutate(cluster = "one")
+
+# some timers: people went only 5 times in 60 days to the canteen 
+some <-  rest %>%  
+    filter(tot_buy > 1 & tot_buy <=5) %>% 
+    mutate(cluster = "some") 
+
+# hot and cold: people went to the hot and cold buffet 
+buffet <-  df_2 %>%  
+    filter(tot_buy > 5 & hnc == 1) %>% 
+    mutate(cluster = "buffet") 
+
+# meat avoiders: people only eat veg/vegan 
+meat_avoiders <- df_2 %>%
+    filter(tot_buy > 5 & hnc < 1 & meaty == 0 & hnc == 0) %>% 
+    filter(duplicated(ccrs)) %>% 
+    mutate(cluster = "avoiders")
+
+# meat lovers
+meat_lovers <- df_ %>% 
+    filter(tot_buy > 5 & hnc < 1 & meaty == 1 & hnc == 0) %>% 
+    mutate(cluster = "lovers")
+
+# canteen goers: people went at least once per week to the canteen
+canteen <-  df_ %>%  
+    filter(tot_buy > 5 & hnc < 1) %>% # min once per week
+    anti_join(., meat_avoiders) %>% # to avoid conflicts with meat_avoiders
+    anti_join(.,meat_lovers) # to avoid conflicts with meat_lovers
+
+# subgroup vegi flexies
+flexi_vegi <- canteen %>% 
+    filter(meaty >= 0 & meaty < 1/3 & hnc >= 0) %>% 
+    mutate(cluster = "vegi flexies")
+
+# subgroup flexi flexies
+flexi_flex <- canteen %>%
+    filter(meaty >= 1/3 & meaty <= 2/3 & hnc >= 0) %>% 
+    mutate(cluster = "flexi flexies")
+
+# subgroup meat flexies
+flexi_meat <- canteen %>%
+    filter(meaty > 2/3 & meaty < 1 & hnc >= 0) %>% 
+    mutate(cluster = "meat flexies")
+
+# concat all clusters to one
+df_2 <- bind_rows(one, some, buffet, meat_avoiders, meat_lovers, flexi_vegi, flexi_flex, flexi_meat)
+
+
+
+
 # for further analyses exclude some Na's---------
 # check for NA's
 library(Amelia)
@@ -696,13 +770,14 @@ df_17$age <- ifelse(df_17$age == 117, NA, df_17$age)
 # prepare data for imputation
 # gender as factor
 df_17$gender <- factor(df_17$gender, levels = c("M","F"))
+df_17$label_content <- factor(df_17$label_content)
 
 # drop variables not for imputation
-df_17 <- select(df_17, date, gender, age)
+test <- select(df_17, date, gender, age, price_article, label_content)
 
 # see https://www.linkedin.com/pulse/amelia-packager-missing-data-imputation-ramprakash-veluchamy
 # seems not to work
-test <- amelia(df_17, m = 3, ts = "date", noms = "gender")
+test <- amelia(test, m = 3, ts = "date", noms = "gender", idvars=c("label_content","price_article"))
 test <- amelia(df_2017, m = 3, ts = c("date","year"), noms = "gender", 
                idvars=c("ccrs","transaction_id","article_description", "art_code","member","rab_descript","pay_descript","shop_description","condit","label_content"), p2s = 0)
 
@@ -719,7 +794,10 @@ ggplot(t2, aes(y=label_content, x = date, color = label_content)) + geom_point()
 # drop label_content (116) and gender (843) with NA
 dat_17 <- df_2017 %>% 
     filter(age != 117) %>% 
-    drop_na(label_content, gender) # drop NA's meal_content due to locals (116) and gender due to spezialkarten (843)
+    drop_na(label_content, gender) %>%  # drop NA's meal_content due to locals (116) and gender due to spezialkarten (843)
+    mutate(member = factor(member, levels = c("Studierende", "Mitarbeitende")),
+           gender = factor(gender, levels = c("F","M")))
+
 dat_17$meat <- ifelse(dat_17$label_content == "Fleisch", 1, 0)
 dat_17$ccrs <- parse_integer(dat_17$ccrs)
 
@@ -729,14 +807,30 @@ table(dat_17$meat)
 
 # logit regression with random intercept (ccrs and condit)-----
 library(lme4)
-mod <- glmer(meat ~ gender + member + age + age*gender + (1|ccrs) + (1|condit), data = dat_17, family = "binomial")
-
+# interaction seems not to converge
+# age and gender no interaction effect
+# condition causes some problems
+mod <- glmer(meat ~ gender + member + age + condit + (1|ccrs), data = dat_17, family = "binomial", control = glmerControl(optimizer = "bobyqa"))
+mod1 <- glmer(meat ~ gender + member + age + (1|shop_description) + (1|ccrs) + (1|condit), data = dat_17, family = "binomial", control = glmerControl(optimizer = "bobyqa"))
 summary(mod)
 
+
+library(GLMMadaptive)
+mod2 <- mixed_model(fixed = meat ~ gender + age + member + condit, random = ~1 | ccrs, data = dat_17, family = binomial())
+summary(mod2)
+
+library(brms)
+#take first sample 
+test <- dat_17 %>% sample_frac(.1)
+
+# takes around 10-20min!
+# many problems! see http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup 
+mod3 <- brms::brm(meat ~ gender + age + member + (1|ccrs) + (1|condit), data = test, family = "bernoulli") # evtl bernoulli
+summary(mod3)
+stancode(mod3)
+
 #predict model
-# not working
-predicted <- predict(mod, dat_17, type = "response")
-pred <- predict(mod, data.frame(meat = 0), type = "response")
+predicted <- predict(mod1, dat_17, type = "response")
 
 # erzeugt eine Tabelle mit den beobachteten Fleischesser/Nichtleischesser und den Vorhersagen des Modells
 km <- table(dat_17$meat, predicted > 0.5)
@@ -749,33 +843,74 @@ mf
 
 # Pseudo R^2
 library(MuMIn)
-r.squaredGLMM(mod) # 44% of the variance is explained through the model
+r.squaredGLMM(mod1) # 44% of the variance is explained through the model
 # das marginale R^2 gibt uns die erklärte Varianz der fixen Effekte
 # das conditionale R^2 gibt uns die erklärte Varianz für das ganze Modell (mit fixen und variablen Effekten)
 # für weitere Informationen: https://rdrr.io/cran/MuMIn/man/r.squaredGLMM.html 
 
 # zusätzliche Informationen, welche für die Interpretation gut sein kann
-# berechnet den Standardfehler 
-se <- sqrt(diag(vcov(mod)))
+exp(confint(mod1)) # sollte gleiche infos ergeben wie die fixef() funktion
 
-# zeigt eine Tabelle der Schätzer mit 95% Konfidenzintervall => falls 0 enthalten dann ist der Unterschied statistisch nicht signifikant
-tab1 <- cbind(Est = fixef(mod), LL = fixef(mod) - 1.96 * se, UL = fixef(mod) + 1.96 *
+
+# fixef: fixed effects from the model were obtained
+# ranef: ranfom effects from the model were obtained
+# coef:  returns the subject-specific coefficients, i.e., the sum of the fixed and random effects coefficients
+
+fixef(mod1)
+ranef(mod1)
+coef(mod1)
+marginal_coefs(mod1) # only with GLLMadaptive possible
+
+# calculated standard error 
+# square root of covariance matrix
+se <- sqrt(diag(vcov(mod1)))
+
+tab1 <- cbind(Est = fixef(mod1), LL = fixef(mod1) - 1.96 * se, UL = fixef(mod1) + 1.96 *
                   se)
 
 # erzeugt die Odds Ratios
 exp(tab1)
 
+# probabilites of logits (see function above)
+logit2prob(tab1[ ,1])
+
+# same should result using predict
+# however not working
+predict(mod1, data.frame(gender = 1, member = 1, age = 20), type = "response")
+
+# write formula
+# meat consumption for men
+prob(meat) = b0 + b1+1*genderM + b2*memberStudent + b3*age
+?? = .40 + .79 + .46
+
 
 # logits to probabilites
-exp(coef(mo))
-
 logit2prob <- function(logit){
     odds <- exp(logit)
     prob <- odds / (1 + odds)
     return(prob)
 }
 
-logit2prob(coef(mod))
+
+# distribution of logit and probabilities
+logit_seq <- seq(-10, 10, by = .1)
+
+prob_seq <- logit2prob(logit_seq)
+
+
+df <- data.frame(Logit = logit_seq,
+                 Probability = prob_seq)
+
+ggplot(df) +
+    aes(x = logit_seq, y = prob_seq) +
+    geom_point(size = 2, alpha = .3) +
+    labs(x = "logit", y = "probability of success")+
+    theme_bw()
+
+
+
+
+
 
 
 ggplot(dat_17, aes(y = meat, x = predicted)) + 
