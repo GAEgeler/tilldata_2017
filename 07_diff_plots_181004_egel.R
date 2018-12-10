@@ -500,3 +500,143 @@ ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/menu_content_can
        dpi = 200,
        device = cairo_pdf)
 
+# turnover analysis-------
+# turnover: payed meal price
+# load data from 2015/2016: see script 04_load_data lines:244 - 266
+dat_1516 <- df_tot %>%  
+    mutate(article_description = gsub("Green", "Green/World", .$article_description)) %>% # change green to green/world due to merge
+    group_by(article_description, week, year) %>% 
+    summarise(tot = sum(tot_sold), turnover = sum(Bruttobetrag, na.rm = T)) %>% 
+    ungroup() %>% 
+    arrange(year)
+
+# group data 2017
+dat_17 <- df_agg %>% 
+    mutate(article_description = gsub("Local ", "", df_agg$article_description)) %>% # change local to "normal" menu line
+    mutate(article_description = gsub("World", "Green/World", .$article_description)) %>% # change green to green/world due to merge))
+    group_by(article_description, week, year, price_article) %>%
+    summarise(tot = n()) %>% 
+    mutate(turnover = tot * price_article) %>% 
+    ungroup() %>% 
+    group_by(article_description, week, year) %>% 
+    summarise(tot = sum(tot),
+              turnover = sum(turnover))
+
+# merge with data 2017
+menu_tot <- bind_rows(dat_1516, dat_17) %>% 
+    mutate(avg_price = turnover / tot) #calculate average price
+
+
+# check differences visually
+ggplot(menu_tot, aes(y = turnover, x = factor(year))) + geom_boxplot()
+summary.lm(aov(menu_tot$turnover~as.factor(menu_tot$year)))
+
+ggplot(menu_tot[menu_tot$year == 2017,], aes(y = turnover, x = factor(week))) + geom_boxplot()
+summary.lm(aov(menu_tot[menu_tot$year == 2017,]$turnover~as.factor(menu_tot[menu_tot$year == 2017,]$week)))
+
+
+# add colors
+ColsPerCat=c("Local/Zusatzangebot" = "black", "Kitchen" = "#008099", "Green/World" = "#fad60d","Favorite"="#c5b87c","Hot and Cold"="#4c4848")
+# detects dark color: for labelling the bars
+menu_tot$label_color <- as.factor(sapply(unlist(ColsPerCat)[menu_tot$article_description], # takes every label and their belonged color
+                                         function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# plot for 2017
+pl <- menu_tot %>% 
+    group_by(year, week) %>% 
+    mutate(pct_turn = turnover/sum(turnover)) %>% 
+    ungroup() %>% 
+    mutate(cycle = ifelse(.$week >=40 & .$week <= 45, 1, 2)) %>% 
+    mutate(condit = ifelse(.$week %%2 == 0 & .$cycle == 1, "Basis",
+                           ifelse(.$week %%2 == 1 & .$cycle == 2,"Basis","Intervention"))) %>%  
+    filter(year == 2017) %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
+
+# test to annotate
+anno_txt <- menu_tot %>% 
+    group_by(week, year) %>% 
+    summarise(tot_turn = sum(turnover)) %>% 
+    mutate(tot_turn = round(tot_turn, 2)) %>%  # seems not to work why?
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>% 
+    filter(year == 2017)
+
+# to annotate median => check other plot for futher details (gesundheit ebp)
+# is not working
+pl <- group_by(pl, article_description) %>% 
+    summarise(med = median(turnover)) %>% 
+    left_join(pl, ., by= "article_description")
+
+p <- ggplot(pl, aes(x = xlab, y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", color = NA, position = position_stack(), width = .6) +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    ylab("\nUmsatz in Prozent")+
+    guides(fill = guide_legend("Menü-Linie\n"),
+           color = F)+
+    scale_y_continuous(label = scales::percent) +
+    scale_color_manual(values = levels(pl$label_color))+
+    geom_text(aes(label = scales::percent(round(pct_turn,2))), size = 8, position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot & Cold (Buffet)"))+
+    annotate("text", x = 1:12, y = 1.05, label = anno_txt$txt, size = 8)+
+    mytheme # check script 08_mythemes
+
+#some how not working!
+#p + geom_errorbar(x = 41, xend = 52, y = pl$med, yend = pl$med)
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+ggsave("plots/meal_line_turnover17_181203_egel.pdf",p,
+       width = 26,
+       height = 15,
+       dpi = 600,
+       device = cairo_pdf)
+
+
+# plot over years
+pl <- menu_tot %>% 
+    group_by(year, week) %>% 
+    mutate(pct_turn = turnover/sum(turnover)) %>% 
+    ungroup() %>% 
+    mutate(cycle = ifelse(.$week >=40 & .$week <= 45, 1, 2)) %>% 
+    mutate(condit = ifelse(.$week %%2 == 0 & .$cycle == 1, "Bs",
+                           ifelse(.$week %%2 == 1 & .$cycle == 2,"Bs","In"))) 
+
+
+# test to annotate
+pl2 <- menu_tot %>% 
+    group_by(week, year) %>% 
+    summarise(tot_turn = sum(turnover)) %>% 
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>%
+    ungroup() %>% 
+    left_join(pl, ., by = c("week", "year")) %>% 
+    ungroup() %>% 
+    mutate(year = factor(year, levels = c("2015", "2016", "2017"))) %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
+
+p <-ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", color = NA, position = position_stack(), width = .7) +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    ylab("\nUmsatz in Prozent")+
+    scale_y_continuous(label = scales::percent) +
+    # scale_x_discrete(label=abbreviate)+
+    guides(fill = guide_legend("Menü-Linie\n"),
+           color = F)+
+    scale_color_manual(values = levels(pl$label_color)) +
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot & Cold (Buffet)"))+
+    facet_wrap(~year)+
+    geom_text(aes(label = scales::percent(round(pl2$pct_turn,2))), position = position_stack(vjust = .5), size = 8) +
+    geom_text(aes(x = factor(week), y = 1.05, label = pl2$txt), size = 5, color = "black")+
+    #some problems adding the text with overlappings, seems to take the info from 2015 for 2016
+    mytheme # check script 08_mythemes
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+# save
+ggsave("plots/meal_line_turnover_181203_egel.pdf",p,
+       width = 32,
+       height = 20,
+       dpi = 600,
+       device = cairo_pdf)
