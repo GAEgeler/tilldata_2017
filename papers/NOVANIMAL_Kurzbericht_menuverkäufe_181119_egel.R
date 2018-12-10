@@ -402,7 +402,7 @@ ggsave("plots/meal_line_hs15_17.pdf",
        device = cairo_pdf)
 
 
-# chanpter 3.4: plot meal lines sellings HS17 over weeks --------
+# chapter 3.4: plot meal lines sellings HS17 over weeks --------
 # prepare data
 meal <- df_agg
 meal$article_description <- gsub("Local ","", meal$article_description)
@@ -458,65 +458,4 @@ ggsave("plots/meal_line_single_HS_17_egel.pdf",p,
        dpi = 600,
        device = cairo_pdf)
 
-
-
-# chapter 3.4: further analysis kitchen content----
-kitchen <- df_agg %>% 
-    filter(grepl("+Kitchen", df_agg$article_description)) %>% # inklude locals
-    group_by(label_content, week) %>% 
-    summarise(tot = n()) %>% 
-    mutate(pct = tot / sum(tot)) %>%
-    drop_na() # drop NA's
-
-kitchen_offer <- info_orig %>% # summary kitchen offer
-    filter(grepl("+Kitchen", info_orig$article_description)) %>% 
-    group_by(label_content, week) %>% 
-    summarise(offer = n())
-
-
-kitchen$offer <- kitchen_offer$offer
-kitchen[grep("\\Pflanzlich", kitchen$label_content), ]$label_content <- "Vegetarisch" # only between meat and vegetarian
-t <- group_by(kitchen, label_content) %>%
-    summarise(tot = sum(tot), offer = sum(offer)) %>%
-    mutate(kitchen_mean = tot/offer) # compare sellings per meal offer between meat and vegetarian content
-
-# chapter 3.4: further analysis favorite content----
-favorite <- df_agg %>% 
-    filter(article_description == "Favorite") %>% 
-    group_by(label_content) %>% 
-    summarise(tot = n()) %>% 
-    mutate(pct = tot / sum(tot))
-
-
-# chapter 3.4: further analysis local content-----
-local <- df_agg %>%
-    filter(grepl("Local+", df_agg$article_description)) %>%
-    group_by(article_description) %>%
-    summarise(tot = n()) %>% 
-    mutate(pct = tot/sum(tot),
-           pct_all = tot/nrow(df_agg))
-
-# define annotation
-text <- group_by(df, year) %>% summarise(tot=sum(tot_sold)) %>%
-    mutate(tot2=format(tot, big.mark = "'", scientific = F)) %>% # add thousand seperator
-    mutate(label = "n") %>%
-    mutate(label2=paste(label,tot2,sep=" = "))
-
-# plot data
-p <- ggplot(local, aes(y=tot,x=article_description, fill = label_content)) +
-    geom_bar(stat="identity", position = "stack", color=NA, width = .6) +
-    #ggtitle("Verkaufte Men?s: 3. + 4. HSW\n") +
-    xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
-    ylab("Verkaufte Gerichte pro Herbstsemester")+
-    guides(fill= guide_legend(title = "Menü-Linien"), 
-           color=F)+
-    scale_fill_manual(values = ColsPerCat,
-                      breaks = attributes(ColsPerCat)$names,
-                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot & Cold (Buffet)"))+
-    scale_color_manual(values = levels(df$label_color))+
-    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 6, position = position_stack(vjust = 0.5))+ # omit 1% annotation
-    annotate("text",x = 1:3, y = 27500, label = text$label2, size=6)+
-    mytheme
-
-p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
 
