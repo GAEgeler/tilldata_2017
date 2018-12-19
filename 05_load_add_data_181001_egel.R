@@ -7,7 +7,7 @@ pck <- c("dplyr", "stringr", "readr", "readxl", "reshape2", "lubridate")
 lapply(pck, function(x){do.call("library", list(x))})
 
 # load documentation ----------- (last update sept 2018)
-info_orig <- read_delim("augmented data/menu_inhalt_protein_180420_matu08.csv", delim =';', locale = locale(encoding = 'LATIN1'),
+info_orig <- read_delim("augmented data/menu_inhalt_protein_180420_matu08.csv", trim_ws = T, delim =';', locale = locale(encoding = 'LATIN1'),
                         col_types = cols(date = col_date(format = "%d.%m.%Y"))) %>% # pay attention to the date format (now is it Date format not POSIXct)
     mutate(date = as.Date(.$date)) %>%
     mutate(week = isoweek(.$date)) %>%
@@ -92,6 +92,7 @@ gwp_1 <- info_orig %>%
 gwp_long <- melt(gwp_1, id.vars = c("meal_name", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "label_content.x", "tot_gwp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "gwp")
 
 # merge dataframes of environmental data
+# generates 7 duplicates of each date => dont know why
 envir_tot <- inner_join(ubp_long[-7], gwp_long[-c(2,4,7)], by = c("meal_name.y" = "meal_name", "article_description", "label_content.y", "date", "content")) %>%
     rename("meal_name" = "meal_name.y", "label_content" = "label_content.y") %>%
     mutate(week = isoweek(.$date))

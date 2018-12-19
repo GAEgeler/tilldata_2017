@@ -15,7 +15,7 @@ df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", loc
 
 
 # data from 2017---------- for aggregated analysis
-df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
+df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
     mutate(date = as.Date(date)) 
 
 
@@ -23,8 +23,10 @@ df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", lo
 # see 05_load_add_data for further information
 source("05_load_add_data_181001_egel.R")
 
+# problem only first cycle has data
 envir <- filter(envir_tot, !duplicated(envir_tot[c("article_description", "label_content", "date", "cycle", "week", "meal_name", "tot_ubp", "tot_gwp")])) %>% # select only those with tot_ubp and tot_gwp and drop all other
     select(article_description, label_content, date, cycle, week, meal_name, tot_ubp, tot_gwp)
+
 info_compl <- left_join(info_orig, envir, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) %>% # left join
     select(-`Kein Protein`,-Kommentar) # diselect all variables of non use
 
@@ -47,11 +49,34 @@ df_2017 <- filter(df_2017, !(duplicated(df_2017$ccrs) & duplicated(df_2017$trans
 df_2017 <- filter(df_2017, !qty_weight > 1) # delete 70 entries, which payed more than one meal (qty bigger than 1)
 df_2017 <- filter(df_2017, ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=1000610019)# exclude 3 cases (which has more than one transaction per day)
 
-# load aggregated sv data
+# merge aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
 
+
+# merge data with ubp and gwp
+
+# create first second cycle
+# creates again duplicates => why?
+# attention 3 meals need to be deleted, because of the first cycle
+t <- mutate(envir, cycle = 2) %>%  # give them value
+    select(-date, -week) %>% # diselect date
+    left_join(., info[ , -6], by = c("article_description", "label_content", "cycle", "meal_name")) %>% # merge with info (see below)
+    filter(!duplicated(.$meal_name))
+
+# delete 3 cases
+t <- drop_na(t, date)
+
+# concat both cycles
+t1 <- filter(envir, cycle == 1) %>% 
+    select(-week) %>% 
+    bind_rows(.,t) %>% 
+    mutate(week = isoweek(date)) %>% 
+    left_join(., info)  # get shop_description
+    
+df_agg_tot <- left_join(df_agg, t1, by = c("shop_description","date","article_description","cycle", "label_content", "meal_name", "week") )
+
 # delete some datasets
-rm(list = c("pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))
+rm(list = c("t", "t1","pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))
 
 
 ######
