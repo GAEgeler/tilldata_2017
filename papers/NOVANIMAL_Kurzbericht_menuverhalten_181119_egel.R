@@ -22,13 +22,15 @@ canteen <- df_2017 %>%
            canteen_pct = round((tot_canteen/sum(tot_canteen))*100,1)) %>% 
     select(canteen_member, tot_canteen, canteen_pct)
 
-pop_w <- c(333, 678, 336, 791, 358) # card holders according to gender and member of wädenswil (status: märz 2018)
+pop_w <- c(342, 671, 335, 797, 358) # card holders according to gender and member of wädenswil (status: dezember 2017)
 
 canteen$tot_pop <- pop_w
 canteen$pop_pct <- round((canteen$tot_pop/sum(canteen$tot_pop))*100,1)
 
 # dont differ statistically
+# depends on spezialkarten
 fisher.test(canteen[c(1:4), c(2,4)], simulate.p.value = T, B = 10000) # exclude spezialcards
+
 
 # mean of age and age imputation------
 
@@ -41,7 +43,7 @@ describe(canteen[canteen$age != 117,]$age)
 which(canteen$age == 117) # 58 cases has age 117 => impute or not?
 
 
-# visiter frequency--------
+# visiter frequency by shop description--------
 visiter <- df_2017 %>%
     group_by(ccrs, shop_description) %>%
     summarise(visit = n())
@@ -55,10 +57,13 @@ visiter_freq <- visiter %>%
     mutate(pct=visit_counts/sum(visit_counts))
 
 # test for differences
-df <- tibble(gruen = visiter_freq[visiter_freq$shop_description == "Grüental",]$visit_counts,
-             vista = visiter_freq[visiter_freq$shop_description == "Vista",]$visit_counts)
+df <- tibble(gruen = visiter_freq[visiter_freq$shop_description == "Grüental", ]$visit_counts,
+             vista = visiter_freq[visiter_freq$shop_description == "Vista", ]$visit_counts,
+             pct_gruen = visiter_freq[visiter_freq$shop_description == "Grüental", ]$visit_counts / sum(visiter_freq[visiter_freq$shop_description == "Grüental",]$visit_counts),
+             pct_vista = visiter_freq[visiter_freq$shop_description == "Vista", ]$visit_counts / sum(visiter_freq[visiter_freq$shop_description == "Vista",]$visit_counts))
 
-fisher.test(df, simulate.p.value = T, B = 100000) # seems to have differences
+fisher.test(df[ ,1:2], simulate.p.value = T, B = 100000) # seems to have differences
+chisq.test(df)
 
 # plot frequency of visitors between canteens
 
@@ -81,6 +86,92 @@ ggsave("plots/visit_freq_181128_egel.pdf",
        dpi = 200,
        device = cairo_pdf)
 
+
+# visitier frequency by gender --------
+visiter <- df_2017 %>%
+    group_by(ccrs, shop_description, gender) %>%
+    summarise(visit = n()) %>% 
+    ungroup() %>% 
+    mutate(gender = ifelse(is.na(.$gender), "Spezialkarten", .$gender))
+
+# mean of visits for gender
+aggregate(visiter$visit ~ visiter$gender, FUN = mean)
+
+# prepare data
+visiter_freq <- visiter %>% 
+    mutate(category=cut(visit, breaks = c(-Inf,2,12,24,36,48,60,Inf), labels=c("einmaliger Besuch", "max. 1x\n pro Woche","max. 2x\n pro Woche","max. 3x\n pro Woche","max. 4x\n pro Woche", "max. 5x\n pro Woche","mehr als 5x\n pro Woche"))) %>%
+    group_by(gender, category) %>% 
+    summarise(visit_counts=n()) %>% # count how hoften a visit occurs, e.g. oneday visitors occur 200 times 
+    mutate(pct=visit_counts/sum(visit_counts))
+
+# plot
+ggplot(visiter_freq, aes(x = category, y = pct, fill = gender)) +
+    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
+    scale_fill_manual(values =  c("#fad60d","#c5b87c", "grey60"),
+                      labels = c("F" = "Frauen", "M" = "Männer"))+
+    scale_y_continuous(labels=scales::percent) +
+    # scale_alpha_discrete(range = c(0.6, .8), guide=F)+
+    # scale_alpha_manual(values=c(0.5, 1), guide=F)+
+    xlab("\nDurchschnittliche Mensabesuche pro Woche") +
+    ylab("Anteil Mensabesucher")+
+    guides(fill= guide_legend(title = "Geschlecht"))+
+    geom_text(aes(label = scales::percent(round(pct,2))), colour = "#000000", position = position_dodge(width = .6),  vjust=-0.25, size= 9) +
+    mytheme
+
+
+# save
+ggsave("plots/visit_freq_gender_181128_egel.pdf",
+       height = 10,
+       width = 24,
+       dpi = 200,
+       device = cairo_pdf)
+
+# visitier frequency by member--------
+visiter <- df_2017 %>%
+    group_by(ccrs, shop_description, member) %>%
+    summarise(visit = n()) %>% 
+    ungroup() 
+
+# mean of visits for gender
+aggregate(visiter$visit ~ visiter$member, FUN = mean)
+
+# prepare data
+visiter_freq <- visiter %>% 
+    mutate(category=cut(visit, breaks = c(-Inf,2,12,24,36,48,60,Inf), labels=c("einmaliger Besuch", "max. 1x\n pro Woche","max. 2x\n pro Woche","max. 3x\n pro Woche","max. 4x\n pro Woche", "max. 5x\n pro Woche","mehr als 5x\n pro Woche"))) %>%
+    group_by(member, category) %>% 
+    summarise(visit_counts=n()) %>% # count how hoften a visit occurs, e.g. oneday visitors occur 200 times 
+    mutate(pct=visit_counts/sum(visit_counts))
+
+# plot
+ggplot(visiter_freq, aes(x = category, y = pct, fill = factor(member, levels = c("Studierende", "Mitarbeitende", "Spezialkarten")))) +
+    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
+    scale_fill_manual(values =  c("#fad60d","#c5b87c", "grey60"))+
+    scale_y_continuous(labels=scales::percent) +
+    # scale_alpha_discrete(range = c(0.6, .8), guide=F)+
+    # scale_alpha_manual(values=c(0.5, 1), guide=F)+
+    xlab("\nDurchschnittliche Mensabesuche pro Woche") +
+    ylab("Anteil Mensabesucher")+
+    guides(fill= guide_legend(title = "Geschelcht"))+
+    geom_text(aes(label = scales::percent(round(pct,2))), colour = "#000000", position = position_dodge(width = .6),  vjust=-0.25, size= 9) +
+    mytheme
+
+# save
+ggsave("plots/visit_freq_member_181128_egel.pdf",
+       height = 10,
+       width = 24,
+       dpi = 200,
+       device = cairo_pdf)
+
+
+# visitier frequency by condition--------
+# make that sense?
+visiter <- df_2017 %>%
+    group_by(ccrs, condit) %>%
+    summarise(visit = n()) %>% 
+    ungroup() 
+
+# mean of visits for gender
+aggregate(visiter$visit ~ visiter$condit, FUN = mean)
 
 # cluster analysis of repeated measures--------
 df_ <- df_2017 %>% 
@@ -111,43 +202,51 @@ some <-  df_ %>%
     mutate(cluster = "some") 
  
 # hot and cold: people went to the hot and cold buffet 
+# 18 (1%)
 buffet <-  df_ %>%  
     filter(tot_buy > 5 & hnc == 1) %>% 
     mutate(cluster = "buffet") 
 
-# meat avoiders: people only eat veg/vegan 
-meat_avoiders <- df_ %>%
-    filter(tot_buy > 5 & hnc < 1 & meaty == 0 & hnc == 0) %>% 
-    mutate(cluster = "avoiders")
+# build groups of canteen visitors (1043-18) beacause of their meat consumption per week (see dagevous) 
+# minus buffet eaters
+canteen_visitors <- filter(df_, tot_buy > 5) %>% 
+    anti_join(., buffet) %>% # eclude buffet eaters
+    mutate(meat_week = Fleisch/12) # divide meat buys through 12 weeks to get meat consumption per week
+
+# meat avoiders
+# 78 (5%)
+meat_avoiders <- canteen_visitors %>%
+    filter(meat_week == 0) %>% 
+    mutate(cluster = "meat avoiders")
+
+# conscious flexitarians: less than one third of all buyings contain meat
+# 190 (190/1560)
+conc_flex <- canteen_visitors %>% 
+    filter(meat_week > 0 & meaty <= 1/4) %>% 
+    mutate(cluster = "conscious flexitarians")
+
+# unconscious flexitarians: less than the halt of all buyings contain meat
+# 224 (224/1560)
+unconc_flex <- canteen_visitors %>% 
+    filter(meat_week > 0 & meaty > 1/4 & meaty <= 1/2) %>% 
+    mutate(cluster = "unconscious flexitarians")# to avoid conflicts with meat_lovers
+
+# extravert flexitarians: less than the halt of all buyings contain meat
+# 328 (328/1560)
+extravert_flex <- canteen_visitors %>% 
+    filter(meat_week > 0 & meaty > 1/2 & meaty <= 3/4) %>% 
+    mutate(cluster = "extravert flexitarians")# to avoid conflicts with meat_lovers
 
 # meat lovers
-meat_lovers <- df_ %>% 
-    filter(tot_buy > 5 & hnc < 1 & meaty == 1 & hnc == 0) %>% 
-    mutate(cluster = "lovers")
+# 205 (205/1560)
+meat_lovers <- canteen_visitors %>% 
+    filter(meat_week > 0 & meaty > 3/4) %>% 
+    mutate(cluster = "meat lovers")# to avoid conflicts with meat_lovers
 
-# canteen goers: people went at least once per week to the canteen
-canteen <-  df_ %>%  
-    filter(tot_buy > 5 & hnc < 1) %>% # min once per week
-    anti_join(., meat_avoiders) %>% # to avoid conflicts with meat_avoiders
-    anti_join(.,meat_lovers) # to avoid conflicts with meat_lovers
 
-# subgroup vegi flexies
-flexi_vegi <- canteen %>% 
-    filter(meaty >= 0 & meaty < 1/3 & hnc >= 0) %>% 
-    mutate(cluster = "vegi flexies")
-
-# subgroup flexi flexies
-flexi_flex <- canteen %>%
-    filter(meaty >= 1/3 & meaty <= 2/3 & hnc >= 0) %>% 
-    mutate(cluster = "flexi flexies")
-
-# subgroup meat flexies
-flexi_meat <- canteen %>%
-    filter(meaty > 2/3 & meaty < 1 & hnc >= 0) %>% 
-    mutate(cluster = "meat flexies")
 
 # concat all clusters to one
-df_2 <- bind_rows(one, some, buffet, meat_avoiders, meat_lovers, flexi_vegi, flexi_flex, flexi_meat)
+df_2 <- bind_rows(one, some, buffet, meat_avoiders, conc_flex, unconc_flex, extravert_flex, meat_lovers)
 
 
 # plot all groups: treemap-------
@@ -164,21 +263,11 @@ dat <- df_2 %>%
     mutate(pct = count/sum(count)) %>% 
     ungroup() %>% 
     mutate(cluster = recode(cluster, "one" = "one timers", "some" = "some timers", 
-                            "avoiders" = "meat avoiders", "lovers" = "meat lovers", 
-                            "vegi flexies" = " (veg) flexitarians\n< 1/3 Fleisch", "meat flexies" = "(meat) flexitarians\n> 2/3 Fleisch",
-                            "flexi flexies" = "(flexi) flexitarians \n \u2265 1/3 bis \u2264 2/3 Fleisch", "buffet" = "buffetarians")) %>% # rename clusters
-    mutate(label = paste(cluster, paste(round(pct*100, 1), "%", sep = " "), sep = "\n"))
-
-
-dat2 <- df_2 %>% # only canteen visitors
-    filter(cluster != "one" & cluster != "some") %>% 
-    group_by(cluster) %>% 
-    summarise(count = n()) %>% 
-    mutate(pct = count/sum(count)) %>% 
-    ungroup() %>% 
-    mutate(cluster = recode(cluster, "avoiders" = "meat avoiders", "lovers" = "meat lovers", 
-                            "vegi flexies" = " (veg) flexitarians\n< 1/3 Fleisch", "meat flexies" = "(meat) flexitarians\n> 2/3 Fleisch",
-                            "flexi flexies" = "(flexi) flexitarians \n \u2265 1/3 bis \u2264 2/3 Fleisch", "buffet" = "buffetarians")) %>% # rename clusters
+                            "conscious flexitarians" = " conscious flexitarians\n\u2264 1/4 Fleisch", 
+                            "unconscious flexitarians" = "unconscious flexitarians\n> 1/4 bis \u2264 1/2 Fleisch",
+                            "extravert flexitarians" = "extravert flexitarians \n> 1/2 bis \u2264 3/4 Fleisch", 
+                            "buffet" = "buffetarians",
+                            "meat lovers" = "meat lovers\n > 3/4 Fleisch")) %>% # rename clusters
     mutate(label = paste(cluster, paste(round(pct*100, 1), "%", sep = " "), sep = "\n"))
 
 
@@ -187,38 +276,61 @@ dat2 <- df_2 %>% # only canteen visitors
 dat$test <- vector()
 dat[grepl("one", dat$cluster), ]$test <- 2
 dat[grepl("some", dat$cluster), ]$test <- 1
-dat$test <- ifelse(dat$test != 1 & dat$test !=2, 3,dat$test)
+dat$test <- sort(dat[dat$cluster != "one",]$pct)
 
 # open pdf device
-# problems with extra signs
-cairo_pdf("plots/treemap_cluster_181203_egel.pdf", width = 20, height = 20)
+# how to order the rectangles => sortID, however not working
+cairo_pdf("plots/treemap_cluster_181221_egel.pdf", width = 20, height = 20)
 
 treemap(dat, #Your data frame object
-        index=c("label"),  #A list of your categorical variables
+        index="label",  #A list of your categorical variables
         vSize = "count",  #This is your quantitative variable
-        type = "index",#Type sets the organization and color scheme of your treemap
+        # type = "index",#Type sets the organization and color scheme of your treemap
         palette = pal,  #Select your color palette from the RColorBrewer presets or make your own.
         fontsize.title = 20, #Change the font size of the title
         title = "", # Change the name of the plot
         fontsize.labels = 30,
         algorithm = "pivotSize",
-        # sortID = order(dat$test))
-        aspRatio = 50/50, # Change font of the labels
+        sortID = "test",
+        # aspRatio = 50/50, # Change font of the labels
         fontfamily.labels = "sans")
 
 dev.off() # close device
 
 
 
-# why not stacked, because fill and x are same variable
-ggplot(dat, aes(x = cluster, y = pct, fill = cluster)) +
-    geom_bar(stat = "identity", position = "stack", width = .6) +
-    scale_y_continuous(labels = scales::percent)+
-    geom_text(aes(label = scales::percent(round(pct,2))), position = position_stack(vjust = 0.5))  # if labels are desired
-    
-mytheme # see skript 08_theme_plots
+# plot all groups according to their visit frequency-----
 
+# prepare data
+visiter <- df_2 %>% 
+    mutate(category=cut(tot_buy, breaks = c(-Inf,2,12,24,36,48,60,Inf), labels=c("einmaliger Besuch", "max. 1x\n pro Woche","max. 2x\n pro Woche","max. 3x\n pro Woche","max. 4x\n pro Woche", "max. 5x\n pro Woche","mehr als 5x\n pro Woche"))) %>%
+    group_by(cluster, category) %>% 
+    summarise(visit_counts=n()) %>% # count how hoften a visit occurs, e.g. oneday visitors occur 200 times 
+    mutate(pct=visit_counts/sum(visit_counts)) %>% 
+    filter(cluster != "one" & cluster != "some")
  
+
+# plot
+ggplot(visiter, aes(x = category, y = pct, fill = factor(cluster, levels = c("buffet", "meat avoiders", "conscious flexitarians", "unconscious flexitarians", "extravert flexitarians", "meat lovers")))) +
+    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
+    scale_fill_manual(values =  c("buffet" = "#262626","meat avoiders" = "#c5b87c", "conscious flexitarians" = "#fad60d","unconscious flexitarians" = "#e64d00", "extravert flexitarians" = "#6619e6","meat lovers" = "#99f200"))+
+    scale_y_continuous(labels=scales::percent) +
+    xlab("\nDurchschnittliche Mensabesuche pro Woche") +
+    ylab("Anteil Mensabesucher")+
+    guides(fill= guide_legend(title = "Ernährungsmuster"))+
+    geom_text(aes(label = scales::percent(round(pct,2))), colour = "#000000", position = position_dodge(width = .6),  vjust=-0.25, size= 9) +
+    mytheme
+
+
+# save
+ggsave("plots/visit_freq_cluster_181227_egel.pdf",
+       height = 10,
+       width = 24,
+       dpi = 200,
+       device = cairo_pdf)
+
+
+
 # first group: one timers: 183----
 one <- filter(df_2, cluster == "one")
 
@@ -703,7 +815,6 @@ ggsave("plots/eating_flexi_meat_181129_egel.pdf",p,
 # cluster analyses for only people in both conditions-------
 # cluster analysis of repeated measures--------
 # exclude first people who eat less than 5 times in the canteen
-
 df_ <- df_2017 %>% 
     select(ccrs, label_content, gender, member, age) %>% # select variable of interest
     dcast(formula = ccrs + gender + age + member ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
@@ -713,15 +824,32 @@ df_ <- df_2017 %>%
            hnc = .$`Hot and Cold` / .$tot_buy) %>% 
     filter(tot_buy > 5) # all canteen visitors => 1048
 
-
-df_2 <- df_2017 %>% # check in dataset for condition
-    filter(ccrs %in% df_$ccrs) %>% 
+# check in dataset for condition
+df_2 <- df_2017 %>%
+    filter(ccrs %in% df_$ccrs) %>%
     select(ccrs, label_content, gender, member, age, condit) %>% # select variable of interest
     dcast(formula = ccrs + gender + age + member + condit ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
     rename(Unknown = 'NA') %>% # rename NA to unknown
-    mutate(tot_buy = rowSums(.[,-c(1:5)])) %>% # exclude ccrs and information of person for sum of rows
-    mutate(meaty =.$Fleisch/.$tot_buy,
-           hnc = .$`Hot and Cold` / .$tot_buy)
+    mutate(tot_buy = rowSums(.[,-c(1:5)])) %>%  # exclude ccrs and information of person for sum of rows
+    group_by(ccrs) %>% 
+    mutate(tot_visit = sum(tot_buy), # sum all visits
+           pct_visit = tot_buy / tot_visit) # calculate pct
+
+# group people into three categories => dont make sense in my eyes
+# 1. basis (people which bought their meals mostly in basis weeks (2/3))
+# 2. intervention (people which bought their meals mostly in intervention weeks (2/3))
+# 3. equals (people which bought their same amount in basis as in intervention(50:50))
+gr1 <- filter(df_2, condit == "Basis" & pct_visit == 1/2) 
+gr1 <- filter(df_2017, ccrs %in% gr1$ccrs)
+
+
+# plot 
+group_by(gr1, condit, week, label_content) %>%
+    summarise(tot = n()) %>% 
+    mutate(pct = tot/sum(tot)) %>% 
+    ggplot(aes(y = pct, x = paste(factor(week), condit, sep = "\n"), fill = factor(label_content, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")))) + geom_bar(stat = "identity")
+
+
 
 # it seems that only three people were once in one condition
 t <- anti_join(df_, filter(df_2, duplicated(df_2$ccrs)), by = "ccrs")
@@ -729,13 +857,17 @@ t2 <- df_2017 %>% # check in dataset for condition
     filter(ccrs %in% t$ccrs) # went only to basis weeks, exclude them
 
 # exclude 3 ccrs numbers
+# unique cards 1040
 df_3 <- anti_join(df_2, t, by = "ccrs")
 
 # some poeple have only one observation in one week => set minimum of twice per week 
-test <-  df_3 %>% 
+# unique cards 740
+unique_cards <-  df_3 %>% 
     group_by(ccrs, condit) %>%
     summarise(tot = sum(tot_buy)) %>%
-    filter(tot > 11) %>% 
+    mutate(tot_card = sum(tot)) %>% # sum both conditions
+    mutate(pct_visit = tot/tot_card) %>%  # percend of visit to total visit
+    filter(tot_card > 11) %>% 
     ungroup()
 
 test2 <- df_3 %>% 
@@ -757,33 +889,31 @@ test2_ <- df_2017 %>%
     
 
 # plot sellings over the twelve weeks
-# take all conditions in account
-dat <- filter(df_3, ccrs %in% test$ccrs)
+# check for all transaktion of those 740 card numbers
 pl <- df_2017 %>% 
-    filter(ccrs %in% df_4$ccrs) %>% 
-    group_by(condit,label_content, week) %>% 
+    filter(ccrs %in% unique_cards$ccrs) %>% 
+    group_by(week, condit, label_content) %>% # pay attention to the order of grouping variables!!
     summarise(tot_buy = n()) %>% 
-    mutate()
-
-
-# test to count single cards per week
-tt <- df_2017 %>% 
-    filter(ccrs %in% df_4$ccrs) %>% 
-    group_by(ccrs, week, condit) %>% 
-    summarise(tot_member = n()) %>% 
+    mutate(pct = tot_buy/sum(tot_buy)) %>% 
     ungroup() %>% 
+    mutate(xlab = paste(week, condit, sep = "\n")) %>% 
+    mutate(label_content = ifelse(is.na(.$label_content), "Unbekannt", .$label_content))
+
+
+# text sellings per week
+txt <- df_2017 %>% 
+    filter(ccrs %in% unique_cards$ccrs) %>% 
     group_by(week, condit) %>% 
-    summarise(tot_member = sum(tot_member))
-    mutate(xlab0 = paste("(",tot_member,")"),
-           xlab = paste(week, xlab0, sep = "\n"),
-           xlab1 = paste(xlab, condit, sep = "\n")) 
+    summarise(week_sell = n()) %>%
+    mutate(label = paste("italic(n)",week_sell, sep = "=="))
+
+   
 
 # add text (card numbers per week) per week => not that easy!!
 text <- df_2017 %>% 
-    filter(ccrs %in% df_4$ccrs) %>%
+    filter(ccrs %in% unique_cards$ccrs) %>%
     group_by(condit, week) %>% 
-    summarise(tot_member = n())
-
+    summarise(week_sell = n()) 
 
 ## check if the background color is dark or not
 # my colors for the plot
@@ -796,7 +926,7 @@ pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], # takes
 
 # plot
 # order is somehow not right => why?
-p <- ggplot(pl, aes(y = pct,x = factor(xlab1, levels = c("Frauen\n( 110 )\nBasis", "Frauen\n( 77 )\nIntervention" ,"Männer\n( 69 )\nBasis",  "Männer\n( 41 )\nIntervention", "Spezialkarten\n( 4 )\nBasis", "Spezialkarten\n( 5 )\nIntervention")), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(pl, aes(y = pct,x = factor(xlab), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
@@ -811,10 +941,13 @@ p <- ggplot(pl, aes(y = pct,x = factor(xlab1, levels = c("Frauen\n( 110 )\nBasis
     # scale_x_discrete(label = c("Frauen\n( 110 )\nBasis", "Frauen\n( 77 )\nIntervention" ,"Männer\n( 69 )\nBasis",  "Männer\n( 41 )\nIntervention", "Spezialkarten\n( 4 )\nBasis", "Spezialkarten\n( 5 )\nIntervention"))+
     geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
-        "text",x = 1:6, y = 1.03, label = text$label2, parse=T, size=9) + # why so big differences to the first version
+        "text",x = 1:12, y = 1.03, label = txt$label, parse=T, size=9) + # why so big differences to the first version
     mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
+
+# save plot
+ggsave("plots/181219.pdf",p)
 
 # for further analyses exclude some Na's---------
 # check for NA's
