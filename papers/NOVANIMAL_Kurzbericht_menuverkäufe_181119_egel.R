@@ -295,15 +295,15 @@ TukeyHSD(aov1, ordered = T)
 # see line 128 for sell_dat
 m_sell <- na.omit(sell_dat) %>% group_by(condit,label_content2) %>% summarise(val = mean(tot_sold)) # calculate means (per what) of the label_content per condition
 
-p <- ggplot(sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, shape = label_content2)) + 
+p <- ggplot(sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, shape = factor(label_content2, levels = ("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold")))) + 
     geom_point(data = m_sell, aes(y = val), size = 4) +
     geom_line(data = m_sell, aes(y = val, group = label_content2), size = 2) + 
     labs(y = "Durchschnittlich verkaufte Gerichte pro Woche", x = "Experimentbedingungen") + 
     scale_y_continuous(breaks = seq(0,1400,200), limits = c(0, 1400)) +
     scale_x_discrete(label = c("Basiswochen", "Interventionswochen"))+
     scale_shape_manual(values = c("Fleisch" = 15, "Hot and Cold" = 17,"Vegan" = 3, "Vegetarisch" = 19), # change order of shape labels
-                        breaks = c("Fleisch", "Vegan", "Vegetarisch", "Hot and Cold"),
-                        labels = c("Fleisch oder Fisch", "Vegan", "Ovo-lakto-vegetarisch", "Hot & Cold (Buffet)"))+
+                        breaks = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold"),
+                        labels = c("Fleisch oder Fisch", "Ovo-lakto-vegetarisch", "Vegan", "Hot & Cold (Buffet)"))+
     guides(shape = guide_legend(title = "Menü-Inhalt\n"), linetype = F)+
     mytheme
 
