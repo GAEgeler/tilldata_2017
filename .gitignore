@@ -7,7 +7,7 @@
 *.png
 *.log
 *.docx
-*.doct
+*.dotx
 
 # ignore all files ending with
 # do not update selected files
@@ -16,7 +16,7 @@
 *.RData
 *.Ruserdata
 *.Rproj
-.Rproj.user
+
 
 
 # ignore subequent folders
@@ -27,3 +27,4 @@
 /analysen
 /archive
 /plots
+/papers/archive
