@@ -7,6 +7,7 @@
 *.png
 *.log
 *.docx
+*.doct
 
 # ignore all files ending with
 # do not update selected files
