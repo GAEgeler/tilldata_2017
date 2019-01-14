@@ -79,7 +79,6 @@ df_agg_tot <- left_join(df_agg, t1, by = c("shop_description","date","article_de
 rm(list = c("t", "t1","pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))
 
 
-######
 # data from 2015 & 2016 calculate sellings per label_content----
 #same dataset as in earlier version
 dat_hs_tot <- read_delim("raw data/verkaufsdaten täglich HS 15-16 180731.csv", 
@@ -98,10 +97,8 @@ df_tot$article_description <-  str_replace(df_tot$article_description,"KitchenTo
 df_tot$article_description <-  str_replace(df_tot$article_description,"FavoriteTotal", "Favorite")
 
 # change first letter of shop_description
-firstup <- function(x) {
-    substr(x, 1, 1) <- toupper(substr(x, 1, 1))
-    x
-}
+source("10_function_first_letter_190114_egel.R")
+
 df_tot$shop_description <- firstup(df_tot$shop_description)
 
 ### 2015: calculation of the relative meal content-----
@@ -288,6 +285,8 @@ df_tot$article_description <-  str_replace(df_tot$article_description,"KitchenTo
 df_tot$article_description <-  str_replace(df_tot$article_description,"FavoriteTotal", "Favorite")
 
 # change first letter of shop_description
+source("10_function_first_letter_190114_egel.R")
+
 df_tot$shop_description <- firstup(df_tot$shop_description) # see function above
 
 # group data 2017 according meal line----

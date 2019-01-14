@@ -43,9 +43,7 @@ df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
 ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
  
 # detects dark color: for labelling the bars
-isDark <- function(color) {
-    (sum(grDevices::col2rgb(color) *c(299, 587,114))/1000 < 123)
-}
+source("09_function_is_dark_190114_egel.R")
 
 df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"

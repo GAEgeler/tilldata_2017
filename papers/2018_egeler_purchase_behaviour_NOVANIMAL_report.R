@@ -7,6 +7,9 @@ source(file = "04_load_data_180802_egel.R")
 source(file = "08_theme_plots_180419_egel.R")
 # warnings can be ignored => due to rm() command
 
+# load function isDark
+source("09_function_is_dark_190114_egel.R")
+
 # chapter 3.1. compare sample with population----------
 # summary canteen card holders according to gender and member
 canteen <- df_2017 %>%
@@ -309,12 +312,6 @@ visiter2 <- visiter %>%
 text <- group_by(visiter, category) %>% 
     summarise(tot = sum(visit_counts)) %>% 
     mutate(label = paste("italic(n)", tot, sep = "=="))
-
-# detects dark color: for labelling the bars
-isDark <- function(color) {
-    (sum(grDevices::col2rgb(color) *c(299, 587,114))/1000 < 123)
-}
-
 
 # add colors
 ColsPerCat=c("buffet" = "#262626","meat avoiders" = "#c5b87c", "conscious flexitarians" = "#fad60d","unconscious flexitarians" = "#e64d00", "disengaged meat-eaters" = "#6619e6","meat lovers" = "#008099")
@@ -1040,14 +1037,9 @@ tab1 <- cbind(Est = fixef(mod3), LL = fixef(mod3) - 1.96 * se, UL = fixef(mod3) 
 # erzeugt die Odds Ratios
 or <- exp(tab1)
 
-# logits to probabilites
-logit2prob <- function(logit){
-    odds <- exp(logit)
-    prob <- odds / (1 + odds)
-    return(prob)
-}
 
 # probabilites of logits (see function above)
+source("11_function_logit2probit_190114_egel.R")
 logit2prob(fixef(mod3))
 
 
