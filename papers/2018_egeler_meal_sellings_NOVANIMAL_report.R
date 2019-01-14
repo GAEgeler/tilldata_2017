@@ -1,5 +1,5 @@
-# R-Skript for NOVANIMAL_Kurzbericht_menuverkäufe_181119_egel
-# Status: 10.12.2018
+# R-Skript for brief report of selected results on meal sellings
+# Status: 10.01.2019
 
 
 # required packages
@@ -57,7 +57,7 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c
     xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
     ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Inhalt\n"),
+    guides(fill = guide_legend("Men?-Inhalt\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
@@ -249,11 +249,11 @@ df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # tak
 p <- ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unbekannt","Pflanzlich","Pflanzlich+","Vegetarisch","Fleisch","Hot and Cold")), color=label_color)) +
     geom_bar(stat="identity", position = "stack", color=NA, width = .5) +
     xlab("") + #"\nGeplante und angebotene Men?-Optionen w?hrend Herbstsemester (Kalenderwochen 40 bis 51)"
-    ylab("Geplante und angebotene Menü-Optionen")+ # title: 
+    ylab("Geplante und angebotene Men?-Optionen")+ # title: 
     #     ggtitle("note: locals are not included
     #          selling time between 9 a.m. until 3 p.m.
     #          locals meals in total: 2602")+
-    guides(fill= guide_legend("Menü-Inhalt"),
+    guides(fill= guide_legend("Men?-Inhalt"),
            color=F)+
     # scale_y_continuous(labels = scales::percent)+
     scale_fill_manual(values = ColsPerCat,
@@ -304,7 +304,7 @@ p <- ggplot(sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, s
     scale_shape_manual(values = c("Fleisch" = 15, "Hot and Cold" = 17,"Vegan" = 3, "Vegetarisch" = 19), # change order of shape labels
                         breaks = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold"),
                         labels = c("Fleisch oder Fisch", "Ovo-lakto-vegetarisch", "Vegan", "Hot & Cold (Buffet)"))+
-    guides(shape = guide_legend(title = "Menü-Inhalt\n"), linetype = F)+
+    guides(shape = guide_legend(title = "Men?-Inhalt\n"), linetype = F)+
     mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
@@ -382,7 +382,7 @@ p <- ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_descriptio
     #ggtitle("Verkaufte Men?s: 3. + 4. HSW\n") +
     xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
     ylab("Verkaufte Gerichte pro Herbstsemester")+
-    guides(fill= guide_legend(title = "Menü-Linien"), 
+    guides(fill= guide_legend(title = "Men?-Linien"), 
            color=F)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$names,
@@ -438,7 +438,7 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(article_descript
     xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
     ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Linie\n"),
+    guides(fill = guide_legend("Men?-Linie\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
