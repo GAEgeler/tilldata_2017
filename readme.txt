@@ -13,7 +13,11 @@
 
 05_load_add_data.R: load some additional data 
 
+06_environmental_analysis_190114_egel.R: some additional analysis on environmental data
+
 08_theme_plots_180419_egel.R: defined themes for plotting
+
+09_11: some usefull functions e.g. for plots
 
 ----------------------
 

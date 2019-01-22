@@ -1,0 +1,253 @@
+---
+title: "Untitled"
+author: "Gian-Andrea Egeler"
+date: "25. April 2018"
+output: pdf_document
+---
+
+######
+# Ingredience Analysis
+######
+
+#Status: 20.04 // egel
+```{r, echo=F}
+lapply(c("Hmisc","lubridate","car","psych","reshape2","gtools","dplyr","readr","stringr","factoextra","FactoMineR","gmodels","tidyr","readxl"), FUN = function(X) {
+    do.call("require", list(X)) 
+})
+
+
+# mytheme for plot
+mytheme <- theme_bw()+ # definve theme for plot
+    theme(plot.title = element_text(size = 20, face = "bold")) +
+    theme(text = element_text(size=20),axis.title.y = element_text(size = 20)) +
+    theme(axis.title.x = element_text(size = 20)) +
+    theme(legend.text = element_text(size = 20),legend.title = element_text(size =20)) +
+    theme(axis.title.y = element_text(size = 20, margin = margin(t = 0, r = 20, b = 0, l = 0)))+
+    theme(axis.title.x = element_text(size = 20,  margin = margin(t = 20, r = 0, b = 0, l = 0)))
+
+setwd("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_original/Versand an ZHAW/files")
+df_new1 <- read_delim(
+    'filtered_data_r_notime_180417_egel.csv', delim=';',locale = locale(encoding='LATIN1'),
+        col_types = cols(
+        transaction_id = col_double(),
+        trans_date = col_datetime(format = ""),
+        date = col_datetime(format = ""),
+        article_description = col_character(),
+        art_code = col_character(),
+        qty_weight = col_double(),
+        card_num = col_double(),
+        Geschlecht = col_character(),
+        Geburtsjahr2 = col_date(format = ""),
+        member = col_character(),
+        rab_descript = col_character(),
+        total_amount = col_double(),
+        price_article = col_double(),
+        price_payment = col_double(),
+        prop_price = col_double(),
+        pay_description = col_character(),
+        shop_description = col_character(),
+        week = col_integer(),
+        year = col_integer(),
+        age = col_double(),
+        cycle = col_integer(),
+        condit = col_character()
+    )
+)
+
+# load data
+setwd("S:/pools/n/N-IUNR-nova-data/06_add_var/01_dokumentation/final")
+info <- read_delim("menu_inhalt_protein_180420_egel_final.csv", delim=';',locale = locale(encoding = 'LATIN1'), col_types = cols(date=col_datetime(format = "%d.%m.%Y"))) # should be the final version :) 
+info <- select(info,date,article_description,label_content,cycle,meal_name,shop_description)
+
+# filter time
+df_17 <- filter(df_new1, (hour(trans_date) >= 9) & (hour(trans_date) <= 14)) # 9.00 is included but not 15.00 is not included, dont know how to handle itdf_7 <- left_join(df_17,info, by = c("shop_description","date","article_description","cycle")) # differences to df_17 are transactions on the same time => see "analyse_180320_03egel"
+df_7 <- left_join(df_17,info, by = c("shop_description","date","article_description","cycle")) # differences to df_17 are transactions on the same time => see "analyse_180320_03egel"
+
+# add semester week to dataframe => there is surely a better way
+
+df_7$semwk <-
+    ifelse(df_7$week == 40,3,ifelse(df_7$week == 41, 4, ifelse(
+        df_7$week == 42,5, ifelse(df_7$week == 43,6,ifelse(
+            df_7$week == 44,7,ifelse(df_7$week == 45, 8, ifelse(
+                df_7$week == 46,9, ifelse(df_7$week == 47,10,ifelse(
+                    df_7$week == 48,11,ifelse(df_7$week == 49,12,ifelse(
+                        df_7$week == 50,13,14)
+                    ))
+                ))
+            ))
+        ))
+    ))
+
+#rename labels of content
+df_7$label_content = str_replace(df_7$label_content,"Fleisch","Meat")
+df_7$label_content = str_replace(df_7$label_content,"Vegetarisch","Vegetarian")
+df_7$label_content = str_replace(df_7$label_content,"Pflanzlich","Vegan")
+
+
+
+#load data, not all information of the locals included (without days where locals were sold double on one menu line)
+setwd("S:/pools/n/N-IUNR-nova-data/06_add_var/01_dokumentation/final")
+offer <- read_delim("menu_inhalt_protein_180420_egel_final.csv", delim=';',locale = locale(encoding = 'LATIN1'), col_types = cols(date=col_datetime(format = "%d.%m.%Y")),trim_ws = T)
+```
+#######
+## protein ditribution
+#######
+# pro standort und ohne locals 
+```{r}
+offer=filter(offer,!grepl("Local+",offer$article_description) & shop_description=="Vista Mensa")
+Hmisc::describe(offer$Tier_1)
+Hmisc::describe(offer$Milchprodukt_1)
+Hmisc::describe(offer$Vegi_Protein)
+Hmisc::describe(offer$Ei)
+
+# Cross tabs => see script .py better print options
+ct=CrossTable(offer$Tier_1,offer$Milchprodukt_1,prop.t = F) # find a way to drop NAN's or na
+print(ct)
+```
+```{r}
+#load data with locals for local analysis
+setwd("S:/pools/n/N-IUNR-nova-data/06_add_var/01_dokumentation/Bestandteile Mensa Menu/")
+offer_l <-  read_delim("menu_inhalt_protein_180420_egel_local_offer.csv", delim=';',locale = locale(encoding = 'LATIN1'), col_types = cols(date=col_datetime(format = "%d.%m.%Y")))
+
+Hmisc::describe(offer_l$Tier_1)
+Hmisc::describe(offer_l$Milchprodukt_1)
+Hmisc::describe(offer_l$Vegi_Protein)
+Hmisc::describe(offer_l$Ei)
+```
+
+###############
+#### Target and Actual Comparison between 2015 - 2017 
+###############
+# timefilter between 11 to 14 and without locals! => see sga-tagung version 04
+
+```{r, echo=F}
+setwd("S:/pools/n/N-IUNR-nova-data/02_kassendaten/01_analysen/ist soll analyse")
+df_ist=read_delim("all data over year 180424 02egel.csv",delim = ';')
+df_soll=read_excel("soll 2015-2017 180420 02egel.xlsx")
+
+#prepare data SOLL
+df_soll <- group_by(df_soll, year,label_content)%>% summarise(tot=n())%>%mutate(pct_soll=tot/sum(tot))
+df_soll <- rename(df_soll, variable=label_content, pct=pct_soll)
+df_soll <- select(df_soll,variable, year, pct)
+df_soll$state = 'Target'
+
+#prepare data IST 
+# df_ist$X1 <- NULL # depens if you save tibble with write.csv2
+# df_ist$variable <- str_replace(df_ist$variable,'Vegan+','Vegan') # change vegan* to vegan
+
+df_ <- group_by(df_ist, variable, year) %>% summarise(value=sum(value)) # aggregate data
+df_ <- df_ %>% 
+    group_by(year) %>% # give in variable, you want to calculate percentage
+    mutate(pct=value/sum(value))
+
+df_ist2=select(df_,variable,year,pct)
+df_ist2$state='Actual'
+
+# concatinate both datasets
+df_t=rbind(df_ist2, df_soll)
+
+# define xlab
+df_t$xlab=paste(df_t$year,df_t$state,sep="\n")
+
+#problems with ordering the strings => only via factor possible
+
+ggplot(df_t, aes(y=pct,x=xlab, fill=factor(variable,levels=c("Vegan","Vegan+","Vegetarian","Meat","Hot and Cold")), label=paste0(round(df_t$pct*100,digits=0),"%"))) +
+    geom_bar(stat="identity", position = "stack") +
+    xlab("Target-Actual comparison per autumn semester") +
+    ylab("Expected and sold meals in percent")+
+    guides(fill=guide_legend("meal content\n",
+                             keywidth=.5,
+                             keyheight=.5,
+                             default.unit="inch"))+
+    scale_y_continuous(labels = scales::percent)+
+    scale_fill_manual(values = c("Vegan"="grey90", "Vegan+"="#80ccff", "Vegetarian" = "#c5b87c", "Meat" = "#fad60d","Hot and Cold"="#262626"))+
+    scale_x_discrete(limits=c("2015\nTarget","2015\nActual","2016\nTarget","2016\nActual","2017\nTarget","2017\nActual"))+
+    geom_text(size = 5, position = position_stack(vjust = 0.5),col="#ffffff")+
+    annotate(
+        "text",x = 1:6, y = -.04, label = c("''","italic(N) == 26446","''","italic(N) == 26211","''","italic(N) == 23692"),size = 5,parse=T)+
+    mytheme
+            
+
+ggsave("S:/pools/n/N-IUNR-nova-data/02_kassendaten/01_analysen/ist soll analyse/meal_offer 2015-2017 180424_egel.pdf",
+       width = 14,
+       height = 8,
+       dpi=600,
+       units="in",
+       device="pdf")
+```` 
+
+################
+### Target and Actual Comparison 2017 => check data, if all is right!!!
+###############
+# Actual: Locals are not included and Timefilter between 9 and 15 oclock
+```{r}
+df=filter(df_7,!grepl("Local+",df_7$article_description))
+df_ist=group_by(df,date,article_description,label_content,shop_description, meal_name)%>% summarise(tot_sold=n())
+
+
+# Target: locals are not included
+setwd("S:/pools/n/N-IUNR-nova-data/06_add_var/02_planung_verkaufszahlen")
+df_soll=read_excel("Mensa_geplant_180216_02egel.xlsx")
+df_soll=rename(df_soll, article_description=Menülinie, date=Datum, shop_description= Ort)
+df_soll$shop_description=str_replace(df_soll$shop_description,"Grüental","Grüental Mensa")
+df_soll$shop_description=str_replace(df_soll$shop_description,"Vista","Vista Mensa")
+# df_soll$shop_description=gsub("&","and",df_soll$shop_description, fixed = T) => difficult to replace regex in R
+
+# Merge both data frames
+df_tot=left_join(df_ist,df_soll, by=c("date","article_description","shop_description"))
+
+# prepare data for plot
+# Actual sold
+df=group_by(df_tot, label_content, shop_description) %>% 
+    summarise(tot_sold=sum(tot_sold)) %>% 
+    mutate(Actual='Actual', xlab=paste(Actual, shop_description,sep="\n")) # add two variables Actual and xlab
+df_ist_t=group_by(df,shop_description) %>% mutate(pct=tot_sold/sum(tot_sold)) # calculate percentage pro shop_description
+
+#target sold
+df=group_by(df_tot, label_content, shop_description) %>% 
+    summarise(tot_plan=sum(Geplant)) %>% 
+    mutate(Actual='Target', xlab=paste(Actual, shop_description,sep="\n"))
+
+df_soll_t=group_by(df,shop_description) %>% mutate(pct=tot_plan/sum(tot_plan))
+
+# concate both datasets: df_ist_t and df_soll_t
+df_t=rbind(df_soll_t,df_ist_t)
+
+# plot meal content => higher selling numbers because of the time filter (=40 meals difference)
+# explanation difference between target and actual is in total 2729. All sold locals are 2601. Thus 127 meals are thrown away?? 
+
+lbt=group_by(df_t, shop_description,tot_p,tot_s) %>% mutate(tot_p=sum(tot_plan, na.rm=T),tot_s=sum(tot_sold, na.rm=T))# label for annotate, however not that format i want
+
+ggplot(df_t, aes(y=pct,x=xlab, fill=factor(label_content,levels=c("Vegan","Vegan+","Vegetarian","Meat","Hot and Cold")), label=paste0(round(df_t$pct*100,digits=0),"%"))) +
+    geom_bar(stat="identity", position = "stack") +
+    xlab("Target-Actual comparison per canteen") +
+    ylab("Expected and sold meals in 2017")+
+    guides(fill=guide_legend("meal content\n",
+                             keywidth=.5,
+                             keyheight=.5,
+                             default.unit="inch"))+
+    scale_y_continuous(labels = scales::percent)+
+    scale_fill_manual(values = c("Vegan"="grey90", "Vegan+"="#80ccff", "Vegetarian" = "#c5b87c", "Meat" = "#fad60d","Hot and Cold"="#262626"))+
+    scale_x_discrete(limits=c("Target\nGrüental Mensa","Actual\nGrüental Mensa","Target\nVista Mensa","Actual\nVista Mensa"))+
+    geom_text(size = 5, position = position_stack(vjust = 0.5),col="#ffffff")+
+    annotate("text",x=1:4,y=-.05,label=c("italic(n)==13140","italic(n)==12542","italic(n)==13321", "italic(n)==11190"), size=5,parse=T)+
+    mytheme
+
+ggsave("S:/pools/n/N-IUNR-nova-data/02_kassendaten/01_analysen/ist soll analyse/meal_offer 2017 180424_egel.pdf",
+              width = 14,
+              height = 8,
+              dpi=600,
+              units="in",
+              device="pdf")
+```
+
+##################
+### test for differences
+##################
+
+
+```{r}
+leveneTest(tot_plan~label_content, data=df_t)
+# ao=aov(tot_plan~label_content+shop_description, data=df_t)
+# summary(ao)
+```

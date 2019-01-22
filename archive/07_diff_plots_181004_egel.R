@@ -1,0 +1,828 @@
+## different plots -----
+
+# status 16.10.18 // egel
+
+# required packages
+pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "ggplot2", "reshape2")
+lapply(pack, function(x){do.call("library", list(x))})
+
+
+# load data => see script 04_load_data
+# load themes for plotting
+source("08_theme_plots_180419_egel.R")
+
+### intervention vs. base: plot data over both cycles and with label content------
+#prepare data for plot: aggregated data
+df_ <- group_by(df_agg, condit ,week, label_content )%>% summarise(tot_sold=n())
+
+df_ <- df_ %>% 
+    group_by(week,condit) %>% # give in variable, you want to calculate percentage
+    mutate(pct=(tot_sold/sum(tot_sold)))
+
+# ranem NA to unknown
+df_$label_content <- ifelse(is.na(df_$label_content),"Unknown",df_$label_content)
+
+# annotation for selling per week
+text <- group_by(df_agg, week) %>% summarise(tot = n()) %>%
+    mutate(label = "italic(n)") %>%
+    mutate(label2 = paste(label, tot, sep="=="))
+
+# define x-lab for plot
+df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
+
+# define date of creation
+st <- strftime(today(), format = "%B %Y")
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+ 
+# detects dark color: for labelling the bars
+isDark <- function(color) {
+    (sum(grDevices::col2rgb(color) *c(299, 587,114))/1000 < 123)
+}
+
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# barplot
+p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
+    ylab("\nVerkaufte Menüs in Prozent")+
+    guides(fill = F, #guide_legend("Menü-Inhalt\n")
+           color = F)+
+    scale_y_continuous(labels=scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","vegan (Fleischersatz)", "vegan (authentisch)", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 10, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    annotate( 
+        "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=10) + # why so big differences to the first version
+    mytheme1
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)", subtitles = st)
+
+# save plot as png and pdf
+ggsave("plots/intervention_basis_181005_egel.png",
+       width = 25, 
+       height = 14, 
+       dpi = 600, 
+       device = "png")
+
+ggsave("plots/intervention_basis_181005_egel.pdf",
+       width = 25,
+       height = 14,
+       dpi = 600,
+       units="in",
+       device= cairo_pdf)
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/menu_content_weeks_181101_egel.pdf",
+       p,
+       height = 14,
+       width = 28,
+       dpi = 200,
+       device = cairo_pdf)
+
+
+### intervention vs. base aggregated: plot data over both cycles and with label content------
+#prepare data for plot: aggregated data
+df_ <- group_by(df_agg, condit ,label_content )%>% summarise(tot_sold=n())
+
+df_ <- df_ %>% 
+    group_by(condit) %>% # give in variable, you want to calculate percentage
+    mutate(pct=(tot_sold/sum(tot_sold)))
+
+# ranem NA to unknown
+df_$label_content <- ifelse(is.na(df_$label_content),"Unknown",df_$label_content)
+
+# annotation for selling per week
+text <- group_by(df_agg, condit) %>% summarise(tot = n()) %>%
+    mutate(label = format(tot, big.mark = "'")) %>%
+    mutate(label2 = paste("italic(n)", format(tot, scientific = F, big.mark = "'"), sep="==")) # with bigmark, parsing the text is not working anymore 
+
+
+# define date of creation
+st <- strftime(today(), format = "%B %Y")
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+# detects dark color: for labelling the bars
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# barplot
+p <- ggplot(df_, aes(y = pct, x = condit, fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemester HS17 (Basis: 'fleischlastige' Wochen, Intervention: 'pflanzenlastige' Wochen")+
+    ylab("\nVerkaufte Menüs in Prozent")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
+           color = F)+
+    scale_y_continuous(labels = scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt", "vegan (Fleischersatz)", "vegan (authentisch)", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(pct * 100 > 1.5, paste0(round(pct*100, digits = 0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    annotate( 
+        "text",x = 1:2, y = 1.03, label = paste("italic(n)", bquote(.(text$label)), sep= "="), parse = T, size = 9) + # why so big differences to the first version
+    mytheme
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)", subtitles = st)
+
+
+# save plot as png and pdf
+ggsave("plots/intervention_basis_agg_181005_egel.png",
+       width = 25, 
+       height = 14, 
+       dpi = 600, 
+       device = "png")
+
+ggsave("plots/intervention_basis_agg_181005_egel.pdf",
+       width = 20,
+       height = 18,
+       dpi = 600,
+       units="in",
+       device= cairo_pdf)
+
+# planed vs. real meal offer------
+# target for 2015 and 2016 and 2017 for both canteens (per canteen 120 meals) and for both cycles: 480 melas in total
+# per canten and cycle: meat:54 (30 + 30*.8), vegetarian:36, hot and cold: 30
+
+df_plan_56 <- tibble(year = rep(2015, times=360, each=1),
+                     label_content = rep(c("Fleisch","Vegetarisch"), times=c((120 + 120*.8),(120 + 120*.2))),
+                     offer = "Geplant")
+
+# plan for intervention:: per canten and cycle: meat: 45, vegetarian: 30, hot and cold: 30, vegan: 7, vegan+: 8
+# plan for basis:: per canteen and cycle: meat: 60, vegetarian: 30, hot and cold: 30
+
+df_plan_7 <- tibble(year = rep(2017, times=360),
+                    label_content = rep(c("Fleisch","Vegetarisch","Pflanzlich","Pflanzlich+"), times=c(180,120,28,32)),
+                    offer= "Geplant")
+
+# Actual: Locals are included
+# use documentation for that (not selling data)
+# exclude hot and cold (only using filter() is deleting missing cases!)
+df_actual_7 <- info_orig %>% filter(!grepl("Hot and Cold", info_orig$label_content)) %>% mutate(offer = "Angebot", year = year(date)) %>%
+    select(year,label_content,offer)
+
+# Merge data frames
+df_t= bind_rows(df_plan_56, df_plan_7, df_actual_7)
+
+# Group data frame
+df_ <- df_t %>%
+    group_by(year,label_content, offer) %>%
+    summarise(tot=n()) %>%
+    ungroup() # otherwise dataframe is still grouped
+
+# define some variables
+df_$xlab <- paste(df_$year,df_$offer, sep = "\n")
+df_$xlab <- str_replace(df_$xlab,"2015\nGeplant","2015 - 2016\nGeplant")
+df_$label_content <- ifelse(is.na(df_$label_content),"Unbekannt",df_$label_content)
+
+# define text for annotation
+text <- group_by(df_, year, offer) %>%
+    summarise(tot=sum(tot)) %>%
+    mutate(label = "n") %>%
+    mutate(label2=paste(label,tot,sep=" = "))
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unbekannt" = "black","Pflanzlich"="grey90", "Pflanzlich+"="#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+
+#plot in de
+ggplot(df_, aes(y=tot,x=xlab, fill=factor(label_content,levels=c("Unknown","Pflanzlich","Pflanzlich+","Vegetarisch","Fleisch","Hot and Cold")), color=label_color)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .6) +
+    xlab("\nGeplante und angebotene Menü-Optionen während Herbstsemester (Kalenderwochen 40 bis 51)") + 
+    ylab("Geplante und angebotene Menü-Optionen")+ 
+    #     ggtitle("note: locals are not included
+    #          selling time between 9 a.m. until 3 p.m.
+    #          locals meals in total: 2602")+
+    guides(fill=F,
+           color=F)+
+    # scale_y_continuous(labels = scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","Vegan (Fleischsubstitut)","Pflanzlich (authentisch)","Vegetarisch","Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    scale_x_discrete(limits=c("2015 - 2016\nGeplant","2017\nGeplant","2017\nAngebot"))+
+    geom_text(aes(label=ifelse(tot>4,tot,"")), size = 8, position = position_stack(vjust = 0.5))+ #omit numbers to be shown smaller than 190
+    annotate("text",x=1:3,y=500,label=c(text$label2[1],text$label2[1],text$label2[2]), size=8)+
+    mytheme
+
+# age, member and gender------
+# see 06_script where sample and population is compared
+
+
+# visiter frequency --------
+canteen <- df_2017 %>%
+    group_by(ccrs, shop_description) %>%
+    summarise(visit = n())
+    
+canteen2 <- canteen %>% 
+    mutate(category=cut(visit, breaks = c(-Inf, 2, 12, 24, 36, 48, 60, Inf), labels = c("einmaliger Besuch", "max. 1x\n pro Woche","max. 2x\n pro Woche","max. 3x\n pro Woche","max. 4x\n pro Woche", "max. 5x\n pro Woche","mehr als 5x\n pro Woche"))) %>%
+    group_by(shop_description, category) %>% 
+    summarise(visit_counts=n()) %>% # count how hoften a visit occurs, e.g. oneday visitors occur 200 times 
+    mutate(pct=visit_counts/sum(visit_counts))
+
+# plot
+canteen2 %>% filter(visit_counts > 2) %>%
+ggplot(aes(x=category,y=pct, fill=shop_description)) +
+    geom_bar(stat="identity",colour=NA, position = "dodge", width = .6)+
+    scale_fill_manual(values =  c("#fad60d","#c5b87c"))+
+    scale_y_continuous(labels=scales::percent) +
+    # scale_alpha_discrete(range = c(0.6, .8), guide=F)+
+    # scale_alpha_manual(values=c(0.5, 1), guide=F)+
+    xlab("\nDurchschnittliche Mensabesuche pro Woche") +
+    ylab("Anteil Mensabesucher")+
+    # ggtitle("Anmerkung: 23'446 Transaktionen wurden berücksichtigt")+
+    guides(fill= guide_legend(title = "Mensa-Standort"))+
+    #         geom_text(aes(
+    #             label = paste0(round(visit3$pct,digits = 0)), vjust =-.2
+    #         ),colour = "#000000",position = position_dodge(width = .8), size= 8) +
+    mytheme1
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/visit_freq_181031_egel.pdf",
+       height = 10,
+       width = 24,
+       dpi = 200,
+       device = cairo_pdf)
+
+# age, member and gender---------
+canteen <- df_2017[!(duplicated(df_2017$ccrs)),]# check only men, women, students and co-workers
+canteen <- filter(canteen, canteen$member != "Spezialkarten")
+
+canteen2 <- canteen %>% 
+    filter(age != 117) %>%
+    mutate(age_group = cut(age,breaks=c(-Inf, 25, 35, 50, 65, Inf), # menuCH age groups
+                           labels=c("16 bis 25-jährig","26 bis 34-jährig","35 bis 49-jährig","50 bis 64-jährig","keine Angaben")))
+# best way, visualize data 
+# age and gender
+df <- group_by(canteen2, age, gender) %>%
+    summarise(tot = n())
+
+ggplot(df, aes(x = age,y = tot, color = gender)) + 
+    geom_point(stat="identity", size = 2) + 
+    geom_smooth(method = "loess", se = F, size = 1.3) + 
+    scale_color_manual(breaks = c("F","M"),
+                       values = c("F" = "#99f200","M" = "#008099"),
+                       labels = c("Frauen", "Männer")) +
+    guides(color = guide_legend(title = "Geschlecht")) +
+    labs(x = "Alter in Jahre", y = "Häufigkeit") + #, caption = "Daten: Kassendaten SV und ZHAW"
+    mytheme1
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/age_gender_181031_egel.pdf",
+       height = 10,
+       width = 18,
+       dpi = 200,
+       device = cairo_pdf)
+
+#plot member and age
+df <- group_by(canteen2, age, member) %>%
+    summarise(tot = n())
+
+ggplot(df, aes(x = age,y = tot, color = member)) + 
+    geom_point(stat="identity", size = 2) + 
+    geom_smooth(method = "loess", se = F, size = 1.3) + 
+    scale_color_manual(breaks = c("Mitarbeitende","Studierende"),
+                       values = c("Mitarbeitende" = "#6619e6","Studierende" = "#80ccff")) +
+    guides(color = guide_legend(title = "Hochschulzugehörigkeit")) +
+    labs(x = "Alter in Jahre", y = "Häufigkeit") + #, caption = "Daten: Kassendaten SV und ZHAW"
+    mytheme1
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/age_member_181031_egel.pdf",
+       height = 10,
+       width = 24,
+       dpi = 200,
+       device = cairo_pdf)
+
+
+
+# menu-line over the past years--------------
+df <- menu_tot %>%
+    group_by(article_description, year) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+# change first some strings
+df$article_description[grep("Local+",df$article_description)] <- "Local" # summarize all locals
+df$article_description[grep("Green",df$article_description)] <- "Green/World"
+df$article_description[grep("World",df$article_description)] <- "Green/World"
+
+# aggregate again because of locale
+
+df <- df %>% group_by(article_description, year) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+df <- df %>% # calculate percentage
+    group_by(year) %>% mutate(pct = tot_sold/sum(tot_sold))
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Local" = "black","Favorite"="#c5b87c", "Green/World" = "#fad60d", "Kitchen" = "#008099","Hot and Cold"="#4c4848")
+
+df$label_color <- as.factor(sapply(unlist(ColsPerCat)[df$article_description], # takes every label and their belonged color
+                                   function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# define annotation
+text <- group_by(df, year) %>% summarise(tot=sum(tot_sold)) %>%
+    mutate(tot2=format(tot, big.mark = "'", scientific = F)) %>% # add thousand seperator
+    mutate(label = "n") %>%
+    mutate(label2=paste(label,tot2,sep=" = "))
+
+# plot data
+ggplot(df, aes(y=tot_sold,x=as.factor(year), fill=factor(article_description,levels=c("Local","Kitchen","Green/World","Favorite","Hot and Cold")), color = label_color)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .4) +
+    #ggtitle("Verkaufte Menüs: 3. + 4. HSW\n") +
+    xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
+    ylab("Verkaufte Menüs pro Herbstsemester")+
+    guides(fill= F, #guide_legend(title = "Menü-Linien")
+           color=F)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$names,
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot and Cold"))+
+    scale_color_manual(values = levels(df$label_color))+
+    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 10, position = position_stack(vjust = 0.5))+ # omit 1% annotation
+    annotate("text",x = 1:3, y = 27500, label = text$label2, size=10)+
+    mytheme1
+
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/menu_line_181101_egel.pdf",
+       height = 10,
+       width = 15,
+       dpi = 200,
+       device = cairo_pdf)
+
+
+##meal content over past years------
+
+df <- menu_tot %>%
+    group_by(label_content, year) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+# change first some strings
+df$label_content[grep("Meat",df$label_content)] <- "Fleisch" # summarize all locals
+df$label_content[grep("Vegetarian",df$label_content)] <- "Vegetarisch"
+df$label_content[grep("Pflanzlich",df$label_content)] <- "Vegan"
+df$label_content[grep("Pflanzlich\\+",df$label_content)] <- "Vegan"
+df$label_content <- ifelse(is.na(df$label_content),"Unknown",df$label_content)
+
+# aggregate again because of locale
+df <- df %>% group_by(label_content, year) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+df <- df %>% # calculate percentage
+    group_by(year) %>% mutate(pct = tot_sold/sum(tot_sold))
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Vegan" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+df$label_color <- as.factor(sapply(unlist(ColsPerCat)[df$label_content], # takes every label and their belonged color
+                                   function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# define annotation
+text <- group_by(df, year) %>% summarise(tot=sum(tot_sold)) %>%
+    mutate(tot2=format(tot, big.mark = "'", scientific = F)) %>% # add thousand seperator
+    mutate(label = "n") %>%
+    mutate(label2=paste(label,tot2,sep=" = "))
+
+# plot data
+ggplot(df, aes(y=tot_sold,x=as.factor(year), fill = factor(label_content, c("Unknown", "Vegan","Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .4) +
+    #ggtitle("Verkaufte Menüs: 3. + 4. HSW\n") +
+    xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
+    ylab("Verkaufte Menüs pro Herbstsemester")+
+    guides(fill= F, #guide_legend(title = "Menü-Linien")
+           color=F)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$names,
+                      labels = c("Unbekannt", "vegan", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df$label_color))+
+    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 10, position = position_stack(vjust = 0.5))+ # omit 1% annotation
+    annotate("text",x = 1:3, y = 27500, label = text$label2, size=10)+
+    mytheme1
+
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/menu_content_181101_egel.pdf",
+       height = 10,
+       width = 15,
+       dpi = 200,
+       device = cairo_pdf)
+
+
+##meal content over past years FOR BOTH CANTEENS------
+
+df <- menu_tot %>%
+    group_by(label_content, year, shop_description) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+# change first some strings
+df$label_content[grep("Meat",df$label_content)] <- "Fleisch" # summarize all locals
+df$label_content[grep("Vegetarian",df$label_content)] <- "Vegetarisch"
+df$label_content[grep("Pflanzlich",df$label_content)] <- "Vegan"
+df$label_content[grep("Pflanzlich\\+",df$label_content)] <- "Vegan"
+df$label_content <- ifelse(is.na(df$label_content),"Unknown",df$label_content)
+df$shop_description <- str_replace_all(df$shop_description, fixed(" "), "") # one has one white space
+
+
+# aggregate again because of locale
+df <- df %>% group_by(label_content, year, shop_description) %>%
+    summarise(tot_sold = sum(tot_sold))
+
+df <- df %>% # calculate percentage
+    group_by(year, shop_description) %>% mutate(pct = tot_sold/sum(tot_sold))
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Vegan" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+df$label_color <- as.factor(sapply(unlist(ColsPerCat)[df$label_content], # takes every label and their belonged color
+                                   function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# define annotation
+text <- group_by(df, year, shop_description) %>% summarise(tot=sum(tot_sold)) %>%
+    mutate(tot2=format(tot, big.mark = "'", scientific = F)) %>% # add thousand seperator
+    mutate(label2 = paste("n", tot2, sep="=")) # with bigmark, parsing the text is not working anymore 
+
+# define xlab
+df$xlab <- paste(df$year, df$shop_description, sep = "\n")
+
+# plot data
+ggplot(df, aes(y=tot_sold,x=xlab, fill = factor(label_content, c("Unknown", "Vegan","Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) +
+    geom_bar(stat="identity", position = "stack", color=NA, width = .4) +
+    #ggtitle("Verkaufte Menüs: 3. + 4. HSW\n") +
+    xlab("Herbstsemester (Kalenderwochen 40 bis 51)") +
+    ylab("Verkaufte Menüs pro Herbstsemester")+
+    guides(fill= F, #guide_legend(title = "Menü-Linien")
+           color=F)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$names,
+                      labels = c("Unbekannt", "vegan", "ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df$label_color))+
+    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")), size = 10, position = position_stack(vjust = 0.5))+ # omit 1% annotation
+    annotate("text",x = 1:6, y = 15000, label = text$label2, size=10)+
+    mytheme1
+
+
+# save for presentation agrifoodsystems
+ggsave("C:/Users/egel/switchdrive/ZHAW/03_Lehre/agrofoodsystems/menu_content_canteen_181101_egel.pdf",
+       height = 10,
+       width = 15,
+       dpi = 200,
+       device = cairo_pdf)
+
+# turnover analysis-------
+# turnover: payed meal price
+# load data from 2015/2016: see script 04_load_data lines:244 - 266
+dat_1516 <- df_tot %>%  
+    mutate(article_description = gsub("Green", "Green/World", .$article_description)) %>% # change green to green/world due to merge
+    group_by(article_description, week, year) %>% 
+    summarise(tot = sum(tot_sold), turnover = sum(Bruttobetrag, na.rm = T)) %>% 
+    ungroup() %>% 
+    arrange(year)
+
+# group data 2017
+dat_17 <- df_agg %>% 
+    mutate(article_description = gsub("Local ", "", df_agg$article_description)) %>% # change local to "normal" menu line
+    mutate(article_description = gsub("World", "Green/World", .$article_description)) %>% # change green to green/world due to merge))
+    group_by(article_description, week, year, price_article) %>%
+    summarise(tot = n()) %>% 
+    mutate(turnover = tot * price_article) %>% 
+    ungroup() %>% 
+    group_by(article_description, week, year) %>% 
+    summarise(tot = sum(tot),
+              turnover = sum(turnover))
+
+# merge with data 2017
+menu_tot <- bind_rows(dat_1516, dat_17) %>% 
+    mutate(avg_price = turnover / tot) #calculate average price
+
+
+# check differences visually
+ggplot(menu_tot, aes(y = turnover, x = factor(year))) + geom_boxplot()
+summary.lm(aov(menu_tot$turnover~as.factor(menu_tot$year)))
+
+ggplot(menu_tot[menu_tot$year == 2017,], aes(y = turnover, x = factor(week))) + geom_boxplot()
+summary.lm(aov(menu_tot[menu_tot$year == 2017,]$turnover~as.factor(menu_tot[menu_tot$year == 2017,]$week)))
+
+
+# add colors
+ColsPerCat=c("Local/Zusatzangebot" = "black", "Kitchen" = "#008099", "Green/World" = "#fad60d","Favorite"="#c5b87c","Hot and Cold"="#4c4848")
+# detects dark color: for labelling the bars
+menu_tot$label_color <- as.factor(sapply(unlist(ColsPerCat)[menu_tot$article_description], # takes every label and their belonged color
+                                         function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# plot for 2017
+pl <- menu_tot %>% 
+    group_by(year, week) %>% 
+    mutate(pct_turn = turnover/sum(turnover)) %>% 
+    ungroup() %>% 
+    mutate(cycle = ifelse(.$week >=40 & .$week <= 45, 1, 2)) %>% 
+    mutate(condit = ifelse(.$week %%2 == 0 & .$cycle == 1, "Basis",
+                           ifelse(.$week %%2 == 1 & .$cycle == 2,"Basis","Intervention"))) %>%  
+    filter(year == 2017) %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
+
+# test to annotate
+anno_txt <- menu_tot %>% 
+    group_by(week, year) %>% 
+    summarise(tot_turn = sum(turnover)) %>% 
+    mutate(tot_turn = round(tot_turn, 2)) %>%  # seems not to work why?
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>% 
+    filter(year == 2017)
+
+# to annotate median => check other plot for futher details (gesundheit ebp)
+# is not working
+pl <- group_by(pl, article_description) %>% 
+    summarise(med = median(turnover)) %>% 
+    left_join(pl, ., by= "article_description")
+
+p <- ggplot(pl, aes(x = xlab, y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", color = NA, position = position_stack(), width = .6) +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    ylab("\nUmsatz in Prozent")+
+    guides(fill = guide_legend("Menü-Linie\n"),
+           color = F)+
+    scale_y_continuous(label = scales::percent) +
+    scale_color_manual(values = levels(pl$label_color))+
+    geom_text(aes(label = scales::percent(round(pct_turn,2))), size = 8, position = position_stack(vjust = 0.5))+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","World","Favorite","Hot & Cold (Buffet)"))+
+    annotate("text", x = 1:12, y = 1.05, label = anno_txt$txt, size = 8)+
+    mytheme # check script 08_mythemes
+
+#some how not working!
+#p + geom_errorbar(x = 41, xend = 52, y = pl$med, yend = pl$med)
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+ggsave("plots/meal_line_turnover17_181203_egel.pdf",p,
+       width = 26,
+       height = 15,
+       dpi = 600,
+       device = cairo_pdf)
+
+
+# plot over years
+pl <- menu_tot %>% 
+    group_by(year, week) %>% 
+    mutate(pct_turn = turnover/sum(turnover)) %>% 
+    ungroup() %>% 
+    mutate(cycle = ifelse(.$week >=40 & .$week <= 45, 1, 2)) %>% 
+    mutate(condit = ifelse(.$week %%2 == 0 & .$cycle == 1, "Bs",
+                           ifelse(.$week %%2 == 1 & .$cycle == 2,"Bs","In"))) 
+
+
+# test to annotate
+pl2 <- menu_tot %>% 
+    group_by(week, year) %>% 
+    summarise(tot_turn = sum(turnover)) %>% 
+    mutate(txt = format(tot_turn, digits = 0, big.mark = "'", scientific = F)) %>%
+    ungroup() %>% 
+    left_join(pl, ., by = c("week", "year")) %>% 
+    ungroup() %>% 
+    mutate(year = factor(year, levels = c("2015", "2016", "2017"))) %>% 
+    mutate(xlab = paste(week, condit, sep = "\n"))
+
+p <-ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", color = NA, position = position_stack(), width = .7) +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    ylab("\nUmsatz in Prozent")+
+    scale_y_continuous(label = scales::percent) +
+    # scale_x_discrete(label=abbreviate)+
+    guides(fill = guide_legend("Menü-Linie\n"),
+           color = F)+
+    scale_color_manual(values = levels(pl$label_color)) +
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Local/Zusatzangebot","Kitchen","Green/World","Favorite","Hot & Cold (Buffet)"))+
+    facet_wrap(~year)+
+    geom_text(aes(label = scales::percent(round(pl2$pct_turn,2))), position = position_stack(vjust = .5), size = 8) +
+    geom_text(aes(x = factor(week), y = 1.05, label = pl2$txt), size = 5, color = "black")+
+    #some problems adding the text with overlappings, seems to take the info from 2015 for 2016
+    mytheme # check script 08_mythemes
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
+
+# save
+ggsave("plots/meal_line_turnover_181203_egel.pdf",p,
+       width = 32,
+       height = 20,
+       dpi = 600,
+       device = cairo_pdf)
+
+
+# environmental impact analysis----
+# load data df_agg_tot
+
+# how to calculate the daily impact: count sellings and multiplicate them with the tot_ubp and tot_gwp
+# eclude all hot and cold and locals
+t <- filter(df_agg_tot, label_content != "Hot and Cold" & !grepl("Local ", df_agg_tot$article_description)) %>% 
+    mutate(condit = ifelse(.$cycle == 1 & .$week %%2 == 0, "Basis",
+                       ifelse(.$cycle == 2 & .$week %%2 == 1, "Basis", "Intervention"))) %>% 
+    group_by(meal_name,week, article_description, condit, label_content, tot_ubp, tot_gwp) %>% 
+    summarise(tot_sold = n()) %>% 
+    mutate(imp_gwp = tot_sold * tot_gwp,
+           imp_ubp = tot_sold * tot_ubp)
+
+# plot gwp total----
+df_ <- group_by(t, condit ,week, label_content )%>% summarise(imp_gwp=sum(imp_gwp))
+
+df_ <- df_ %>% 
+    group_by(week,condit) %>% # give in variable, you want to calculate percentage
+    mutate(pct_gwp=(imp_gwp/sum(imp_gwp)))
+
+# annotation for selling per week
+text <- group_by(t, week) %>% summarise(tot = sum(tot_sold)) %>%
+    # mutate(label = "italic(CO[2]*eq)") %>%
+    mutate(label2 = paste(label, round(tot,0), sep="=="))
+
+# define x-lab for plot
+df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
+
+# define date of creation
+st <- strftime(today(), format = "%B %Y")
+
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+# detects dark color: for labelling the bars
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# barplot
+p <- ggplot(df_, aes(y = imp_gwp,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "stack", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
+    ylab("\n Anzahl Treibhausgase (THG) in CO2eq")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
+           color = F)+
+    # scale_y_continuous(labels=scales::percent)+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold"))+
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(pct_gwp*100>1.5,paste0(round(pct_gwp*100, digits=0),"%"),"")),size = 10, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+    # annotate( 
+    #     "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=6) + # why so big differences to the first version
+    mytheme
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)", 
+         subtitles = "Von 26'000 Transaktionen konnten für 76 Prozent (20'000) die Treibhausgase berechnet werden.\n Hot & Cold (Buffet) und Locals sind hier nicht berücksichtigt worden (Stand: Dezember 2018).")
+
+# save plot as png and pdf
+ggsave("plots/intervention_basis_gwp_181211_egel.pdf",
+       width = 26, 
+       height = 14, 
+       dpi = 600, 
+       device = cairo_pdf)
+
+# plot ubp total----
+df_ <- group_by(t, condit ,week, label_content )%>% summarise(imp_ubp=sum(imp_ubp))
+
+df_ <- df_ %>% 
+    group_by(week, condit) %>% # give in variable, you want to calculate percentage
+    mutate(pct_ubp = (imp_ubp/sum(imp_ubp)))
+
+# annotation for selling per week
+text <- group_by(t, week) %>% summarise(tot = sum(imp_ubp)) %>%
+    mutate(label = "italic(UBP)") %>%
+    mutate(label2 = paste(label, format(tot, digits = 2, scientific = F), sep="=="))
+
+# define x-lab for plot
+df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
+
+# define date of creation
+st <- strftime(today(), format = "%B %Y")
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+# detects dark color: for labelling the bars
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# barplot
+p <- ggplot(df_, aes(y = imp_ubp,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "stack", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)\n") +
+    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
+    ylab("\nAnzahl Umweltbelastungspunkte (UBP)")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
+           color = F)+
+    scale_y_continuous(labels = function(x){format(x,big.mark = "'", scientific = F)})+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold")) +
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(df_$pct_ubp * 100 > 1.5, paste0(round(df_$pct_ubp * 100, digits = 0),"%"),"")),size = 10, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
+    # annotate( 
+    #     "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=6) + # why so big differences to the first version
+    mytheme
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)", 
+         subtitles = "Von 26'000 Transaktionen konnten für 76 Prozent (20'000) die Umweltbelastungspunkte berechnet werden.\n Hot & Cold (Buffet) und Locals sind hier nicht berücksichtigt worden (Stand: Dezember 2018).")
+
+# save plot as png and pdf
+ggsave("plots/intervention_basis_ubp_181211_egel.pdf",
+       width = 26, 
+       height = 14, 
+       dpi = 600, 
+       device = cairo_pdf)
+# plot ubp mean per meal and week----
+# how to calculate the daily impact: count sellings and multiplicate them with the tot_ubp and tot_gwp
+# eclude all hot and cold and locals
+t <- filter(df_agg_tot, label_content != "Hot and Cold" & !grepl("Local ", df_agg_tot$article_description)) %>% 
+    mutate(condit = ifelse(.$cycle == 1 & .$week %%2 == 0, "Basis",
+                           ifelse(.$cycle == 2 & .$week %%2 == 1, "Basis", "Intervention"))) %>% 
+    group_by(meal_name,week, article_description, condit, label_content, tot_ubp, tot_gwp) %>% 
+    summarise(tot_sold = n()) %>% 
+    mutate(imp_ubp = tot_sold * tot_ubp,
+           imp_gwp = tot_sold * tot_gwp) %>% 
+    ungroup() %>% 
+    group_by(week) %>% 
+    mutate(imp_week_ubp = sum(imp_ubp),
+           imp_week_gwp = sum(imp_gwp)) %>% 
+    ungroup() %>% 
+    group_by(week, condit) %>% 
+    mutate(pct_sold = tot_sold/sum(tot_sold),
+           prop_ubp = pct_sold * imp_week_ubp,
+           prop_gwp = pct_sold * imp_week_gwp)
+
+# prepare data for plot           
+df_ <- group_by(t, condit ,week, label_content)%>% summarise(imp_ubp_m=sum(prop_ubp),
+                                                             tot_pct = sum(pct_sold))
+
+# define x-lab for plot
+df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
+
+## check if the background color is dark or not
+# see mytheme for function
+# my colors for the plot
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+
+# detects dark color: for labelling the bars
+df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
+                                    function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
+
+# barplot
+p <- ggplot(df_, aes(y = imp_ubp_m, x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    geom_bar(stat = "identity", position = "stack", color = NA, width = .6) + # set color NA otherwise error occurs
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)\n") +
+    # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
+    ylab("\nAnzahl Umweltbelastungspunkte (UBP)")+
+    guides(fill = guide_legend("Menü-Inhalt\n"),
+           color = F)+
+    scale_y_continuous(labels = function(x){format(x,big.mark = "'", scientific = F)})+
+    scale_fill_manual(values = ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name,
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold")) +
+    scale_color_manual(values = levels(df_$label_color))+
+    geom_text(aes(label=ifelse(df_$pct_ubp * 100 > 1.5, paste0(round(df_$pct_ubp * 100, digits = 0),"%"),"")),size = 10, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
+    # annotate( 
+    #     "text",x = 1:12, y = 1.03, label = text$label2,parse=T, size=6) + # why so big differences to the first version
+    mytheme
+
+p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)", 
+         subtitles = "Von 26'000 Transaktionen konnten für 76 Prozent (20'000) die Umweltbelastungspunkte berechnet werden.\n Hot & Cold (Buffet) und Locals sind hier nicht berücksichtigt worden (Stand: Dezember 2018).
+         ")
+
+# save plot as png and pdf
+ggsave("plots/intervention_basis_ubp_181211_egel.pdf",
+       width = 26, 
+       height = 14, 
+       dpi = 600, 
+       device = cairo_pdf)
+
