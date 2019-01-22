@@ -23,9 +23,11 @@
 
 # ignore subequent folders
 
-/analysen/
-/archive/
+/raw data
+/clean data
+/augmented data
+/files
+/analysen
+/archive
+/plots
 /papers/*
-/plots/
-/raw data/
-/.Rproj.user/*
