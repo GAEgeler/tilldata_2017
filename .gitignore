@@ -23,6 +23,5 @@
 
 # ignore subequent folders
 
-*/*raw data
+*/*
 
-.Rproj.user
