@@ -24,4 +24,9 @@
 # ignore subequent folders
 
 */*
+/analysen
+/archive
+/papers
+/plots
+/raw data
 

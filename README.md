@@ -4,4 +4,4 @@ To approach resource-light food patterns, the standards, routines and practices 
 In this study we focus on models and techniques aiming at directly activating behavioral change. In other words how can canteen guests be persuaded to choose vegetarian or vegan dishes that conserve resources more often due to a changed offer? 
 Main result changing the meal offer changes the purchase behavior.
 
-for further information visit our (webpage)[www.novanimal.ch]
+for further information visit our webpage www.novanimal.ch
