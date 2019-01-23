@@ -1,4 +1,10 @@
 # environmental impact analysis----
+
+###
+# state: januar 2019
+# author: gian-Andrea egeler
+###
+
 # load data df_agg_tot
 source("04_load_data_180802_egel.R")
 source("08_theme_plots_180419_egel.R") # mythemes

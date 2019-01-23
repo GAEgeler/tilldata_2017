@@ -1,6 +1,9 @@
 ## load additional data-----
 
-# status 1.10.18 // egel
+###
+# state: januar 2019
+# author: gian-Andrea egeler
+###
 
 # load packages
 pck <- c("dplyr", "stringr", "readr", "readxl", "reshape2", "lubridate")

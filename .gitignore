@@ -31,3 +31,5 @@
 /archive
 /plots
 /papers/*
+/.Rproj/**
+.Rproj.user

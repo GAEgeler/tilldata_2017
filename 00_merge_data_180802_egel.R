@@ -2,7 +2,8 @@
 
 
 ###
-# Stand: 29.9.18 // egel
+# state: januar 2019
+# author: gian-Andrea egeler
 ###
 
 # required packages
@@ -12,14 +13,26 @@ lapply(pack, function(x){do.call("library",list(x))})
 
 
 
-#### First Step: Loading data--------
+#### First Step: Loading both data sets: all transactions ZHAW 2.Okt 2017 till 22. Dec 2017--------
 
 
-# all transactions ZHAW 2.Okt 2017 till 22. Dec 2017 (last update from 27.09.18)
+# aggregated dataset (data got on March 2018)
+# script was last run on data set in August 2018
+# inluced all cash payers
+trans_dat <- read_delim("raw data/ZHAW_Transactions_180320.csv", delim = ';',col_names = T,trim_ws = T) %>% # trim_ws removes white space
+    select(id, till_id, shop_id, operator_id, trans_date, total_amount, trans_num, bookkeeping_date, pricelevel_id, Geschlecht, card_num, Geburtsjahr2, Kategorisierung) %>%
+    rename(transaction_id = id, member = Kategorisierung, date = bookkeeping_date) %>%
+    mutate(trans_num = parse_integer(.$trans_num), # parse to integer otherwise r saves it as numeric (e.g. 2.67e3)
+           transaction_id = parse_integer(.$transaction_id))
+ 
+
+# individual dataset (data got on 27.09.18)
+# script was last run on dataset in September 2018
 # (No column name) = ccnr | its a number to identify a distinct person (important for indivdiaul analyses)
-# Bruno says trans_num is better for merge as transaction_id => however there is no trans_num in either of the other data sets 
+# Bruno says trans_num is better for merge as transaction_id => however there is no trans_num in either of the other data sets
+# do not inluced all cash payers
 # dob = date of birth
-trans_dat <- read_xlsx("raw data/Kaufverhalten_2018-09-27_V01.xlsx", sheet = 5, col_names = T, trim_ws = T) %>% # trim_ws removes white space
+trans_dat1 <- read_xlsx("raw data/Kaufverhalten_2018-09-27_V01.xlsx", sheet = 5, col_names = T, trim_ws = T) %>% # trim_ws removes white space
     select(`(No column name)`, id, till_id, DatumSV, trans_date, total_amount, trans_num, pricelevel_id, Geschlecht, card_num, Geburtsjahr2, Kategorisierung) %>%
     rename(ccrs = `(No column name)`, transaction_id = id, member = Kategorisierung, gender = Geschlecht, Dob = Geburtsjahr2, date = DatumSV) %>%
     mutate(ccrs = parse_integer(.$ccrs), # parse to integer otherwise r saves it as numeric (e.g. 2.67e3)
@@ -105,5 +118,8 @@ df4 <- left_join(df3, pay_inf, by = "transaction_id", "total_amount") %>%# some 
     select(-total_amount.y) %>% # drop double variable
     rename(total_amount = total_amount.x)
 
-# save data        
+# save individual data        
 write_delim(df4, "raw data/data_trans_180929_egel.csv", delim = ';') # contains all transaction over ZHAW
+
+# save aggregated data
+write_delim(df4, "raw data/data_trans_180802_egel.csv", delim = ';') # contains all transaction over ZHAW

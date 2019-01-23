@@ -1,6 +1,9 @@
 ## load data -----
 
-# status 17.10.18 // egel
+###
+# state: januar 2019
+# author: gian-Andrea egeler
+###
 
 # required packages
 pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr")
@@ -52,28 +55,6 @@ df_2017 <- filter(df_2017, ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=10006
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
 
-
-# merge data with ubp and gwp
-
-# create first second cycle
-# creates again duplicates => why?
-# attention 3 meals need to be deleted, because of the first cycle
-t <- mutate(envir, cycle = 2) %>%  # give them value
-    select(-date, -week) %>% # diselect date
-    left_join(., info[ , -6], by = c("article_description", "label_content", "cycle", "meal_name")) %>% # merge with info (see below)
-    filter(!duplicated(.$meal_name))
-
-# delete 3 cases
-t <- drop_na(t, date)
-
-# concat both cycles
-t1 <- filter(envir, cycle == 1) %>% 
-    select(-week) %>% 
-    bind_rows(.,t) %>% 
-    mutate(week = isoweek(date)) %>% 
-    left_join(., info)  # get shop_description
-    
-df_agg_tot <- left_join(df_agg, t1, by = c("shop_description","date","article_description","cycle", "label_content", "meal_name", "week") )
 
 # delete some datasets
 rm(list = c("t", "t1","pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))

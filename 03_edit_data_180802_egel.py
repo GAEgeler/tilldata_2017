@@ -1,7 +1,10 @@
 ##### edit special cases in data
 #### Manuelle Anpassungen an die Kassendaten:
 
-# Stand: 2.10.18 // egel    
+###
+# state: januar 2019
+# author: gian-Andrea egeler
+###
 
 # see documentation: "anpassungen an datensatz 180502.txt"
 
@@ -18,14 +21,14 @@ import re
 
 # load data
 os.chdir('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/clean data')
-# new data set
-d = pd.read_csv('data_filtered_180929_egel.csv',sep=';', parse_dates=['trans_date']) # dont parse date
-# d['date2'] = d['date'].dt.date
-# d['date2'] = pd.to_datetime(d['date2'], format = "%Y-%m-%d")
 
-# old data set
-d1 = pd.read_csv('data_filtered_180802_egel.csv',sep=';', parse_dates=['trans_date',"date"])
-d1['shop_description'] = d1['shop_description'].str.replace(" .*","") # select only fist word of string
+# individual data set
+d = pd.read_csv('data_filtered_180929_egel.csv',sep=';', parse_dates=['trans_date']) # do not parse date
+
+
+# agg data set
+d = pd.read_csv('data_filtered_180802_egel.csv',sep=';', parse_dates=['trans_date',"date"])
+d['shop_description'] = d1['shop_description'].str.replace(" .*","") # select only fist word of string => reason?
 
 
 # two special cases:
@@ -116,6 +119,10 @@ d.loc[(d['date']=='2017-12-15') & (d['article_description']=="Local Favorite"),'
 # 	2017-12-20: 2 observations in new data set  (before 1) 
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Local Favorite"),'article_description'] = 'Favorite'
 
-### save data
-d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/augmented data/data_edit_180929_egel.csv',sep=';', index=False) # not including time filter
+
+### save individual data
+d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/augmented data/data_edit_180929_egel.csv',sep=';', index=False) 
+
+### save agg data set
+d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/augmented data/data_edit_180802_egel.csv',sep=';', index=False) 	
 

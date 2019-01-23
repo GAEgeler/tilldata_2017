@@ -3,7 +3,10 @@
 ######
 
 
-# Status: 3.12.18 // egel
+###
+# state: december 2018
+# author: gian-Andrea egeler
+###
 
 # required packages
 library(ggplot2)
