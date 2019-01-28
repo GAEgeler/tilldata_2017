@@ -1,7 +1,7 @@
 # Clean and edit data --------
 
 ###
-# state: januar 2019
+# state: january 2019
 # author: gian-Andrea egeler
 ###
 

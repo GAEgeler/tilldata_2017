@@ -9,16 +9,9 @@
 pck <- c("dplyr", "stringr", "readr", "readxl", "reshape2", "lubridate")
 lapply(pck, function(x){do.call("library", list(x))})
 
-# load documentation ----------- (last update sept 2018)
-info_orig <- read_delim("augmented data/menu_inhalt_protein_180420_matu08.csv", trim_ws = T, delim =';', locale = locale(encoding = 'LATIN1'),
-                        col_types = cols(date = col_date(format = "%d.%m.%Y"))) %>% # pay attention to the date format (now is it Date format not POSIXct)
-    mutate(date = as.Date(.$date)) %>%
-    mutate(week = isoweek(.$date)) %>%
-    mutate(condit = ifelse(.$cycle == 1 & .$week %%2 == 0,"Basis",ifelse(.$cycle == 2 & .$week %%2 == 1,"Basis","Intervention"))) %>%
-    mutate(shop_description = str_replace(.$shop_description, " .*", "")) # take only first word of shop_description (better for merge)
-
+# load documentation ----------- (last update janaury 2019)
 # of with info about fish
-#source("07_change_documentary_190128_egel.R")
+source("07_change_documentary_190128_egel.R") # some changes in label_content
 
 # load hot and cold buffet information-----
 buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
@@ -34,9 +27,9 @@ ubp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Nov
     rename(label_content = Menuart, meal_name = `Name Menu`, meal_name_comp = X__2, article_description = X__3, week = X__4,  gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(cycle = 1, method = "ubp", X__5 = str_sub(X__5, end = 5)) %>% # create new variables: cycle, calculation method, date
     mutate(date=paste(str_sub(X__5, end = -3), str_sub(X__5, start = 4), 17, sep = ".")) %>% # paste date together, however need some changes
-    select(meal_name, meal_name_comp, article_description, label_content, date, week, cycle, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>% ## select variables
+    dplyr::select(meal_name, meal_name_comp, article_description, label_content, date, week, cycle, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>% ## select variables
     # sum all variables => only for sorting in plot
-    mutate(tot_ubp = Kohlenhydrate + Protein + gemuse_fruchte + ol_fett_nuss + suss_salz_alk + foodwaste + zubereitung)
+    mutate(tot_ubp = Kohlenhydrate + Protein + gemuse_fruchte + ol_fett_nuss + suss_salz_alk + foodwaste + zubereitung) # add all variables together
 
 
 # do some changes to the data: cycle, date, label_content
@@ -63,7 +56,7 @@ ubp <- ubp %>%
 
 # join with documentation to achive the best names matches
 ubp_ <- info_orig %>%
-    select(article_description, week, cycle, date, label_content, meal_name) %>%
+    dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
     filter(duplicated(meal_name)) %>% # only duplicates (because of shop_description)
     left_join(ubp, .,by = c("article_description", "cycle", "date", "week")) %>%
     filter(!duplicated(meal_name.y))
@@ -76,7 +69,7 @@ ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cyc
 gwp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!AB3:AM96", trim_ws=TRUE, col_names = T) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name_comp = X__2, gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(method = "gwp") %>% # create new variables: calculation method
-    select(meal_name_comp, label_content, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%
+    dplyr::select(meal_name_comp, label_content, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%
     mutate(tot_gwp = Kohlenhydrate + Protein + gemuse_fruchte + ol_fett_nuss + suss_salz_alk + foodwaste + zubereitung)
 
 # change label content for merge
@@ -88,7 +81,7 @@ gwp_ <- left_join(gwp, ubp[c("meal_name_comp", "label_content", "article_descrip
 
 # merge with documentation
 gwp_1 <- info_orig %>%
-    select(article_description, week, cycle, date, label_content, meal_name) %>%
+    dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
     filter(duplicated(meal_name)) %>% # only duplicates (because of shop_description)
     left_join(gwp_, .,by = c("article_description", "cycle", "date", "week")) %>%
     filter(!duplicated(meal_name))
@@ -115,7 +108,7 @@ nutri_wide <- read_xlsx("S:/pools/n/N-IUNR-nova-data/08_bewertung_ausgewogenheit
     mutate(date = sub("\\.\\.",".",.$date)) %>% # replace double dot
     mutate(date = parse_date(.$date, format = "%d.%m.%y")) %>% # convert to date format for merging with documentation, PAY ATTENTION to date format for merging, trying with CET and not UTC
     mutate(cycle = 1) %>%
-    select(meal_name, article_description, date, week, cycle, ebp_points, ebp_label, teller_points, teller_label)
+    dplyr::select(meal_name, article_description, date, week, cycle, ebp_points, ebp_label, teller_points, teller_label)
 
 #special edits: seelachsnuggets, vesuvio, seitan, hot pumkin, quornragout, moussaka with meat
 nutri_wide[grep("Seelachsn", nutri_wide$meal_name),]$cycle <- 2  #change week of seelachsnuggets to week nr 
@@ -129,10 +122,10 @@ nutri_wide <- nutri_wide[-grep("85_Auberginen-Moussaka_45K9.11",nutri_wide$meal_
 nutri_wide[grep("85_Auberginen-Moussaka",nutri_wide$meal_name),]$date <- "2017-11-09" # change date to correct date in cycle 1
 
 nutri_wide_ <- info_orig %>%
-    select(article_description, week, cycle, date, label_content, meal_name) %>%
+    dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
     left_join(nutri_wide, .,by = c("article_description", "cycle", "date", "week")) %>%
     filter(!duplicated(meal_name.y)) %>%
-    select(-meal_name.x)
+    dplyr::select(-meal_name.x)
 
 
 # nutritionoal data into long format 
@@ -140,5 +133,5 @@ nutri_long <- melt(nutri_wide_, id.vars = c("meal_name.y", "date", "cycle", "art
 
 
 #delete other datasets
-rm(list=c("gwp", "gwp_", "gwp_1" , "info1", "nutri_wide",  "pck",  "ubp" ,        
-           "ubp_"  , "ubp_long", "gwp_long", "nutri_long"))
+rm(list=c("gwp", "gwp_", "nutri_wide",  "pck",  "ubp" ,        
+           "ubp_long", "gwp_long", "nutri_long"))

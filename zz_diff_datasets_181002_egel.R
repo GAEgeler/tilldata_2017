@@ -1,6 +1,7 @@
 #Difference between new and old data set
 
-# status: 2.10.18 // egel
+# state: august 2018
+# author: gian-Andrea egeler
 
 # new data set # 23'683 obs
 df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%

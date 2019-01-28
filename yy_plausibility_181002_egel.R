@@ -1,6 +1,7 @@
 # check for plausibility
 
-# status: 17.10.18 // egel
+# state: august 18 
+# author: gian-andrea egeler
 
 # load data see script 04_load_data
 # generate sample for further looking ----

@@ -2,7 +2,7 @@
 #### Manuelle Anpassungen an die Kassendaten:
 
 ###
-# state: januar 2019
+# state: january 2019
 # author: gian-Andrea egeler
 ###
 
@@ -28,8 +28,8 @@ d = pd.read_csv('data_filtered_180929_egel.csv',sep=';', parse_dates=['trans_dat
 
 # agg data set
 d = pd.read_csv('data_filtered_180802_egel.csv',sep=';', parse_dates=['trans_date',"date"])
-d['shop_description'] = d1['shop_description'].str.replace(" .*","") # select only fist word of string => reason?
-
+# the shop_description contained two words "grüental/vista MENSA"; to delete the mensa word see code below 
+d['shop_description'] = d['shop_description'].str.replace(" .*","") # select only fist word of string 
 
 # two special cases:
 # 1. take 65 random local favorites from data frame and change them to favorite
@@ -40,7 +40,7 @@ spec['article_description'] = 'Favorite' # rename label
 d.update(spec)# merge it back to data frame
 
 # 2. 10 vegi-burgers where sold as world instead of local world only in Vista canteen
-## am 17.11 could be a possible solution => discuss it with others
+## am 17.11 World to local World
 random.seed(3)
 rand = d.loc[(d['date']=='2017-11-17') & (d['shop_description']=='Vista') & (d['article_description']=="World")].sample(10)
 rand['article_description'] = 'Local World'
@@ -48,7 +48,8 @@ d.update(rand)
 
 # adjust data frame according to the description above
 ## Kitchen
-# 	2017-10-09: local tössfeld to kitchen (10x)
+# 	2017-10-09: local tössfeld to kitchen in individual dataset (10x)
+# 	2017-10-09: local tössfeld to kitchen in aggregated dataset (12x)
 d.loc[(d['date']=='2017-10-09') & (d['article_description']=="Local Tössfeld"),'article_description'] ='Local Kitchen'
 
 # 	2017-10-17
@@ -60,10 +61,12 @@ d.loc[(d['date']=='2017-10-20') & (d['shop_description']=='Vista') & (d['article
 # 	2017-11-20
 d.loc[(d['date']=='2017-11-20') & (d['article_description']=="Kitchen 2"),'article_description'] ='Local Kitchen'
 
-# 	2017-12-19: in comparison to the old data set (16), the new data set has only 14 kitchen 2
+# 	2017-12-19: in individual data set (14)
+#   2017-12-19: in aggregated data set (16)
 d.loc[(d['date']=='2017-12-19') & (d['shop_description']=='Grüental') & (d['article_description']=="Kitchen 2"),'article_description'] = 'Local Kitchen'
 
-# 	2017-12-20: in comparison to the old data set (15), the new data set has only 14 kitchen 2
+# 	2017-12-20: in individual data set (14)
+# 	2017-12-20: in aggregated data set (15)
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Kitchen 2"),'article_description'] ='Local Kitchen'
 
 # change all other kitchen 1,2,3,4 to kitchen
@@ -74,19 +77,21 @@ d['article_description'] = d['article_description'].str.replace("Kitchen \d", "K
 # 2017-10-09
 d.loc[(d['date']=='2017-10-09') & (d['shop_description']=='Vista') & (d['article_description'] == "Local World"),'article_description']='Local Favorite'
 
-# 	2017-10-26
+# 	2017-10-26: 2 in individual data set
+# 	2017-10-26: 3 in aggregated data set
 d.loc[(d['date']=='2017-10-26') & (d['article_description']=="Local Favorite"),'article_description'] = 'Local World'
 
 # 	2017-10-30
 d.loc[(d['date']=='2017-10-30') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
 
-# 	2017-11-02: not anymore there in new data set (because it was payed cash)
-# d.loc[(d['date']=='2017-11-02') & (d['shop_description']=='Vista') & (d['article_description'] =="Local Favorite"),'article_description']# = 'Local World'
+# 	2017-11-02: only for aggregated data set (1)
+d.loc[(d['date']=='2017-11-02') & (d['shop_description']=='Vista') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
 
-# 	2017-11-03
-d.loc[(d['date']=='2017-11-03') & (d['shop_description']=='Grüntal Mensa') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
+# 	2017-11-03: 
+d.loc[(d['date']=='2017-11-03') & (d['shop_description']=='Grüental') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
 
-# 	2017-11-07: 5 observations in new data set (before 6)
+# 	2017-11-07: 5 observations in individual data set
+#   2017-11-07: 6 observations in aggrageted data set
 d.loc[(d['date']=='2017-11-07') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
 
 # 	2017-11-15
@@ -95,7 +100,7 @@ d.loc[(d['date']=='2017-11-15') & (d['article_description']=="Local World"),'art
 # 	2017-11-16
 d.loc[(d['date']=='2017-11-16') & (d['article_description']=="Local World"),'article_description']='Local Favorite'
 
-# 	2017-11-17: not anymore there in new data set (because it was payed cash)
+# 	2017-11-17: only for aggregated data set (1)
 d.loc[(d['date']=='2017-11-17') & (d['article_description']=="Local Favorite"),'article_description'] ='Local World'
 
 # 	2017-11-21
@@ -104,7 +109,8 @@ d.loc[(d['date']=='2017-11-21') & (d['article_description']=="Local Favorite"),'
 # 	2017-11-22
 d.loc[(d['date']=='2017-11-22') & (d['article_description']=="Local Favorite"),'article_description'] = 'Local World'
 
-# 	2017-12-04: 24 observations in new data set  (before 26) 
+# 	2017-12-04: 24 observations in individual data set 
+#   2017-12-04: 25 observations in aggregated data set 
 d.loc[(d['date']=='2017-12-04') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
 
 # 	2017-12-07 
@@ -116,7 +122,8 @@ d.loc[(d['date']=='2017-12-13') & (d['article_description']=="Local World"),'art
 # 	2017-12-15
 d.loc[(d['date']=='2017-12-15') & (d['article_description']=="Local Favorite"),'article_description'] = 'Local World'
 
-# 	2017-12-20: 2 observations in new data set  (before 1) 
+# 	2017-12-20: 2 observations in individual data set  (its a duplicate) 
+# 	2017-12-20: 1 observations in aggregated data set   
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Local Favorite"),'article_description'] = 'Favorite'
 
 

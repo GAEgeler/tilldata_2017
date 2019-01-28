@@ -1,7 +1,7 @@
 ## load data -----
 
 ###
-# state: januar 2019
+# state: january 2019
 # author: gian-Andrea egeler
 ###
 
@@ -24,7 +24,7 @@ df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", lo
 
 # merge documentation info with environmental data-----
 # see 05_load_add_data for further information
-source("05_load_add_data_181001_egel.R")
+source("05_load_add_data_181001_egel.R") # or source("051_load_add_data_190128_egel.R)
 
 # problem only first cycle has data
 envir <- filter(envir_tot, !duplicated(envir_tot[c("article_description", "label_content", "date", "cycle", "week", "meal_name", "tot_ubp", "tot_gwp")])) %>% # select only those with tot_ubp and tot_gwp and drop all other
