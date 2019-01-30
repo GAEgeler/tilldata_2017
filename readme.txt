@@ -9,15 +9,21 @@
 
 03_edit_data.py: special cases were edited (siehe Doku WAS??)
 
-04_load_data.R: load main data sets 
+04_load_data.R: load main data sets (without information about environment and nutrition)
 
-05_load_add_data.R: load some additional data 
+04_1_load_data.R: load main data sets (with information about environment)
 
-06_environmental_analysis_190114_egel.R: some additional analysis on environmental data
+05_load_add_data.R: load some additional data (e.g. buffet and documentation)
 
-08_theme_plots_180419_egel.R: defined themes for plotting
+05_1_load_add_data.R: load additional data (information about meals with fish, environmental data)
 
-09_11: some usefull functions e.g. for plots
+06_environmental_analysis_190114.R: some additional analysis on environmental data (see publications for more information)
+
+07_change_documentary_190128.R: additional information about meals containing fish
+
+08_theme_plots_180419.R: defined themes for plotting
+
+09_12: some usefull functions e.g. for plots
 
 ----------------------
 

@@ -13,6 +13,7 @@ lapply(pck, function(x){do.call("library", list(x))})
 # of with info about fish
 source("07_change_documentary_190128_egel.R") # some changes in label_content
 
+
 # load hot and cold buffet information-----
 buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
     mutate(article_description = "Hot and Cold") %>%
@@ -21,7 +22,6 @@ buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
 
 
 # load environmental data-----------
-
 ## load ubp
 ubp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name = `Name Menu`, meal_name_comp = X__2, article_description = X__3, week = X__4,  gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
@@ -54,15 +54,54 @@ ubp[grep("Quornragout", ubp$meal_name), ]$date[1] <- "Nov.10.17"
 ubp <- ubp %>%
     mutate(date=as.Date(ubp$date,format="%b.%d.%y")) # important change date to date format (not posixct)
 
-# join with documentation to achive the best names matches
+# problem UBP information of first cycle only, 
+# try do duplicate the first
+# problems of six dublicates => we need to delete them manually!
+t <- bind_rows(ubp, ubp[ ,-c(7)]) %>% 
+    mutate(cycle = ifelse(is.na(cycle), 2, cycle)) # add second cycle, however now there are six meals to much (those 3 form the second cycle and their duplicated from the first cycle)
+
+# delete six cases
+t <- t[-grep("Seitangesch", t$meal_name)[1],]
+t <- t[-grep("Seelachs", t$meal_name)[1],]
+t <- t[-grep("Nudeln ohne", t$meal_name)[1],]
+t <- t[-grep("Eiernudeln", t$meal_name)[2], ] # delete the one in the second cycle (multiple conditioning is somehow not working)
+t <- t[-grep("Quornragout", t$meal_name)[4], ] # delete the one on the kitchen and with ebly
+t <- t[-grep("Lachsbur", t$meal_name)[2], ]
+
+group_by(t, cycle) %>% count # check, both cycles shoud be 90
+
+# add new dates to the date of the first cycle
+library(lubridate)
+library(anytime)
+
+first_part <- t %>% 
+    filter(cycle == 2 & week < 46) %>% 
+    mutate(date = ifelse(.$week%%2 ==0, .$date %m+% weeks(7), .$date %m+% weeks(5))) %>% # adds for even weeks 7 weeks to the date and for the odd week 5
+    mutate(date = anydate(date)) %>% # changes dates back to origin format 
+    mutate(week = isoweek(date))
+
+ubp <- t %>% 
+    filter(cycle == 1 | week > 45) %>% 
+    bind_rows(first_part) # joining went bad, thus an alternative, seems to be right
+
+
+# join with documentation to achive
+library(statar) # has some features which dyplr do not have (check and _merge)
+
+# it looks like, that the merging with info_orig has too many duplicates
+# solution (not a nice one): filter info_orig only for one canteen and drop the rest (= 180 meals)
 ubp_ <- info_orig %>%
+    filter(!grepl("Local ", .$article_description) & article_description != "Hot and Cold" & shop_description == "Grüental") %>% 
     dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
-    filter(duplicated(meal_name)) %>% # only duplicates (because of shop_description)
-    left_join(ubp, .,by = c("article_description", "cycle", "date", "week")) %>%
-    filter(!duplicated(meal_name.y))
+    # filter(!duplicated(meal_name)) %>% # only duplicates (because of shop_description) => not a good
+    join(ubp, ., on = c("article_description", "date", "cycle", "week"), kind = "full", check = m~1)  # gen = "_merge" to check if rows matched
 
 # melt into long format
-ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "label_content.x", "tot_ubp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "ubp")
+# meal_name.x = names from the original file
+# meal_name_comp = names form the original file
+# label_content.x = names/labels from the original file
+# meal_name.y = names from info_orig
+ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "tot_ubp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "ubp")
 
 
 ## load gwp
@@ -76,25 +115,37 @@ gwp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Nov
 gwp$label_content <- str_replace(gwp$label_content, "Vegetarisch", "ovo-lakto-vegetarisch")
 gwp[grep("Seitanragout", gwp$meal_name_comp), ]$label_content <- "vegan (Fleischersatz)"
 
-# date is missing => merge with ubp
+# date, week and cycle is missing => merge with ubp
 gwp_ <- left_join(gwp, ubp[c("meal_name_comp", "label_content", "article_description", "date", "week", "cycle")], by = c("meal_name_comp", "label_content"))
 
 # merge with documentation
 gwp_1 <- info_orig %>%
+    filter(!grepl("Local ", .$article_description) & article_description != "Hot and Cold" & shop_description == "Grüental") %>% 
     dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
-    filter(duplicated(meal_name)) %>% # only duplicates (because of shop_description)
-    left_join(gwp_, .,by = c("article_description", "cycle", "date", "week")) %>%
-    filter(!duplicated(meal_name))
+    # filter(!duplicated(meal_name)) %>% # only duplicates (because of shop_description) => not a good
+    join(gwp_, ., on = c("article_description", "date", "cycle", "week"), kind = "full", check = m~1)  
+
 
 # melt into long format
-gwp_long <- melt(gwp_1, id.vars = c("meal_name", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "label_content.x", "tot_gwp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "gwp")
+# meal_name_comp = names form the original file
+# label_content.x = names/labels from the original file
+# meal_name = names from info_orig (corresponds to meal_name.y in ubp data set)
+gwp_long <- melt(gwp_1, id.vars = c("meal_name", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "tot_gwp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "gwp")
 
 # merge dataframes of environmental data
-# generates 7 duplicates of each date => dont know why
-envir_tot <- inner_join(ubp_long[-7], gwp_long[-c(2,4,7)], by = c("meal_name.y" = "meal_name", "article_description", "label_content.y", "date", "content")) %>%
+# to merge with df_agg or df_2017 this file should it do
+# contains only tot_ubp and tot_gwp => for more information see envir_tot
+envir <- left_join(ubp_[ , c("meal_name_comp", "meal_name.y", "article_description", "label_content.y", "date", "week", "cycle", "tot_ubp")], 
+                    gwp_1[ , c("meal_name_comp", "meal_name", "article_description", "label_content.y", "date", "week", "cycle", "tot_gwp")], 
+                    by = c("meal_name.y" = "meal_name", "meal_name_comp", "article_description", "label_content.y", "date", "week", "cycle")) %>%
+    rename("meal_name" = "meal_name.y", "label_content" = "label_content.y")
+
+
+# do we need that one?
+# 1260 obs / 14 returns us 90 meals (for each meal 7 criteria for ubp and gwp e.g. foodwaste)
+envir_tot <- inner_join(ubp_long, gwp_long, by = c("meal_name.y" = "meal_name", "article_description", "label_content.y", "date", "content", "cycle", "meal_name_comp")) %>%
     rename("meal_name" = "meal_name.y", "label_content" = "label_content.y") %>%
-    mutate(week = isoweek(.$date)) %>% 
-    filter(!duplicated(meal_name))
+    mutate(week = isoweek(.$date))
 
 
 # load nutritional data-----------
@@ -121,17 +172,21 @@ nutri_wide[grep("Hot", nutri_wide$meal_name),]$date <-  strptime(as.character("2
 nutri_wide <- nutri_wide[-grep("85_Auberginen-Moussaka_45K9.11",nutri_wide$meal_name),] # delete moussaka with meat 
 nutri_wide[grep("85_Auberginen-Moussaka",nutri_wide$meal_name),]$date <- "2017-11-09" # change date to correct date in cycle 1
 
-nutri_wide_ <- info_orig %>%
-    dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
-    left_join(nutri_wide, .,by = c("article_description", "cycle", "date", "week")) %>%
-    filter(!duplicated(meal_name.y)) %>%
-    dplyr::select(-meal_name.x)
+# nutri_wide_ <- info_orig %>%
+#     filter(here comes filter from above!)
+#     dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
+#     left_join(nutri_wide, .,by = c("article_description", "cycle", "date", "week")) %>%
+#     filter(!duplicated(meal_name.y)) %>%
+    
 
 
-# nutritionoal data into long format 
-nutri_long <- melt(nutri_wide_, id.vars = c("meal_name.y", "date", "cycle", "article_description", "label_content"), measure.vars = c("ebp_points", "ebp_label", "teller_points", "teller_label"))
+# attention there is only data for the first cycle => in case we need that infomation see code from above!
+
+# # nutritionoal data into long format 
+# nutri_long <- melt(nutri_wide_, id.vars = c("meal_name.y", "date", "cycle", "article_description", "label_content"), measure.vars = c("ebp_points", "ebp_label", "teller_points", "teller_label"))
 
 
 #delete other datasets
-rm(list=c("gwp", "gwp_", "nutri_wide",  "pck",  "ubp" ,        
-           "ubp_long", "gwp_long", "nutri_long"))
+rm(list=c("gwp", "gwp_", "nutri_wide_", "nutri_wide",
+          "pck",  "ubp" , "t", "first_part",   
+          "ubp_long", "gwp_long", "nutri_long"))

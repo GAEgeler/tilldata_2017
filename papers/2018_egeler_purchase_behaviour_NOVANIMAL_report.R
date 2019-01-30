@@ -1,5 +1,8 @@
 # R-Skript for brief report of selected results on purchase behaviour
-# Status: 10.01.2019
+# State: january 2019
+# author: gian-andrea egeler
+
+####ATTENTION: some encoding problems with umlaute!!
 
 # to load data (analyses will be made with df_2017)
 source(file = "04_load_data_180802_egel.R")

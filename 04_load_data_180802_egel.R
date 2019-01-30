@@ -22,27 +22,17 @@ df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", lo
     mutate(date = as.Date(date)) 
 
 
-# merge documentation info with environmental data-----
+# merge documentation (in case buffet information is needed you can merge that too)-----
 # see 05_load_add_data for further information
-source("05_load_add_data_181001_egel.R") # or source("051_load_add_data_190128_egel.R)
+source("05_load_add_data_181001_egel.R") 
 
-# problem only first cycle has data
-envir <- filter(envir_tot, !duplicated(envir_tot[c("article_description", "label_content", "date", "cycle", "week", "meal_name", "tot_ubp", "tot_gwp")])) %>% # select only those with tot_ubp and tot_gwp and drop all other
-    select(article_description, label_content, date, cycle, week, meal_name, tot_ubp, tot_gwp)
 
-info_compl <- left_join(info_orig, envir, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) %>% # left join
-    select(-`Kein Protein`,-Kommentar) # diselect all variables of non use
-
-nutri <- filter(nutri_wide_, !duplicated(nutri_wide_[c("article_description", "label_content", "date", "cycle", "week", "meal_name.y","ebp_points", "ebp_label", "teller_points", "teller_label")])) %>%
-    select(c(article_description, label_content, date, cycle, week, meal_name.y, ebp_points, ebp_label, teller_points, teller_label))
-info_compl <- left_join(info_compl, nutri, by=c("meal_name" = "meal_name.y", "article_description","date", "cycle", "week", "label_content")) 
-   
 # documentation with buffet data
-info_compl <- left_join(info_compl, buffet, by=c("date","article_description","shop_description"))
+info_compl <- left_join(info_orig, buffet, by=c("date","article_description","shop_description"))
 
 # merge documentation with data 2017
 info <- select(info_orig, date, article_description, label_content, cycle, meal_name, shop_description) # subset of info_orig
-info_ <- select(info_compl, date,article_description,label_content,cycle,meal_name,shop_description, tot_ubp, tot_gwp, ebp_points, ebp_label, teller_points, teller_label, buffet_animal_comp) # subset of info_compl
+info_ <- select(info_compl, date, article_description, label_content, cycle, meal_name, shop_description, buffet_animal_comp, outside, sun, clouds, rainfall) # subset of info_compl
 df_7 <- left_join(df_17, info, by = c("shop_description","date","article_description","cycle"))
 df_7_ <- left_join(df_17,info_, by = c("shop_description","date","article_description","cycle"))
 
@@ -57,7 +47,7 @@ df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_desc
 
 
 # delete some datasets
-rm(list = c("t", "t1","pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))
+rm(list = c("pack", "buffet", "envir", "envir_tot", "info", "info_", "info_compl", "info_orig", "nutri", "nutri_wide_"))
 
 
 # data from 2015 & 2016 calculate sellings per label_content----
