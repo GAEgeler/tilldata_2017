@@ -5,7 +5,9 @@
 
 
 # load individual data
-source("04_load_data_180802_egel.R")
+# source("04_load_data_180802_egel.R")
+source("04_1_load_data_190128_egel.R") # why loading that data => with fish is better
+source("04_load_data_180802_egel.R") # warnings can be ignored
 source("08_theme_plots_180419_egel.R") # themes for plots
 source("09_function_is_dark_190114_egel.R") # load function isDark
 
@@ -14,7 +16,7 @@ source("09_function_is_dark_190114_egel.R") # load function isDark
 # create age_groups
 dat_g <- df_2017 %>% 
     mutate(category=cut(df_2017$age,breaks=c(-Inf, 25, 35, 50, 65, Inf), 
-                        labels=c("16 bis 25-jÃ¤hrig","26 bis 34-jÃ¤hrig","35 bis 49-jÃ¤hrig","50 bis 64-jÃ¤hrig","keine Angaben"))) %>%
+                        labels=c("16 bis 25-jährig","26 bis 34-jährig","35 bis 49-jährig","50 bis 64-jährig","keine Angaben"))) %>%
     group_by(gender, category, label_content) %>% 
     summarise(tot_sold = n()) %>% 
     mutate(pct = tot_sold / sum(tot_sold)) %>% 
@@ -22,7 +24,7 @@ dat_g <- df_2017 %>%
 
 # create new variable xlab for plot    
 dat <- dat_g %>% 
-    mutate(gender = recode(gender, "F" = "Frauen", "M" = "MÃ¤nner", .missing = "Spezialkarten")) %>% 
+    mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer", .missing = "Spezialkarten")) %>% 
     mutate(xlab = paste(gender, category, sep = "\n")) %>% 
     mutate(label_content = ifelse(is.na(label_content), "Unbekannt", label_content)) %>% 
     arrange(category) # for order in plot
@@ -47,7 +49,7 @@ p <- ggplot(dat, aes(y = pct, x = parse_factor(xlab, levels = c(), locale = loca
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("MenÃƒÂ¼-Inhalt\n"),
+    guides(fill = guide_legend("Menü-Inhalt\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
@@ -65,7 +67,7 @@ dat <- df_2017 %>%
     group_by(gender, label_content, condit) %>% 
     summarise(tot_sold = n()) %>% 
     ungroup() %>% 
-    mutate(gender = recode(gender, "F" = "Frauen", "M" = "MÃ¤nner", .missing = "Spezialkarten"),
+    mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer", .missing = "Spezialkarten"),
            label_content = recode(label_content, .missing = "Unbekannt")) %>% 
     group_by(label_content, gender) %>% 
     summarise(tot_sold = sum(tot_sold)) %>% 
@@ -97,8 +99,8 @@ p <- ggplot(dat, aes(y = pct, x = factor(label_content, c("Unbekannt", "Hot and 
     guides(fill = guide_legend(""),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
-    scale_fill_manual(values = c("Frauen" = "#99f200", "MÃ¤nner" = "#6619e6", "Spezialkarten" = "#008099"), 
-                      breaks = c("Spezialkarten", "MÃ¤nner", "Frauen")) +
+    scale_fill_manual(values = c("Frauen" = "#99f200", "Männer" = "#6619e6", "Spezialkarten" = "#008099"), 
+                      breaks = c("Spezialkarten", "Männer", "Frauen")) +
     scale_x_discrete( breaks = attributes(ColsPerCat)$name,
                       labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
     # scale_color_manual(values = levels(dat$label_color))+
@@ -119,44 +121,60 @@ dat <- df_2017 %>%
     ungroup() %>% 
     group_by(gender, condit) %>% 
     mutate(pct = tot_sold / sum(tot_sold)) %>% # test if right
-    ungroup() %>% 
-    mutate(gender = recode(gender, "F" = "Frauen", "M" = "MÃ¤nner", .missing = "Spezialkarten"),
-           label_content = recode(label_content, .missing = "Unbekannt")) %>% 
+    ungroup() %>%
+    mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer", .missing = "Spezialkarten"),
+           label_content = recode(label_content, .missing = "Unbekannt")) %>%
+    filter(gender != "Spezialkarten") %>% 
     mutate(xlab = paste(gender, condit, sep = "\n"))
 
+# add annotation for xlab # drop that information => not necessary
+# pl <- df_2017 %>% 
+#     filter(!duplicated(ccrs)) %>% 
+#     group_by(gender) %>% 
+#     summarise(tot_member = n()) %>% 
+#     drop_na() %>% # drop Spezialkarten
+#     left_join(dat,., by = "gender") %>% 
+#     ungroup() %>% 
+#     mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer", .missing = "Spezialkarten"),
+#            label_content = recode(label_content, .missing = "Unbekannt")) %>% 
+#     mutate(xlab = paste(gender, condit, sep = "\n")) #%>% xlab_ = paste(tot_member, gender, sep = " "),
+#     mutate(label_content = parse_factor(label_content, levels = c())) %>% 
+#     arrange(gender, -tot_sold)
 
 # define annotation
-txt <- group_by(dat, gender, condit, xlab) %>% 
+txt <- group_by(dat, gender, condit) %>% 
     summarise(tot = sum(tot_sold)) %>% 
-    mutate(label = paste("italic(n)", tot, sep = "==")) %>% 
-    arrange(xlab) # sort according dat
+    mutate(label_ = format(tot, big.mark = "'", scientific = F),
+           label = paste("italic(n)", tot, sep = "==")) #%>% 
+    # arrange(xlab) # sort according dat
 
 #prepare data for plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch" = "#6619e6", "Fleisch" = "#fad60d", "Hot and Cold"="#4c4848") # attention order matter
 
 # detects dark color: for labelling the bars
-dat$label_color <- as.factor(sapply(unlist(ColsPerCat)[dat$label_content], 
+pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
                                     function(color) { if (isDark(color)) 'white' else 'black' })) 
 
 #ATTENTION parse_factor throws errors because of umlaute use encoding latin1!!
 
 #plot
-p <- ggplot(dat, aes(y = pct, x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(pl, aes(y = pct, x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     ylab("Verkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend(""),
+    guides(fill = guide_legend("Menü-Inhalt"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat, 
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)")) +
-    scale_color_manual(values = levels(dat$label_color))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot & Cold (Buffet)")) +
+    scale_color_manual(values = levels(pl$label_color))+
     geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
-    ggplot2::annotate("text", x = 1:6, y = 1.03, label = txt$label, parse=T, size=9) +
+    ggplot2::annotate("text", x = 1:4, y = 1.05, label = txt$label, parse=T, size=8) + # deparsing seems to work, if you have only one thing to plot
     mytheme 
 
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
+p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)\n
+         Abbildung: Gian-Andrea Egeler")
 
 # save
 ggsave("plots/gender_condit_190129_egel.pdf",
@@ -165,6 +183,8 @@ ggsave("plots/gender_condit_190129_egel.pdf",
        dpi = 600,
        device = cairo_pdf)
 
+# save data set => for grafic section impact
+write_delim(dat[ ,-6], "augmented data/dataset_novanimal_grafics_impact_190204_egel.csv", delim = ";", locale = locale(encoding = "latin1"))
 
 
 # differences between men and women aggregated per label content-------
@@ -173,24 +193,25 @@ dat <- df_2017 %>%
     summarise(tot_sold = n()) %>% 
     mutate(pct = tot_sold / sum(tot_sold)) %>% # add percent calculation
     ungroup() %>% 
-    mutate(gender = recode(gender, "F" = "Frauen", "M" = "MÃ¤nner", .missing = "Spezialkarten"),
+    mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer", .missing = "Spezialkarten"),
            label_content = recode(label_content, .missing = "Unbekannt")) %>% 
     filter(gender != "Spezialkarten")
 
 
 # count male and female
-g <- df_2017 %>% filter(!duplicated(ccrs)) %>% 
+g <- df_2017 %>% 
+    filter(!duplicated(ccrs)) %>% # why is unique() not working?
     group_by(gender) %>%  
     count() %>% 
     drop_na() %>% 
     ungroup() %>% 
-    mutate(gender = recode(gender, "F" = "Frauen", "M" = "MÃ¤nner"),
+    mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer"),
            label = paste(n, gender, sep = " "))
 
 # define annotation
 pl <- group_by(dat, gender) %>% 
     summarise(tot = sum(tot_sold)) %>% 
-    mutate(label_ = paste("(n =", format(tot, big.mark = "'", scientific = F),")"),
+    mutate(label_ = paste("(n = ", format(tot, big.mark = "'", scientific = F),")", sep = ""),
            label = paste(g$label, label_, sep = "\n")) %>%
     left_join(dat, ., by = "gender") %>% 
     # mutate(xlab = paste(gender,g$label, label, sep = "\n")) %>% 
@@ -203,7 +224,7 @@ pl <- pl[order(pl$gender, -pl$tot_sold),] # somehow not possible
 c("Unbekannt", "Hot and Cold", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch")
 
 #prepare data for plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
+ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d", "Fisch" = "#6619e6","Hot and Cold"="#4c4848")
 
 
 #plot => its difficult to sort the data!!
@@ -211,16 +232,17 @@ p <- ggplot(pl, aes(y = pct, x = label,  fill = parse_factor(label_content, leve
     geom_bar(stat = "identity", position = position_dodge(width = NULL) , color = NA, width = .8) + # set color NA otherwise error occurs
     xlab("") +
     ylab("Verkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("MenÃ¼-Inhalt"),
+    guides(fill = guide_legend("Menü-Inhalt"),
            color = F)+
-    scale_y_continuous(labels=scales::percent)+
+    scale_y_continuous(labels=scales::percent, limits = c(0,.6), breaks = seq(0,.6,.1))+
     scale_fill_manual(values = ColsPerCat, 
-                      breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)")) +
-    geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 8, position = position_dodge(width=.8), vjust=-0.25)+ # omit 0% with ifelse()
+                      breaks = c("Fleisch", "Hot and Cold", "Vegetarisch", "Pflanzlich+", "Pflanzlich", "Fisch", "Unbekannt"),
+                      labels = c("Fleisch", "Hot & Cold (Buffet)", "Ovo-lakto-vegetarisch", "Vegan (authentisch)", "Vegan (Fleischersatz)", "Fisch", "Unbekannt")) +
+    geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 7.5, position = position_dodge(width=.8), vjust=-0.25, hjust = .5)+ # omit 0% with ifelse()
     mytheme
 
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
+p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)\n
+         Abbildung: Gian-Andrea Egeler")
 
 # save
 ggsave("plots/gender_aggregated_190130_egel.pdf",
@@ -237,7 +259,7 @@ dat <- df_2017 %>%
     summarise(tot_sold = n()) %>% 
     mutate(pct = tot_sold / sum(tot_sold)) %>% # add percent calculation
     ungroup() %>% 
-    mutate(gender = recode(gender, "F" = "Frauen", "M" = "MÃ¤nner", .missing = "Spezialkarten"),
+    mutate(gender = recode(gender, "F" = "Frauen", "M" = "Männer", .missing = "Spezialkarten"),
            label_content = recode(label_content, .missing = "Unbekannt")) %>% 
     filter(gender != "Spezialkarten") %>% 
     mutate(label_content = recode(label_content, "Pflanzlich" = "Vegan (Fleischersatz)", "Pflantlich+" = "Vegan (authentisch)", 
@@ -253,7 +275,7 @@ ggplot(dat, aes(y = pct, x = reorder_within(dat$label_content, -dat$tot_sold, da
     geom_bar(stat = "identity", position = position_dodge(width = NULL) , color = NA, width = .8) + # set color NA otherwise error occurs
     xlab("") +
     ylab("Verkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("MenÃ¼-Inhalt"),
+    guides(fill = guide_legend("Menü-Inhalt"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_x_reordered()+ # get back the origin names

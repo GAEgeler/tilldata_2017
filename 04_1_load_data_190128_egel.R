@@ -47,4 +47,4 @@ df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_des
     
 
 # delete some datasets
-rm(list = c("pack", "envir", "buffet", "df_17", "df_7_" "envir_tot", "info_", "info_compl", "info_orig"))
+rm(list = c("pack", "envir", "buffet", "df_17", "df_7_", "envir_tot", "info_", "info_compl", "info_orig"))

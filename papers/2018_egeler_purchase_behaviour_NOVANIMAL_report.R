@@ -170,7 +170,7 @@ ggsave("plots/visit_freq_member_181128_egel.pdf",
 
 
 # chapter 3.3: cluster analysis for nutritional patterns-----
-df_ <- df_2017 %>% 
+df_ <- df_2017 %>% # watch with what for dataset you work!
     select(ccrs, label_content, gender, member, age) %>% # select variable of interest
     filter(member != "Spezialkarten") %>% 
     dcast(formula = ccrs + gender + age + member ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
@@ -415,425 +415,123 @@ ggsave("plots/visit_freq_cluster_181227_egel.pdf",
        dpi = 200,
        device = cairo_pdf)
 
-
-# chapter 3.3: cluster one timers: 177----
-one <- filter(df_2, cluster == "one" & member != "Spezialkarten")
-
-# describe this group
-Hmisc::describe(one$gender) # gender distribution
-psych::describe(one[one$age<100,]$age) # mean of age
-Hmisc::describe(one$member) # member distribution
-mean(one$tot_buy) # mean of visit days
-
-
-# prepare for plot => eating behavior
-dat <- filter(df_2017, ccrs %in% one$ccrs) # to get other variables out of the data
-
-pl <- dat %>%  
-    group_by(gender, label_content, condit) %>% 
-    summarise(tot = n()) %>% 
-    ungroup() %>% 
-    mutate(gender = ifelse(is.na(gender), "NA", gender),
-           label_content = ifelse(is.na(label_content), "Unbekannt",label_content)) %>% 
-    mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer", "NA" = "Spezialkarten")) %>% 
-    group_by(gender, condit)%>% 
-    mutate(pct = tot/sum(tot)) %>% 
-    mutate(xlab = paste(gender,condit, sep = "\n"))
-
-# summarise purchase behavior
-aggregate(pl$tot ~ label_content, FUN = mean)
-aggregate(pl$pct ~ label_content, FUN = mean) # is that a proper way? mean of pct?
-
-# chapter 3.3: cluster some timers: 319-----
-some <- filter(df_2, cluster == "some" & member != "Spezialkarten")
-
-# describe this group
-Hmisc::describe(some$gender) # gender distribution
-psych::describe(some[some$age<100,]$age) # mean of age
-Hmisc::describe(some$member) # member distribution
-mean(some$tot_buy)
-
-# how do they eat -> plot eating behavior
-dat <- filter(df_2017, ccrs %in% some$ccrs) 
-pl <- dat %>% 
-    group_by(label_content, gender, condit) %>% 
-    summarise(tot_sold = n()) %>% 
-    ungroup() %>% 
-    group_by(gender, condit) %>%
-    mutate(pct = tot_sold/sum(tot_sold)) %>% 
-    ungroup() %>% 
-    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
-           gender = recode(.$gender, "F" = "Frauen", "M" = "Männer"), # attention the order of those 2 code lines matter
-           gender = ifelse(is.na(.$gender),"Spezialkarten", gender))
-
-# summarise purchase behavior
-aggregate(pl$tot ~ label_content, FUN = mean)
-aggregate(pl$pct ~ label_content, FUN = mean) # is that a proper way? mean of pct?
-
-
-# chapter 3.3: cluster canteen people 1007----
-## describe all canteen visitors 
-canteen <- filter(df_2, cluster != "one" & cluster!= "some")
-
-
 # chapter 3.3: describe clusters --------
-# buffet
-description <- filter(df_2, cluster == "buffet")
-
-# describe group hot and colders 18 
-Hmisc::describe(description$gender)
-psych::describe(description[description$age<100,]$age)
-Hmisc::describe(description$member)
-mean(description$tot_buy)
-
-
-# chapter 3.3: cluster meat avoiders: 18, without hot and cold----
-meat_avoiders <- filter(df_2, cluster == "meat avoiders")
-
-## describe this cluster
-Hmisc::describe(meat_avoiders$gender)
-psych::describe(meat_avoiders[meat_avoiders$age<100,]$age)
-Hmisc::describe(meat_avoiders$member)
-mean(meat_avoiders$tot_buy)
-
-# gender and condit
-dat <- filter(df_2017, ccrs %in% meat_avoiders$ccrs) 
-pl <- dat %>% 
-    group_by(label_content, gender, condit) %>% 
-    summarise(tot_sold = n()) %>% 
-    ungroup() %>% 
-    group_by(gender, condit) %>%
-    mutate(pct = tot_sold/sum(tot_sold)) %>% 
-    ungroup() %>% 
-    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
-           gender = ifelse(is.na(gender),"Spezialkarten",gender),
-           gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab = paste(gender, condit, sep = "\n"))
-
-# add xlab => do not take that into account (not clear enough)
-# pl <- dat %>% 
-#     # filter(!duplicated(ccrs)) %>% # not the right aproach!
-#     group_by(gender, condit, ccrs) %>% 
-#     summarise(tot_purchase = n()) %>% # summarise all purchases
-#     ungroup() %>% 
-#     group_by(gender, condit) %>% # summarise purchases accodrung gender and consit 
-#     summarise(tot_member = n()) %>% 
-#     ungroup() %>% 
-#     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
-#            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-#     inner_join(.,pl, by = c("gender", "condit")) %>% 
-#     ungroup() %>% 
-#     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-#     mutate(xlab0 = paste("(",tot_member,")"),
-#            xlab = paste(gender, xlab0, sep = "\n"),
-#            xlab = paste(xlab, condit, sep = "\n"))
-
-# add annotation
-text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
-    mutate(label = "italic(n)") %>%
-    mutate(label2 = paste(label, tot, sep="=="))
-
-
-## check if the background color is dark or not
-# my colors for the plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
-
-# detects dark color: for labelling the bars
-pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
-                                   function(color) { if (isDark(color)) 'white' else 'black' })) 
-
-
-#plot
-p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
-    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
-    xlab("") +
-    ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Inhalt\n"),
-           color = F)+
-    scale_y_continuous(labels=scales::percent)+
-    scale_fill_manual(values = ColsPerCat,
-                      breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
-    scale_color_manual(values = levels(pl$label_color))+
-    geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
-    annotate( 
-        "text",x = 1:4, y = 1.03, label = text$label2,parse=T, size=9) + 
-    mytheme
-
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
-
-#save
-ggsave("plots/eating_meat_avoider_181227_egel.pdf",p,
-       width = 18,
-       height = 10,
-       dpi = 600,
-       device = cairo_pdf)
-
-
-# chapter 3.3: cluster veg-flexitarians: 1-26% meat consumtion (330)----------
-veg_flex <- filter(df_2, cluster == "veg-flexitarians")
-
-# describe this cluster
-Hmisc::describe(veg_flex$gender) # gender distribution
-psych::describe(veg_flex[veg_flex$age<100,]$age) # mean of age
-Hmisc::describe(veg_flex$member) # member distribution
-mean(veg_flex$tot_buy) # mean of visit days
-
-# plot difference in eating behavior an gender
-dat <- filter(df_2017, ccrs %in% veg_flex$ccrs)
-pl <- dat %>% 
-    group_by(label_content, gender, condit) %>% 
-    summarise(tot_sold = n()) %>% 
-    ungroup() %>% 
-    group_by(gender, condit) %>%
-    mutate(pct = tot_sold/sum(tot_sold)) %>% 
-    ungroup() %>% 
-    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
-           gender = ifelse(is.na(gender),"Spezialkarten",gender),
-           gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab = paste(gender, condit, sep = "\n"))
-
-
-# add xlab
-# pl <- dat %>%
-#     group_by(gender, condit, ccrs) %>% 
-#     summarise(tot_purchase = n()) %>% # summarise all purchases
-#     ungroup() %>% 
-#     group_by(gender, condit) %>% # summarise purchases accodrung gender and consit 
-#     summarise(tot_member = n()) %>% 
-#     ungroup() %>%
-#     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
-#            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-#     inner_join(.,pl, by = c("gender", "condit")) %>% 
-#     ungroup() %>% 
-#     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-#     mutate(xlab0 = paste("(",tot_member,")"),
-#            xlab = paste(gender, xlab0, sep = "\n"),
-#            xlab = paste(xlab, condit, sep = "\n")) 
-
-# add annotation
-text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
-    mutate(label = "italic(n)") %>%
-    mutate(label2 = paste(label, tot, sep="=="))
-
-## check if the background color is dark or not
-# my colors for the plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
-
-# detects dark color: for labelling the bars
-pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
-                                   function(color) { if (isDark(color)) 'white' else 'black' })) 
-
-
-
-# plot
-# order is somehow not right => because of ggplot takes factor out of it, however not that order i want!
-# find a easy way to reorder factors, except with levels => parse_factors(sorts per defaut alphabetically)
-# check out forcats => good to change order of factors!
-
-p <- ggplot(pl, aes(y = pct, x = parse_factor(pl$xlab, levels = c(), locale = locale(encoding = "latin1")), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
-    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
-    xlab("") +
-    ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Inhalt\n"),
-           color = F)+
-    scale_y_continuous(labels=scales::percent)+
-    scale_fill_manual(values = ColsPerCat,
-                      breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
-    scale_color_manual(values = levels(pl$label_color))+
-    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
-    annotate( 
-        "text",x = 1:4, y = 1.03, label = text$label2, parse=T, size=9) + # why so big differences to the first version
-    mytheme
-
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
-
-ggsave("plots/eating_cons_flex_181227_egel.pdf",
-       width = 18,
-       height = 10,
-       dpi = 600,
-       device = cairo_pdf)
-
-# chapter 3.3: cluster meat-flexitarians: 34-66% meat consumption (352)-------
-meat_flex <- filter(df_2, cluster == "meat-flexitarians")
-
-# describe this cluster
-Hmisc::describe(meat_flex$gender)
-psych::describe(meat_flex[meat_flex$age<100,]$age)
-Hmisc::describe(meat_flex$member)
-mean(meat_flex$tot_buy)
-
-
-ggsave("plots/eating_uncons_flex_181129_egel.pdf",p,
-       width = 18,
-       height = 10,
-       dpi = 600,
-       device = cairo_pdf)
-
-# chapter 3.3: cluster disengaged meat-eaters: over 67% meat consumption (311)--------
-diseng_meat <- filter(df_2, cluster == "disengaged meat-eaters")
-
-# describe this cluster
-Hmisc::describe(diseng_meat$gender)
-psych::describe(diseng_meat[diseng_meat$age<100,]$age)
-Hmisc::describe(diseng_meat$member)
-mean(diseng_meat$tot_buy)
-
-# plot difference in eating behavior an gender
-dat <- filter(df_2017, ccrs %in% diseng_meat$ccrs)
-pl <- dat %>% 
-    group_by(label_content, gender, condit) %>% 
-    summarise(tot_sold = n()) %>% 
-    ungroup() %>% 
-    group_by(gender, condit) %>%
-    mutate(pct = tot_sold/sum(tot_sold)) %>% 
-    ungroup() %>% 
-    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
-           gender = ifelse(is.na(gender),"Spezialkarten",gender),
-           gender = recode(gender, "F" = "Frauen", "M" = "Männer"))
-
-
-# add xlab
-pl <- dat %>% 
-    filter(!duplicated(ccrs)) %>% 
-    group_by(gender, condit) %>% 
-    summarise(tot_member = n()) %>% 
-    ungroup() %>% 
-    mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
-           gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    inner_join(.,pl, by = c("gender", "condit")) %>% 
-    ungroup() %>% 
-    mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab0 = paste("(",.$tot_member,")"),
-           xlab = paste(gender, xlab0, sep = "\n"),
-           xlab = paste(xlab, condit, sep = "\n")) 
-
-# add annotation
-text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
-    mutate(label = "italic(n)") %>%
-    mutate(label2 = paste(label, tot, sep="=="))
-
-
-## check if the background color is dark or not
-# my colors for the plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
-
-# detects dark color: for labelling the bars
-pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
-                                   function(color) { if (isDark(color)) 'white' else 'black' })) 
-
-
-#plot
-p <- ggplot(pl, aes(y = pct, x = parse_factor(xlab, levels = c()), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
-    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
-    xlab("") +
-    ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Inhalt\n"),
-           color = F)+
-    scale_y_continuous(labels=scales::percent)+
-    scale_fill_manual(values = ColsPerCat,
-                      breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
-    scale_color_manual(values = levels(pl$label_color))+
-    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
-    annotate( 
-        "text",x = 1:6, y = 1.03, label = text$label2,parse=T, size=9) + 
-    mytheme
-
-
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
-
-ggsave("plots/eating_extra_flexi_181228_egel.pdf",p,
-       width = 18,
-       height = 10,
-       dpi = 600,
-       device = cairo_pdf)
-
-
-
-# chapter 3.3: cluster meat lovers: 205 persons over 75% of buyings meat----
-meat_lovers <- filter(df_2, cluster == "meat lovers")
-
-
-## describe this cluster
-Hmisc::describe(meat_lovers$gender) # gender distribution
-psych::describe(meat_lovers[meat_lovers$age<100,]$age) # mean of age
-Hmisc::describe(meat_lovers$member) # member distribution
-mean(meat_lovers$tot_buy) # mean of visit days
-
-
-#plot 
-dat <- filter(df_2017, ccrs %in% meat_lovers$ccrs) 
-pl <- dat %>% 
-    group_by(label_content, gender, condit) %>% 
-    summarise(tot_sold = n()) %>% 
-    ungroup() %>% 
-    group_by(gender, condit) %>%
-    mutate(pct = tot_sold/sum(tot_sold)) %>% 
-    ungroup() %>% 
-    mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
-           gender = ifelse(is.na(gender),"Spezialkarten",gender),
-           gender = recode(gender, "F" = "Frauen", "M" = "Männer"))
-
-
-# add xlab
-pl <- dat %>% 
-    filter(!duplicated(ccrs)) %>%
-    group_by(gender, condit) %>% 
-    summarise(tot_member = n()) %>% 
-    ungroup() %>% 
-    mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
-           gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    complete(gender, condit, fill = list(tot_member = 4)) %>% # spezial case, all 4 persons of the special card, where in both conditions
-    inner_join(.,pl, by = c("gender", "condit")) %>% 
-    ungroup() %>% 
-    mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
-    mutate(xlab0 = paste("(",.$tot_member,")"),
-           xlab = paste(gender, xlab0, sep = "\n"),
-           xlab = paste(xlab, condit, sep = "\n")) 
-
-# add annotation
-text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
-    mutate(label = "italic(n)") %>%
-    mutate(label2 = paste(label, tot, sep="=="))
-
-
-## check if the background color is dark or not
-# my colors for the plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
-
-# detects dark color: for labelling the bars
-pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
-                                   function(color) { if (isDark(color)) 'white' else 'black' })) 
-
-
-#plot
-p <- ggplot(pl, aes(y = pct, x = parse_factor(xlab, levels = c()), fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
-    geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
-    xlab("") +
-    ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Menü-Inhalt\n"),
-           color = F)+
-    scale_y_continuous(labels=scales::percent)+
-    scale_fill_manual(values = ColsPerCat,
-                      breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
-    scale_color_manual(values = levels(pl$label_color))+
-    geom_text(aes(label=ifelse(pct*100>2,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
-    annotate( 
-        "text",x = 1:6, y = 1.03, label = text$label2,parse=T, size=9) + 
-    mytheme
-
-
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
-
-#save plot
-ggsave("plots/eating_meat_lovers_181228_egel.pdf",p,
-       width = 18,
-       height = 10,
-       dpi = 600,
-       device = cairo_pdf)
+# create loop with separate outputs (if time)
+
+dfList <- list(one, somem, buffet, meat_avoiders, veg_flex, meat_flex, meat_eat, meat_lovers, alwy_meat)
+
+for (i in 1:length(dfList)) {
+    description <- filter(df_2, cluster == dfList[[i]]$cluster[1]) # filter first datasets
+    a <- Hmisc::describe(description$gender)
+    b <- psych::describe(description[description$age<100,]$age)
+    c <- Hmisc::describe(description$member)
+    d <- mean(description$tot_buy)
+    e <- dfList[[i]]$cluster[1]
+    f <- paste(nrow(description), "count of person in that cluster")
+    g <- paste(nrow(filter(df_2017, ccrs %in% dfList[[i]]$ccrs))/nrow(df_2017)*100, "percent of all sellings")
+    print(list(a,b,c,d,e,f))
+}
+
+
+# chapter 3.3: plot purchase behavior of the clusters-------
+
+# create a list with all dataframes (alwy_meat makes no sense to plot)
+dfList <- list(meat_avoiders, veg_flex, meat_flex, meat_eat, meat_lovers, alwy_meat)
+
+# loop though that list
+for (i in 1:length(dfList)) {
+    dat <- filter(df_2017, ccrs %in% dfList[[i]]$ccrs) # filter first datasets
+    
+    # new variable to check in which dataset we are
+    dat$check <- paste(dfList[[i]]$cluster[1], format(Sys.Date(), "%Y_%m_%d"), "egel", sep = "_") # seach for a better name!!
+    
+    # prepare data
+    pl <- dat %>% 
+        group_by(label_content, gender, condit) %>% 
+        summarise(tot_sold = n()) %>% 
+        ungroup() %>% 
+        group_by(gender, condit) %>%
+        mutate(pct = tot_sold/sum(tot_sold)) %>% 
+        ungroup() %>% 
+        mutate(label_content = ifelse(is.na(label_content),"Unbekannt",label_content),
+               gender = ifelse(is.na(gender),"Spezialkarten",gender),
+               gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
+        mutate(xlab = paste(gender, condit, sep = "\n"))
+    text <- group_by(dat, gender, condit) %>% summarise(tot = n()) %>%
+        mutate(label = "italic(n)") %>%
+        mutate(label2 = paste(label, tot, sep="=="))
+    
+    # add xlab => do not take that into account (not clear enough)
+    # pl <- dat %>% 
+    #     # filter(!duplicated(ccrs)) %>% # not the right aproach!
+    #     group_by(gender, condit, ccrs) %>% 
+    #     summarise(tot_purchase = n()) %>% # summarise all purchases
+    #     ungroup() %>% 
+    #     group_by(gender, condit) %>% # summarise purchases accodrung gender and consit 
+    #     summarise(tot_member = n()) %>% 
+    #     ungroup() %>% 
+    #     mutate(gender = ifelse(is.na(gender),"Spezialkarten",gender),
+    #            gender = recode(gender, "F" = "Frauen", "M" = "Männer")) %>% 
+    #     inner_join(.,pl, by = c("gender", "condit")) %>% 
+    #     ungroup() %>% 
+    #     mutate(gender = recode(.$gender, "F" = "Frauen", "M" = "Männer")) %>% 
+    #     mutate(xlab0 = paste("(",tot_member,")"),
+    #            xlab = paste(gender, xlab0, sep = "\n"),
+    #            xlab = paste(xlab, condit, sep = "\n"))
+    
+    
+    ## check if the background color is dark or not
+    # my colors for the plot
+    ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d", "Hot and Cold"="#4c4848")
+    
+    # detects dark color: for labelling the bars
+    pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
+                                       function(color) { if (isDark(color)) 'white' else 'black' })) 
+    
+    
+    #plot
+    p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+        geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
+        xlab("") +
+        ylab("\nVerkaufte Gerichte in Prozent")+
+        guides(fill = guide_legend("Menü-Inhalt\n"),
+               color = F)+
+        scale_y_continuous(labels=scales::percent)+
+        scale_fill_manual(values = ColsPerCat,
+                          breaks = attributes(ColsPerCat)$name,
+                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
+        scale_color_manual(values = levels(pl$label_color))+
+        geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+        annotate( 
+            "text",x = 1:4, y = 1.03, label = text$label2,parse=T, size=9) + 
+        mytheme
+    
+    p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
+    
+    ggsave(path = "plots/", 
+           filename = paste(dat$check[1],".pdf", sep = ""),
+           width = 18,
+           height = 10,
+           dpi = 600,
+           device = cairo_pdf)
+}
+
+# chapter 3.3: some statistics--------
+# create a list with all dataframes (alwy_meat makes no sense to plot)
+dfList <- list(meat_avoiders, veg_flex, meat_flex, meat_eat, meat_lovers)
+
+# loop though that list
+for (i in 1:length(dfList)) {
+    dat <- filter(df_2017, ccrs %in% dfList[[i]]$ccrs) # filter first datasets
+    dat_ <- group_by(dat, condit, label_content) %>%
+        summarise(tot_sold = n()) %>%  # summarise all sellings per meal content per condition
+        mutate(pct = tot_sold / sum(tot_sold))
+    dat_$check <- dfList[[i]]$cluster[1]
+    dfList_[[i]] <- dat_ # append to list
+    # aggregate(pl$pct ~ label_content, FUN = mean)
+}
+
+big_data <- do.call(rbind, dfList_) # concat all dataframes from list together
 
 # chapter 3.4: cluster analyses only for people with same buyings in both conditions--------
 # exclude first people who eat less than 5 times in the canteen
