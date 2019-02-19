@@ -11,10 +11,9 @@ source("05_1_load_add_data_190128_egel.R") # do only need ubp_ and gwp_1
 source("08_theme_plots_180419_egel.R")
 
 
-#ATTENTION to calculate the hole sellings, big problems in documentation!!
-
 # plot all menus ubp----
 # melt into long format
+# attention the ubp is containig all meals from both cycles => to avoid that extract all duplicates!
 ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cycle", "article_description", "label_content.y", "label_content.x", "tot_ubp"), measure.vars = c("Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste", "zubereitung"), variable.name = "content", value.name = "ubp")
 
 # plot order of ubp_points
@@ -45,7 +44,7 @@ p <- ggplot(ubp_long, aes(x = meal_name_comp,y = ubp, fill = factor(content, lev
     scale_x_discrete(limits = unique(order_$meal_name_comp), guide_legend("")) +
     scale_fill_manual(values = c("zubereitung" = "#262626", "Kohlenhydrate" = "#fad60d", "Protein" = "#c5b87c", "gemuse_fruchte" = "#008099", "ol_fett_nuss" = "#80ccff", "suss_salz_alk" = "grey90", "foodwaste" = "#99f200"),
                       breaks = c("zubereitung", "Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste"),
-                      labels = c("Zubereitung", "Kohlenhydrate", "Protein", "Gemüse & Früchte", "Öle, Fette & Nüsse", "Süsses/Salziges/Alkoholisches", "Foodwaste ohne Tellerrest"))+
+                      labels = c("Zubereitung", "Kohlenhydrate", "Protein", "Gemüse & Früchte", "Ã–le, Fette & Nüsse", "Süsses/Salziges/Alkoholisches", "Foodwaste ohne Tellerrest"))+
     scale_y_continuous(limits = c(0, 10000), breaks = seq(0, 10000, 2500))+
     ylab("Umweltbelastungspunkte (UBP/Gericht)")+
     mytheme4
@@ -53,12 +52,12 @@ p <- ggplot(ubp_long, aes(x = meal_name_comp,y = ubp, fill = factor(content, lev
      
 
 # annotate text and lines
-p + annotate("segment", x="Poulet Nasi Goreng mit Blattsalat", xend = "Rindsragout mit Spätzli und Bohnen", y = txt[txt$label_content.y == "Fleisch", ]$median,yend = txt[txt$label_content.y == "Fleisch", ]$median, size = 2, color = "grey20") + # annotate median of meat meals
-    annotate("segment", x="Kartoffel-Gemüsegratin", xend = "Spätzli-Gemüsepfanne mit Blattsalat", y = txt[txt$label_content.y == "Vegetarisch", ]$median, yend = txt[txt$label_content.y == "Vegetarisch", ]$median, size = 2, color = "grey20")+ # annotate median of vegetarian meals
+p + annotate("segment", x="Poulet Nasi Goreng mit Blattsalat", xend = "Rindsragout mit SpÃ¤tzli und Bohnen", y = txt[txt$label_content.y == "Fleisch", ]$median,yend = txt[txt$label_content.y == "Fleisch", ]$median, size = 2, color = "grey20") + # annotate median of meat meals
+    annotate("segment", x="Kartoffel-Gemüsegratin", xend = "SpÃ¤tzli-Gemüsepfanne mit Blattsalat", y = txt[txt$label_content.y == "Vegetarisch", ]$median, yend = txt[txt$label_content.y == "Vegetarisch", ]$median, size = 2, color = "grey20")+ # annotate median of vegetarian meals
     annotate("segment", x="Linsen-Gemüsecurry mit Samosa", xend = "Aglio Olio mit Blattsalat", y = txt[txt$label_content.y == "Pflanzlich+", ]$median,  yend = txt[txt$label_content.y == "Pflanzlich+", ]$median, size = 2, color = "grey20")+
     annotate("segment", x="Falafel im Pitabrot mit Blattsalat", xend = "Caribbean Tofu und Kefen in Currysauce" , y = txt[txt$label_content.y == "Pflanzlich", ]$median, yend = txt[txt$label_content.y == "Pflanzlich", ]$median, size = 2, color = "grey20")+
     annotate("segment", x="Paniertes MSC-Kabeljau-Filet mit Reis und Zuchetti", xend = "Gebratene ASC-Lachs-Tranche mit Blattsalat" , y = txt[txt$label_content.y == "Fisch", ]$median, yend = txt[txt$label_content.y == "Fisch", ]$median, size = 2, color = "grey20")+
-    # annotate("text", x="Grosis Hacktätschli mit Polenta und Ratatouille", y = c(6800,6300) , label= txt$label3[1], size = 7, color = "grey20", parse = T) + # annotate mean and sd of meat
+    # annotate("text", x="Grosis Hackt?tschli mit Polenta und Ratatouille", y = c(6800,6300) , label= txt$label3[1], size = 7, color = "grey20", parse = T) + # annotate mean and sd of meat
     # annotate("text", x="Marronirisotto", y = c(6800,6300) , label= txt$label3[4], size = 7, color = "grey20", parse = T)+
     # annotate("text", x="Friedrice", y = c(6800,6300) , label= txt$label3[3], size = 7, color = "grey20", parse = T)+
     # annotate("text", x="Vegi-Burger", y = c(6800,6300) , label= txt$label3[2], size = 7, color = "grey20", parse = T) +
@@ -96,7 +95,7 @@ p <- ggplot(gwp_long, aes(x = meal_name_comp, y = gwp, fill = factor(content, le
     scale_x_discrete(limits = order_$meal_name_comp, guide_legend("")) + # code from above!
     scale_fill_manual(values = c("zubereitung" = "#262626", "Kohlenhydrate" = "#fad60d", "Protein" = "#c5b87c", "gemuse_fruchte" = "#008099", "ol_fett_nuss" = "#80ccff", "suss_salz_alk" = "grey90", "foodwaste" = "#99f200"),
                       breaks = c("zubereitung", "Kohlenhydrate", "Protein", "gemuse_fruchte", "ol_fett_nuss", "suss_salz_alk", "foodwaste"),
-                      labels = c("Zubereitung", "Kohlenhydrate", "Protein", "Gemüse & Früchte", "Öle, Fette & Nüsse", "Süsses/Salziges/Alkoholisches", "Foodwaste ohne Tellerrest"))+
+                      labels = c("Zubereitung", "Kohlenhydrate", "Protein", "Gemüse & Früchte", "Ã–le, Fette & Nüsse", "Süsses/Salziges/Alkoholisches", "Foodwaste ohne Tellerrest"))+
     #scale_y_continuous(limits = c(-40, 20), breaks = seq(-40, 20, 10))+
     ylab(expression(paste("\n Global warming potential GWP (kg ", "CO"[2],"eq/Gericht)"))) +
     mytheme4
@@ -104,8 +103,8 @@ p <- ggplot(gwp_long, aes(x = meal_name_comp, y = gwp, fill = factor(content, le
 
 
 # annotate text and lines (check always if library NLP is loaded => conflict with ggplot2 annotate())
-p + ggplot2::annotate("segment", x="Poulet Nasi Goreng mit Blattsalat", xend = "Rindsragout mit Spätzli und Bohnen", y = txt[txt$label_content.y == "Fleisch", ]$median,yend = txt[txt$label_content.y == "Fleisch", ]$median, size = 2, color = "grey20") + # annotate median of meat meals
-    ggplot2::annotate("segment", x="Kartoffel-Gemüsegratin", xend = "Spätzli-Gemüsepfanne mit Blattsalat", y = txt[txt$label_content.y == "Vegetarisch", ]$median, yend = txt[txt$label_content.y == "Vegetarisch", ]$median, size = 2, color = "grey20")+ # annotate median of vegetarian meals
+p + ggplot2::annotate("segment", x="Poulet Nasi Goreng mit Blattsalat", xend = "Rindsragout mit SpÃ¤tzli und Bohnen", y = txt[txt$label_content.y == "Fleisch", ]$median,yend = txt[txt$label_content.y == "Fleisch", ]$median, size = 2, color = "grey20") + # annotate median of meat meals
+    ggplot2::annotate("segment", x="Kartoffel-Gemüsegratin", xend = "SpÃ¤tzli-Gemüsepfanne mit Blattsalat", y = txt[txt$label_content.y == "Vegetarisch", ]$median, yend = txt[txt$label_content.y == "Vegetarisch", ]$median, size = 2, color = "grey20")+ # annotate median of vegetarian meals
     ggplot2::annotate("segment", x="Linsen-Gemüsecurry mit Samosa", xend = "Aglio Olio mit Blattsalat", y = txt[txt$label_content.y == "Pflanzlich+", ]$median,  yend = txt[txt$label_content.y == "Pflanzlich+", ]$median, size = 2, color = "grey20")+
     ggplot2::annotate("segment", x="Falafel im Pitabrot mit Blattsalat", xend = "Caribbean Tofu und Kefen in Currysauce" , y = txt[txt$label_content.y == "Pflanzlich", ]$median, yend = txt[txt$label_content.y == "Pflanzlich", ]$median, size = 2, color = "grey20")+
     ggplot2::annotate("segment", x="Paniertes MSC-Kabeljau-Filet mit Reis und Zuchetti", xend = "Gebratene ASC-Lachs-Tranche mit Blattsalat" , y = txt[txt$label_content.y == "Fisch", ]$median, yend = txt[txt$label_content.y == "Fisch", ]$median, size = 2, color = "grey20")+
@@ -131,6 +130,14 @@ summary.lm(aov1)
 library(ggfortify)
 autoplot(aov1) # boxplot ok, however not the residuals (check out with log10)
 TukeyHSD(aov1)
+
+# do some alternative checkings => parameter free analysis
+library(PMCMR)
+ubp_$label_content.y <- parse_factor(ubp_$label_content.y, levels = c())
+kruskal.test(ubp_$tot_ubp ~ ubp_$label_content.y)
+posthoc.kruskal.nemenyi.test(ubp_$tot_ubp, ubp_$label_content.y)# post hoc tests
+
+# let that away
 library(multcomp) # add letters for boxplot
 ubp_$label_content.y <- parse_factor(ubp_$label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")) # first parse characters to factors, otherwise multcomp package can handle the information
 model <- aov(tot_ubp ~ label_content.y, data = ubp_) # important to right it that way resp. with data = , otherwise multicomp throws u an error
@@ -139,6 +146,7 @@ letters <- cld(glht(model, linfct = mcp(label_content.y="Tukey")))
 # boxplot ubp-----
 # add number of meals per meal content (in xlab)
 dat <- ubp_ %>% 
+    filter(!duplicated(.$meal_name_comp)) %>% # filter first ()
     group_by(label_content.y) %>% 
     summarise(sum_content = n()) %>% 
     left_join(ubp_, ., by = c("label_content.y")) %>% 
@@ -149,17 +157,44 @@ dat <- ubp_ %>%
     mutate(xlab_ = paste("(", sum_content, ")"), 
           xlab_1 = paste(label_content.z, xlab_, sep = "\n"))
 
+# colors per category
+ColsPerCat=c("Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch"="#4c4848", "Fleisch" = "#fad60d")
+
+# add median and min max to plot
+data_summary <- function(x) {
+    m <- median(x)
+    ymin <- min(x)
+    ymax <- max(x)
+    return(c(y=m,ymin=ymin,ymax=ymax))
+}
+
+add_point <- function(x) {
+    subset(x, x == max(x) | x == min(x))
+}
+
 # attention problems to sort data!
-ggplot(dat, aes(y = tot_ubp, x = factor(label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")), fill = label_content.y)) + 
-    geom_boxplot() + 
+p <- ggplot(dat, aes(y = tot_ubp, x = factor(label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")), fill = label_content.y)) + 
+    geom_boxplot(outlier.shape = NA) + #drop outliers
     scale_fill_manual(values = alpha(ColsPerCat, .8)) +
     guides(fill =F) +
     scale_y_continuous(limits = c(0, 11000)) +
     scale_x_discrete(breaks = dat$label_content.y,
                      labels = dat$xlab_1) +
     labs(x = "Menü-Inhalt\n (Anzahl Gerichte)", y = "Umweltbelastungspunkte (UBP / Menü-Inhalt)") +
-    annotate("text", x = 1:5, y = 11000, label = letters$mcletters$Letters, size = 8) +
+    #annotate("text", x = 1:5, y = 11000, label = letters$mcletters$Letters, size = 8) +
     mytheme
+
+
+# annotate meadian
+med <- aggregate(dat$tot_ubp ~ dat$label_content.y, FUN = median)
+med <- arrange(med, label = factor(med$`dat$label_content.y`, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch"))) # get order right!
+
+# add ANNOTATION AND STATISTICS to plot
+p + annotate("text", x = 1:5, y = 10000, label = paste("Median =", round(med$`dat$tot_ubp`), "UBP"), size = 8) + # annotate mean    
+    # labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)") + # add source
+    stat_summary(fun.data=data_summary, size = 0) +
+    stat_summary(fun.y = add_point, geom="point") +
+    stat_boxplot(geom='errorbar',coef=10, width = 0.2)
 
 # save
 ggsave("plots/boxplot_ubp_190128_egel.pdf",
@@ -169,16 +204,6 @@ ggsave("plots/boxplot_ubp_190128_egel.pdf",
        device = cairo_pdf)
 
 # violin plot ubp----
-# add median and min max to plot
-data_summary <- function(x) {
-    m <- median(x)
-    ymin <- min(x)
-    ymax <- max(x)
-    return(c(y=m,ymin=ymin,ymax=ymax))
-}
-
-ColsPerCat=c("Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch"="#4c4848", "Fleisch" = "#fad60d")
-
 p <- ggplot(dat, aes(y = tot_ubp, x = factor(label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")), fill = label_content.y)) + 
     geom_violin(trim =  F) + 
     scale_x_discrete(breaks = dat$label_content.y,
@@ -219,6 +244,14 @@ Anova(aov2, type = 2) # seems not to differ from type 1??
 library(ggfortify)
 autoplot(aov2) # boxplot ok, however do a log10 transformation (attention does change the output massively)
 TukeyHSD(aov2)
+
+# do some non paramter analysis
+gwp_1$label_content <- parse_factor(gwp_1$label_content, levels = c())
+kruskal.test(gwp_1$tot_gwp ~gwp_1$label_content)
+posthoc.kruskal.nemenyi.test(gwp_1$tot_gwp, gwp_1$label_content)# post hoc tests
+
+
+# let that away
 library(multcomp) # add letters for boxplot
 gwp_1$label_content.y <- parse_factor(gwp_1$label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")) # first parse characters to factors, otherwise multcomp package can handle the information
 model <- aov(log10(tot_gwp) ~ label_content.y, data = gwp_1) # important to right it that way resp. with data = , otherwise multicomp throws u an error
@@ -226,11 +259,12 @@ letters <- cld(glht(model, linfct = mcp(label_content.y="Tukey")))
 
 # add number of meals per meal content (in xlab)
 dat <- gwp_1 %>% 
-    group_by(label_content.y) %>% 
+    filter(!duplicated(.$meal_name_comp)) %>% 
+    group_by(label_content) %>% 
     summarise(sum_content = n()) %>% 
-    left_join(gwp_1, ., by = c("label_content.y")) %>% 
+    left_join(gwp_1, ., by = c("label_content")) %>% 
     # mutate(label_content.y = factor(label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch"))) %>% 
-    mutate(label_content.z = dplyr::recode(label_content.y, "Pflanzlich" = "Vegan (Fleischersatz)", 
+    mutate(label_content.z = dplyr::recode(label_content, "Pflanzlich" = "Vegan (Fleischersatz)", 
                                     "Pflanzlich+" = "Vegan (authentisch)", 
                                     "Vegetarisch" = "Ovo-lakto-vegetarisch"
     )) %>% 
@@ -238,26 +272,37 @@ dat <- gwp_1 %>%
            xlab_1 = paste(label_content.z, xlab_, sep = "\n"))
 
 # plot
-ggplot(dat, aes(y = tot_gwp, x = factor(label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")), fill = label_content.y)) + 
-    geom_boxplot() + 
+p <- ggplot(dat, aes(y = tot_gwp, x = factor(label_content, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")), fill = label_content)) + 
+    geom_boxplot(outlier.shape = NA) + 
     scale_fill_manual(values = alpha(ColsPerCat,.8)) + 
     guides(fill = F) +
     scale_y_continuous(limits = c(0,6)) +
-    scale_x_discrete(breaks = dat$label_content.y,
+    scale_x_discrete(breaks = dat$label_content,
                      labels = dat$xlab_1) +
-    labs(x = "Menü-Inhalt\n (Anzahl Gerichte)", y = expression(paste("\n Anzahl Treibhausgase (THG) in ", "CO"[2],"eq"))) +
-    annotate("text", x = 1:5, y = max(gwp_1$tot_gwp)+1, label = letters$mcletters$Letters, size = 8) +
+    labs(x = "Menü-Inhalt\n (Anzahl Gerichte)", y = bquote("\n GWP (kg " ~ "CO"[2] ~"eq" ~ " / Menü-Inhalt)")) +
+    # annotate("text", x = 1:5, y = max(gwp_1$tot_gwp)+1, label = letters$mcletters$Letters, size = 8) +
     mytheme
+
+# annotate meadian
+med <- aggregate(dat$tot_gwp ~ dat$label_content, FUN = median)
+med <- arrange(med, label = factor(med$`dat$label_content`, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch"))) # get order right!
+
+# add ANNOTATION AND STATISTICS to plot
+p + annotate("text", x = 1:5, y = 6, label = paste("Median =", round(med$`dat$tot_gwp`,2), "GWP"), size = 8) + # annotate mean    
+    # labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)") + # add source
+    stat_summary(fun.data=data_summary, size = 0) +
+    stat_summary(fun.y = add_point, geom="point") +
+    stat_boxplot(geom='errorbar', coef=10, width = 0.2) # add errorbar (with coef = 10, just give an arbitrarily big number here)
+
 
 # save
 ggsave("plots/boxplot_gwp_190128_egel.pdf",
        width = 18,
        height = 10,
        dpi = 300,
-       device = cairo_pdf)
+       device = "pdf") # cairo_pdf is not working because of the co2 expression! use pdf device => however pdf size is suspiciously small
 
 # violin plot gwp----
-
 p <- ggplot(dat, aes(y = tot_gwp, x = factor(label_content.y, levels = c("Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch")), fill = label_content.y)) + 
     geom_violin(trim =  F) + 
     scale_x_discrete(breaks = dat$label_content.y,

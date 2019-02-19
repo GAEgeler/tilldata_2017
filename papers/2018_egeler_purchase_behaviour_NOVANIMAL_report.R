@@ -6,6 +6,7 @@
 
 # to load data (analyses will be made with df_2017)
 source(file = "04_load_data_180802_egel.R")
+source(file = "04_1_load_data_190128_egel.R")
 # to load themes
 source(file = "08_theme_plots_180419_egel.R")
 # warnings can be ignored => due to rm() command
@@ -176,7 +177,7 @@ df_ <- df_2017 %>% # watch with what for dataset you work!
     dcast(formula = ccrs + gender + age + member ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
     rename(Unknown = 'NA') %>% # rename NA to unknown
     mutate(tot_buy = rowSums(.[,-c(1:4)])) %>% # exclude ccrs and information of person for sum of rows
-    mutate(meaty =.$Fleisch/.$tot_buy,
+    mutate(meaty =(.$Fleisch + .$Fisch)/.$tot_buy,
            hnc = .$`Hot and Cold` / .$tot_buy)
 
 
@@ -418,7 +419,7 @@ ggsave("plots/visit_freq_cluster_181227_egel.pdf",
 # chapter 3.3: describe clusters --------
 # create loop with separate outputs (if time)
 
-dfList <- list(one, somem, buffet, meat_avoiders, veg_flex, meat_flex, meat_eat, meat_lovers, alwy_meat)
+dfList <- list(one, some, buffet, meat_avoiders, veg_flex, meat_flex, meat_eat, meat_lovers, alwy_meat)
 
 for (i in 1:length(dfList)) {
     description <- filter(df_2, cluster == dfList[[i]]$cluster[1]) # filter first datasets
@@ -482,7 +483,7 @@ for (i in 1:length(dfList)) {
     
     ## check if the background color is dark or not
     # my colors for the plot
-    ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d", "Hot and Cold"="#4c4848")
+    ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch"="#6619e6", "Fleisch" = "#fad60d", "Hot and Cold"="#4c4848")
     
     # detects dark color: for labelling the bars
     pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
@@ -490,7 +491,7 @@ for (i in 1:length(dfList)) {
     
     
     #plot
-    p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+    p <- ggplot(pl, aes(y = pct,x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch","Fleisch", "Hot and Cold")), color = label_color)) + 
         geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
         xlab("") +
         ylab("\nVerkaufte Gerichte in Prozent")+
@@ -499,9 +500,9 @@ for (i in 1:length(dfList)) {
         scale_y_continuous(labels=scales::percent)+
         scale_fill_manual(values = ColsPerCat,
                           breaks = attributes(ColsPerCat)$name,
-                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot & Cold (Buffet)"))+
+                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot & Cold (Buffet)"))+
         scale_color_manual(values = levels(pl$label_color))+
-        geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
+        geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 7, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
         annotate( 
             "text",x = 1:4, y = 1.03, label = text$label2,parse=T, size=9) + 
         mytheme
@@ -527,11 +528,24 @@ for (i in 1:length(dfList)) {
         summarise(tot_sold = n()) %>%  # summarise all sellings per meal content per condition
         mutate(pct = tot_sold / sum(tot_sold))
     dat_$check <- dfList[[i]]$cluster[1]
-    dfList_[[i]] <- dat_ # append to list
+    dfList_[[i]] <- dat_ # append to list (do a dataframe directly => how is this possible)
     # aggregate(pl$pct ~ label_content, FUN = mean)
 }
 
 big_data <- do.call(rbind, dfList_) # concat all dataframes from list together
+
+# calculate differences between basis and intervention in meat consumption
+nameList <- unique(big_data$check)
+for (i in nameList) {
+    dat <- drop_na(big_data[big_data$check == i, ]) # subsetting => drop NA's otherwiese problems
+    base_meat <- dat[dat$label_content == "Fisch" & dat$condit == "Basis", ]$pct +
+        dat[dat$label_content == "Fleisch" & dat$condit == "Basis", ]$pct # calculate meat per basisweeks
+    int_meat <- dat[dat$label_content == "Fisch" & dat$condit == "Intervention", ]$pct +
+        dat[dat$label_content == "Fleisch" & dat$condit == "Intervention", ]$pct #calculate meat per intervention weeks
+    diff_ <- base_meat - int_meat # difference
+    print(paste(round(diff_*100,2), "percent", i))
+}
+
 
 # chapter 3.4: cluster analyses only for people with same buyings in both conditions--------
 # exclude first people who eat less than 5 times in the canteen
