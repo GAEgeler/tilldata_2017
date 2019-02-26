@@ -1,17 +1,16 @@
 ####
-## analysis in nutritional data
+## analysis with nutritional data
 ####
 
 # status: february 2019
 # author: gian-andrea egeler
 
 
-## load data nutrition and edit some cases: wide format------------
-# check 05_01 load additional data
+# load data nutrition 
 source("05_1_load_add_data_190128_egel.R")
 source("08_theme_plots_180419_egel.R")
 
-## summarise and visualize the data (take long data set)-----
+# summarise and visualize the data (take long data set)-----
 library(gmodels)
 
 df_ <- nutri_wide_
@@ -239,7 +238,7 @@ CrossTable(nutri_wide_$ebp_label, nutri_wide_$teller_label, fisher = T)
 chisq.test(nutri_wide_$ebp_label, nutri_wide_$teller_label)$expected # smaller than 5 => fishers exact test
 fisher.test(nutri_wide_$ebp_label, nutri_wide_$teller_label)
 
-# Korrelation between both methods------------
+# correlation between both methods------------
 cor <- cor.test(nutri_wide_$ebp_points, nutri_wide_$teller_points, method = "spearman") # very low correlation
 cor <- cor.test(nutri_wide_$ebp_points, nutri_wide_$teller_points, method = "kendall") 
 

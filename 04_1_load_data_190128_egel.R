@@ -26,7 +26,6 @@ df_agg <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", lo
 source("05_1_load_add_data_190128_egel.R") # with the difference between fish and meat
 
 # merge  
-# attention information about gwp is not complete!
 info_compl <- left_join(info_orig, envir, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) # left join
     
 
