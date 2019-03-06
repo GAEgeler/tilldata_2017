@@ -6,6 +6,7 @@
 
 # load data df_agg-----
 source("04_1_load_data_190128_egel.R")
+source("08_theme_plots_180419_egel.R")
 # detects dark color: for labelling the bars
 source("09_function_is_dark_190114_egel.R")
 
@@ -403,3 +404,176 @@ meat2 <- df_tot %>%
     ungroup() %>% 
     group_by(gender) %>% 
     mutate(pct = tot / sum(tot))
+
+
+# nutrition clusters and ubp-----
+source("04_1_load_data_190128_egel.R")
+
+# define clusters accoring meat purchase
+df_ <- df_2017 %>% # watch with what for dataset you work!
+    select(ccrs, label_content, gender, member, age) %>% # select variable of interest
+    filter(member != "Spezialkarten") %>% 
+    dcast(formula = ccrs + gender + age + member ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
+    rename(Unknown = 'NA') %>% # rename NA to unknown
+    mutate(tot_buy = rowSums(.[,-c(1:4)])) %>% # exclude ccrs and information of person for sum of rows
+    mutate(meaty =(.$Fleisch + .$Fisch)/.$tot_buy,
+           hnc = .$`Hot and Cold` / .$tot_buy)
+
+
+
+# hot and cold: people went to the hot and cold buffet 
+# 18 nrow(buffet)/1043 => 1.7%
+buffet <-  df_ %>%  
+    filter(tot_buy > 5 & hnc == 1) %>% 
+    mutate(cluster = "buffet") 
+
+
+# meat avoiders
+# 22 nrow(meat_avoiders)/1043 => 2.1%
+no_meat <- df_ %>%
+    filter(tot_buy > 5 & meaty == 0 & hnc == 0) %>% 
+    mutate(cluster = "never meat")
+
+# always meat
+# 16 nrow(alwy_meat)/1043 => 1.5%
+alwy_meat <- df_ %>% 
+    filter(tot_buy > 5 & meaty  == 1 & hnc == 0) %>% 
+    mutate(cluster = "always meat")
+
+# build groups of canteen visitors (1043-(16 + 22 + 13)) beacause of their meat consumption per week
+# minus buffet eaters
+# minus meat_avoiders
+# minus alway_meat (to avoid dublicates)
+canteen_visitors <- filter(df_, tot_buy > 5) %>% 
+    anti_join(., buffet) %>%   # exclude buffet eaters
+    anti_join(., no_meat) %>%  # exclude meat avoiders
+    anti_join(., alwy_meat) # exclude always meat
+
+
+# veg-flexitarians: less than one third of all buyings contain meat
+# 246 nrow(meat_avoiders)/nrow(canteen_visitors) => 22.2%
+veg_flex <- canteen_visitors %>% 
+    filter(meaty <= 1/4) %>% 
+    mutate(cluster = "veg-flexitarians")
+
+# meat-flexitarians: less than the halt of all buyings contain meat
+# 224 nrow(meat_flex)/nrow(canteen_visitors) => 22.7%
+meat_flex <- canteen_visitors %>% 
+    filter(meaty > 1/4 & meaty <= 1/2) %>% 
+    mutate(cluster = "meat-flexitarians")
+
+# meat-eaters: less than the halt of all buyings contain meat
+# 328 nrow(meat_eat)/nrow(canteen_visitors) => 33.2%
+meat_eat <- canteen_visitors %>% 
+    filter(meaty > 1/2 & meaty <= 3/4) %>% 
+    mutate(cluster = "meat-eaters")
+
+# meat lovers
+# 189 nrow(meat_lovers)/nrow(canteen_visitors) => 19.1%
+meat_lovers <- canteen_visitors %>% 
+    filter(meaty > 3/4) %>% 
+    mutate(cluster = "meat lovers")
+
+
+# concatenate all canteen visitors----
+canteen_visitors <- bind_rows(buffet, no_meat, veg_flex, meat_flex, meat_eat, meat_lovers, alwy_meat)
+
+
+# prepare data for plot
+# merge it back to df_2017
+pl <- df_2017 %>% 
+    left_join(., canteen_visitors[, c("ccrs", "cluster")], by = "ccrs") %>% 
+    group_by(cluster) %>% 
+    summarise(med_ubp = median(tot_ubp, na.rm = T),
+              med_gwp = median(tot_gwp, na.rm = T)) %>% 
+    ungroup() 
+
+# add how many people in cluster
+pl2 <- canteen_visitors %>% 
+    group_by(cluster) %>% 
+    summarise(tot_cluster = n()) %>% 
+    left_join(pl,.) %>% 
+    mutate(txt_ = paste("(", tot_cluster, ")", sep = ""),
+           txt = paste(cluster, txt_, sep = " " )) %>% 
+    mutate(cluster2 = recode(cluster, 
+                             # "one" = "one timers", "some" = "some timers",
+                             "never meat" = "0 %", #if i want to change the label name, then the letters need to match the letters of the string in df_2$cluster otherwiese takes the original label
+                             "veg-flexitarians" = "> 0 bis \u2264 25 %", 
+                             "meat-flexitarians" = "> 25 bis \u2264 50 %",
+                             "meat-eaters" = "> 50 bis \u2264 75 %", 
+                             "meat lovers" = "> 75 bis < 100 %",
+                             "always meat" = "100 %")) %>% # rename clusters
+    mutate(color = recode(cluster,
+                          "buffet" = "#e64d00",
+                          "never meat" = "#99f200",
+                          "veg-flexitarians" = "#c5b87c", 
+                          "meat-flexitarians" = "#fad60d",
+                          "meat-eaters" = "#80ccff" , 
+                          "meat lovers" = "#6619e6",
+                          "always meat" = "#008099")) %>% 
+    drop_na() # drop buffet, some and one
+
+# sort data
+# c("never meat", "veg-flexitarians", "meat-flexitarians", "meat-eaters", "meat lovers", "always meat")
+
+# plot data ubp-----
+ggplot(pl2, aes(x = parse_factor(pl2$cluster2, levels = c(pl2$cluster2[5],  pl2$cluster2[6], pl2$cluster2[3], pl2$cluster2[2], pl2$cluster2[4], pl2$cluster2[1])), 
+       y = med_ubp, fill = color)) +
+    geom_bar(stat = "identity", width = .6) + # fill = "grey60"
+    xlab("Anteil fleischhaltige an allen gekauften Menüs") +
+    ylab("Mittlerer Wert in UBP (Median)") +
+    guides(fill = F) +
+    geom_text(aes(label = txt), position = position_dodge(width = 1), vjust = -.5, size = 8) +
+    geom_text(aes(label = paste(round(med_ubp), " UBP")), position = position_dodge(width = 1), vjust = 1, size = 6) +
+    mytheme
+
+ggsave("plots/cluster_ubp_190306_egel.pdf",
+       width = 14,
+       height = 10,
+       device = cairo_pdf)    
+
+# check again (run fist two lines 484, 485)
+aggregate(tot_ubp ~ as.factor(cluster),  data = pl, FUN = median)
+
+# plot data gwp-----
+ggplot(pl2, aes(x = parse_factor(pl2$cluster2, levels = c(pl2$cluster2[5],  pl2$cluster2[6], pl2$cluster2[3], pl2$cluster2[2], pl2$cluster2[4], pl2$cluster2[1])), 
+                y = med_gwp, fill = color)) +
+    geom_bar(stat = "identity", width = .6) +
+    xlab("Anteil fleischhaltiger an allen gekauften Menüs") +
+    ylab("Mittlerer Wert in GWP (Median)") +
+    guides(fill = F) +
+    geom_text(aes(label = txt), position = position_dodge(width = 1), vjust = -.25, size = 8) +
+    geom_text(aes(label = paste(round(med_gwp,2), " UBP")), position = position_dodge(width = 1), vjust = 1, size = 6) +
+    mytheme
+
+ggsave("plots/cluster_gwp_190306_egel.pdf",
+       width = 14,
+       height = 10,
+       device = cairo_pdf) 
+
+#plot data ubp and label content-------
+# prepare data
+pl <- df_2017 %>% 
+    left_join(., canteen_visitors[, c("ccrs", "cluster")], by = "ccrs") %>% 
+    group_by(cluster, label_content) %>% 
+    summarise(med_ubp = median(tot_ubp, na.rm = T),
+              med_gwp = median(tot_gwp, na.rm = T)) %>% 
+    mutate()
+    ungroup()
+
+# add size of cluster
+pl2 <- canteen_visitors %>% 
+    group_by(cluster) %>% 
+    summarise(tot_cluster = n()) %>% 
+    left_join(pl,.) %>% 
+    mutate(txt_ = paste("(", tot_cluster, ")", sep = ""),
+           txt = paste(cluster, txt_, sep = "\n" )) %>% 
+    mutate(cluster2 = recode(cluster, 
+                             # "one" = "one timers", "some" = "some timers",
+                             "never meat" = "0 %", #if i want to change the label name, then the letters need to match the letters of the string in df_2$cluster otherwiese takes the original label
+                             "veg-flexitarians" = "\u2264 25 %", 
+                             "meat-flexitarians" = "> 25 bis \u2264 50 %",
+                             "meat-eaters" = "> 50 bis \u2264 75 %", 
+                             "meat lovers" = "> 75 bis 99%",
+                             "always meat" = "100 %")) %>% # rename clusters
+    drop_na()

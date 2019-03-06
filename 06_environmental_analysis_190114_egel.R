@@ -336,20 +336,40 @@ library(ggrepel)
 dat <- bind_cols(ubp_, gwp_1) %>% 
     dplyr::select(meal_name_comp, label_content.y, tot_ubp, tot_gwp) %>% 
     filter(!duplicated(.$meal_name_comp))
+
+
+dat <- dat[!grepl("Fisch", dat$label_content.y),]
+
+# for abline regression line
 a <- summary.lm(glm(dat$tot_ubp ~ dat$tot_gwp))
 
-ggplot(dat, aes(y = tot_ubp, x = tot_gwp, color = label_content.y))+
-    geom_point(size = 3.3)+
+# for abline median (gwp and upb)
+b <- lapply(dat[ ,3:4], FUN = median) 
+
+# somehow is it not working to pick up randomly 4 meals and put that back to dataframe with information of meal name comp 
+# mabe this works: 
+set.seed(17)
+pl <- dat %>% group_by(label_content.y) %>% 
+    sample_n(1) %>% 
+    left_join(dat, ., by = c("label_content.y", "tot_ubp", "tot_gwp"))  %>% 
+    rename(meal_name_comp = meal_name_comp.x, name_plot = meal_name_comp.y)  
+
+
+
+p <- ggplot(pl, aes(y = tot_ubp, x = tot_gwp, color = label_content.y))+
+    geom_point(size = 3.5)+
     scale_color_manual(values = ColsPerCat,
                        breaks = c("Fleisch", "Fisch", "Vegetarisch","Pflanzlich+","Pflanzlich"),
                        labels = c("Fleisch", "Fisch", "Ovo-lakto-vegetarisch", "Vegan (authentisch)", "Vegan (Fleischersatz)")) +
     guides(color = guide_legend("Menü-Inhalt")) +
-    scale_y_continuous(limits = c(0, 10000)) +
+    scale_y_continuous(limits = c(0, 10000), breaks = seq(0, 10000, 2000)) +
+    scale_x_continuous(limits = c(0,6), breaks = seq(0, 6, 1)) +
     ylab("Umweltbelastungspunkte (UBP/Gericht)")+
     xlab(expression(paste("\n GWP (kg ", "CO"[2],"eq / Gericht)")))+
-    annotate("text", x=c(4,4) , y=c(6200,5700) , label=c("italic(r) == 0.86\n","italic(p) < 0.001"), parse=T, size=7,color = "grey50")+
-    geom_abline(intercept = a$coefficients[[1]], slope = a$coefficients[[2]], color="grey50", 
-                size=2) +
+    # annotate("text", x=c(4,4) , y=c(6200,5700) , label=c("italic(r) == 0.86\n","italic(p) < 0.001"), parse=T, size=7,color = "grey50")+
+    geom_abline(intercept = b[[1]], color="grey50", 
+                size=1) + # add median ubp
+    geom_vline(xintercept = b[[2]], color = "grey50", size = 1) + # add median gwp
     # stat_smooth(aes(y = tot_ubp, x = tot_gwp), inherit.aes = T,
     #             method = "glm", 
     #             se = F, 
@@ -357,10 +377,21 @@ ggplot(dat, aes(y = tot_ubp, x = tot_gwp, color = label_content.y))+
     #             size = 2, 
     #             fullrange = F # should expand the line, however not working => thus geom_abline()
     #             ) +
-    mytheme # somehow throws an error if it's the last line of the code
-    geom_label_repel(aes(label= ifelse(dat$label_content.y == "Fisch", dat$meal_name_comp, "")), size=5, show.legend = FALSE) # adds text of meal_name
+    mytheme +  # somehow throws an error if it's the last line of the code
+    geom_label_repel(aes(label = pl$name_plot), # try to avoid overlappings! 
+                     size=5,
+                     box.padding = unit(0.35, "lines"),
+                     point.padding = unit(0.4, "lines"),
+                     segment.color = 'grey50',
+                     show.legend = FALSE,
+                     # arrow = arrow(length = unit(0.03, "npc"), type = "closed", ends = "first"),
+                     force = 1) 
     
 
+# annotate text
+p + annotate("text", x = 2.6, y = 9000, label = paste("Median = ",round(b[[1]]), " UBP", sep = ""), color = "grey50", size = 9) +
+    annotate("text", x = 4.5, y = 4000, label = paste("Median = ", round(b[[2]],3), " GWP" , sep = ""), color = "grey50", size = 9)
+    
 # save
 ggsave("plots/cor_ubp_gwp_190128_egel.pdf",
        height = 13,

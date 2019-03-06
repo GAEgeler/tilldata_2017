@@ -224,7 +224,7 @@ menu_tot7 <- df_agg %>%
 
 
 #combine all three data frames
-menu_tot <- bind_rows(menu_tot5, menu_tot6, menu_tot7)
+menu_tot_sells <- bind_rows(menu_tot5, menu_tot6, menu_tot7)
 
 # remove some data from working space
 rm(list=c("Hot_Cold_v","Hot_Cold_g","Fleisch_v","Fleisch_g","Vegetarisch_v","Vegetarisch_g","menu_5","dat_hs","dat_hs_tot","df_old", "df_tot","df","dt","menu_tot5","menu_tot5_v","menu_tot5_g","menu_tot6","menu_tot6_g","menu_tot6_v","menu_tot7","menu_tot7_"))
@@ -268,6 +268,6 @@ menu_tot7 <- df_agg %>%
     select(date, article_description, year, week, cycle, shop_description, condit, tot_sold, price_article)
 
 # merge with data 2017
-menu_tot <- bind_rows(df_tot, menu_tot7)
+menu_tot_line <- bind_rows(df_tot, menu_tot7)
 
 rm(list = c("dat_hs_tot", "menu_tot7", "df_tot"))
