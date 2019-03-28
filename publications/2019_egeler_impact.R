@@ -149,16 +149,16 @@ txt <- group_by(dat, gender, condit) %>%
     # arrange(xlab) # sort according dat
 
 #prepare data for plot
-ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch" = "#6619e6", "Fleisch" = "#fad60d", "Hot and Cold"="#4c4848") # attention order matter
+ColsPerCat=c("Unbekannt" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch" = "#6619e6", "Geflügel" = "#008099", "Fleisch" = "#fad60d", "Hot and Cold"="#4c4848") # attention order matter
 
 # detects dark color: for labelling the bars
-pl$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl$label_content], 
+dat$label_color <- as.factor(sapply(unlist(ColsPerCat)[dat$label_content], 
                                     function(color) { if (isDark(color)) 'white' else 'black' })) 
 
 #ATTENTION parse_factor throws errors because of umlaute use encoding latin1!!
 
 #plot
-p <- ggplot(pl, aes(y = pct, x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(dat, aes(y = pct, x = xlab, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Geflügel", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("") +
     ylab("Verkaufte Gerichte in Prozent")+
@@ -167,17 +167,16 @@ p <- ggplot(pl, aes(y = pct, x = xlab, fill = factor(label_content, c("Unbekannt
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat, 
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot & Cold (Buffet)")) +
-    scale_color_manual(values = levels(pl$label_color))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Geflügel", "Fleisch", "Hot & Cold (Buffet)")) +
+    scale_color_manual(values = levels(dat$label_color))+
     geom_text(aes(label=ifelse(pct<0.02,"",scales::percent(round(pct,2)))), size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     ggplot2::annotate("text", x = 1:4, y = 1.05, label = txt$label, parse=T, size=8) + # deparsing seems to work, if you have only one thing to plot
     mytheme 
 
-p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)\n
-         Abbildung: Gian-Andrea Egeler")
+p + labs(caption = "Daten: Kassendaten SV Schweiz und ZHAW (2017)")
 
 # save
-ggsave("plots/gender_condit_190129_egel.pdf",
+ggsave("plots/gender_condit_190129_02egel.pdf",
        height = 15,
        width = 18,
        dpi = 600,

@@ -9,14 +9,13 @@
 # see documentation: "anpassungen an datensatz 180502.txt"
 
 # required packages
-import seaborn as sns
 import numpy as np
 import pandas as pd
 import string
 from datetime import datetime
 import random
 import os
-import re
+
 
 
 # load data
@@ -46,7 +45,7 @@ rand = d.loc[(d['date']=='2017-11-17') & (d['shop_description']=='Vista') & (d['
 rand['article_description'] = 'Local World'
 d.update(rand)
 
-# adjust data frame according to the description above
+# adjust data set
 ## Kitchen
 # 	2017-10-09: local tössfeld to kitchen in individual dataset (10x)
 # 	2017-10-09: local tössfeld to kitchen in aggregated dataset (12x)
@@ -73,12 +72,11 @@ d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article
 d['article_description'] = d['article_description'].str.replace("Kitchen \d", "Kitchen")
 
 
-## faults of system, or workers
+## adjust data set 
 # 2017-10-09
 d.loc[(d['date']=='2017-10-09') & (d['shop_description']=='Vista') & (d['article_description'] == "Local World"),'article_description']='Local Favorite'
 
-# 	2017-10-26: 2 in individual data set
-# 	2017-10-26: 3 in aggregated data set
+# 	2017-10-26 
 d.loc[(d['date']=='2017-10-26') & (d['article_description']=="Local Favorite"),'article_description'] = 'Local World'
 
 # 	2017-10-30
@@ -110,14 +108,14 @@ d.loc[(d['date']=='2017-11-21') & (d['article_description']=="Local Favorite"),'
 d.loc[(d['date']=='2017-11-22') & (d['article_description']=="Local Favorite"),'article_description'] = 'Local World'
 
 # 	2017-12-04: 24 observations in individual data set 
-#   2017-12-04: 25 observations in aggregated data set 
+#   2017-12-04: 25 observations in aggregated data set (reason not clear yet)
 d.loc[(d['date']=='2017-12-04') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
 
 # 	2017-12-07 
 d.loc[(d['date']=='2017-12-07') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
 
 # 	2017-12-13
-d.loc[(d['date']=='2017-12-13') & (d['article_description']=="Local World"),'article_description'] = 'Favorite'
+d.loc[(d['date']=='2017-12-13') & (d['article_description']=="Local World"),'article_description'] = 'World'
 
 # 	2017-12-15
 d.loc[(d['date']=='2017-12-15') & (d['article_description']=="Local Favorite"),'article_description'] = 'Local World'

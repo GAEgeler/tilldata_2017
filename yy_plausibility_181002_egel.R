@@ -124,6 +124,7 @@ df_2017 <- filter(df_7, !(duplicated(df_7$ccrs) & duplicated(df_7$transaction_id
 
 # after discussion with baur 26.10.18:-----
 # - delete all cases with multiple entries (e.g. those which payed for another one) (see points form above 1,2,4)
+# in total 987 cases deleted (attention do not take the sum of the signle steps, due to duplicates in the signle steps)
 
 # 1. 75 cases => let them in the dataset, because only one transaction
 test <- filter(df_17, qty_weight > 1)
@@ -133,18 +134,18 @@ test <- filter(df_17, qty_weight > 1)
 test <- filter(df_17, total_amount > prop_price & duplicated(transaction_id))
 test1_ <- df_17[duplicated(df_17),] # one case differs
 
-# 3. 70 cases, all the same, however two different meals => take the first out of the data
+# 3. 265 cases, all the same, however two different meals => take the first out of the data
 test1 <- filter(df_17, duplicated(df_17$ccrs) & duplicated(df_17$transaction_id) & duplicated(df_17$trans_date) & total_amount == prop_price) # 265 cases
 test1_ <- df_17[duplicated(df_17),] # 435 cases are double in df_7, however also those with multiple transactions
 diff_ <- anti_join(test1, test1_)
 
-test2 <- filter(df_7, transaction_id %in% diff_$transaction_id) # in total 13 unique ccrs numbers (and one ccrs (1000584132) number has same transaction but different meals)
+test2 <- filter(df_17, transaction_id %in% diff_$transaction_id) # in total 13 unique ccrs numbers (and one ccrs (1000584132) number has same transaction but different meals)
 
+# 4. three people with more than one transaction per day (resp. meal purchases) 252 cases
+#ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=1000610019
+test_ <- df_7 %>% group_by(ccrs) %>% summarise(tot = n()) %>% filter(tot>60) # because of the lenght of the fieldexperiment
 
-# 4. 265 cases => delete these cases
-test_ <- filter(df_7, !(duplicated(df_7$ccrs) & duplicated(df_7$transaction_id) & duplicated(df_7$trans_date) & total_amount == prop_price))
-
-
+test_2 <- filter(df_7, ccrs %in% test_$ccrs)
 
 # some code left----
 # only two cases left seems to have same transaction_id (however two different persons)
