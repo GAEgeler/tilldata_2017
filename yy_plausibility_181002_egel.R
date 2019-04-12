@@ -1,10 +1,57 @@
 # check for plausibility
 
-# state: august 18 
+# state: april 18 
 # author: gian-andrea egeler
 
 # load data see script 04_load_data
-# generate sample for further looking ----
+
+# short notice: ----
+# after discussion with baur 26.10.18:-----
+# - delete all cases with multiple entries (e.g. those which payed for another one)
+# in total 987 cases deleted (attention do not take the sum of the signle steps, due to duplicates in the signle steps)
+
+# 0. 435 cases are double in datafreame df_17, however if we look closer there are some other weird transactions! => see A - D
+test_0 <- df_17[duplicated(df_17),] 
+test_01 <- df_17[duplicated(df_17$trans_date),]
+
+
+# A. 67 persons with 75 transactions
+test_a <- filter(df_17, qty_weight > 1)
+
+# B. 880 persons with double dates (2038 cases)
+test_b <- group_by(df_17, ccrs, date) %>% 
+    summarize(multi_date = n()) %>% 
+    filter(multi_date > 1) %>% # attention the data includes some of the cases from A
+    ungroup()
+
+test_b1 <- inner_join(df_17, test_b, by =c("ccrs", "date")) %>% filter(qty_weight <= 1) # something is weird => somehow the total transactions differ form here to the total in 04_load_data
+
+
+# C. 431 cases with duplicates 
+# duplicates in ccrs, transaction_id and total_amount > prop_price: means that the person payed more than one meal
+test_c <- filter(df_17, duplicated(ccrs) & duplicated(transaction_id) & total_amount > prop_price & qty_weight <= 1) # avoid entries from test_a
+
+anti_join(test_c, test_b1) #  check if test_c is in test_b: YES
+
+# D. 265 cases, all the same
+# duplicated trans_date with total_amount == prop_price (some cases are the same as above: 87)
+test_d <- filter(df_17, duplicated(ccrs) & duplicated(transaction_id) & duplicated(trans_date) & total_amount == prop_price & qty_weight <= 1) # attention some entries f come rom test_b => see diff_c2
+diff_d1 <- anti_join(test_c, test_b, by = "ccrs") # 178 cases differ between test_c and test_b (that means 87 entries in comon => see test_c2)
+
+anti_join(test_d, test_b1) # check if test_d is in test_b: YES
+
+
+# E. three people with more than 60 transaction in 60 days (resp. meal purchases) 252 cases
+#ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=1000610019
+test_e <- df_17 %>% group_by(ccrs) %>% summarise(tot = n()) %>% filter(tot>60) # because of the lenght of the fieldexperiment
+test_e1 <- filter(df_17, ccrs %in% test_d$ccrs)
+
+anti_join(test_e, test_b1) # check if these three persons where in test_b: YES
+
+
+
+###################
+# generate sample for prior looking (some of the old code) ----
 set.seed(17)
 
 df_list <- df_7 %>%
@@ -13,7 +60,7 @@ df_list <- df_7 %>%
 
 df <- filter(df_7, ccrs %in% df_list$ccrs)
 
-write_delim(df, "augmented data/plausibility_180310_egel.csv", delim = ";") # some problems with the encoding
+write_delim(df, "augmented data/plausibility_180310_egel.csv", delim = ";") # some problems with the encoding => co worker checked for misterious transactions (Julia Matyas, in October 2018)
 
 # check if rab_description is same as member ----
 df_7$rab_descript2 <- str_replace(df_7$rab_descript, "Mitarbeiter", "Mitarbeitende")
@@ -32,17 +79,17 @@ CrossTable(df$member,df$gender)
 
 # differs the sample from the population 
 sam_gruen <- c(452,
-575,
-236,
-244,
-57
+               575,
+               236,
+               244,
+               57
 )
 
 pop_zhaw <- c(678,
-791,
-333,
-336,
-358
+              791,
+              333,
+              336,
+              358
 )
 
 d = pop_zhaw/sum(pop_zhaw) # expected probability of occuracy in population
@@ -61,7 +108,7 @@ pop_zhaw <- c(678,
               791,
               333,
               336
-
+              
 )
 
 d1 = pop_zhaw/sum(pop_zhaw)
@@ -76,7 +123,7 @@ hot <- filter(df_7, label_content == "Hot and Cold" & duplicated(df_7$transactio
 # single case transaction_id: 2381978 (ccrs: 1000620827 )
 t <- filter(df_7, transaction_id == 2381978)
 
-# exclude hot and cold to see if same reults after
+# exclude hot and cold to see if same results after
 test0 <- filter(df_7,label_content != "Hot and Cold") # doesnt matter if you exclude or include hot and cold
 
 # 265 transactions has same transaction_id, same transaction date
@@ -109,97 +156,4 @@ t <- filter(trans_dat, transaction_id == 2342280) # same transaction_id
 t <- filter(trans_dat, transaction_id == 2372291) # same transaction_id for two different card holders, thus take ccrs nummer also into account
 t <- filter(trans_dat, transaction_id == 2523637) # same transaction id, however different dob
 t <- filter(trans_dat, transaction_id == 2525577) # same transaction id, however two different card holders
-
-
-# dataset without double entries seems to be right-----
-df_2017 <- filter(df_7, !(duplicated(df_7$ccrs) & duplicated(df_7$transaction_id) & duplicated(df_7$trans_date) & total_amount == prop_price))
-
-
-# short notice: ----
-# 1. there are some cases (in total 75 cases), where the quantity is more than 1: means that the person payed more than one meal: question here, was it the same meal e.g. 2327593
-# 2. there are some cases (around 900 cases ), where the same card holder payed more than one meal, but with different transactions_id
-# => filter(df_2017, total_amount > prop_price & duplicated(transaction_id))
-# 3. there are some cases (in total 70 cases), wehere the same transaction (id, time, sometimes meal is the same): hoewever there are two different meals on the same transaction 
-# 4. there are some cases (in total 265), where the hole entrie is double (same id, time, meal, ect.): dont now why
-
-# after discussion with baur 26.10.18:-----
-# - delete all cases with multiple entries (e.g. those which payed for another one) (see points form above 1,2,4)
-# in total 987 cases deleted (attention do not take the sum of the signle steps, due to duplicates in the signle steps)
-
-# 1. 75 cases => let them in the dataset, because only one transaction
-test <- filter(df_17, qty_weight > 1)
-
-# 2. 436 cases => dont know, how i came up with 900, probabiliy 436 * 2
-# delete these cases
-test <- filter(df_17, total_amount > prop_price & duplicated(transaction_id))
-test1_ <- df_17[duplicated(df_17),] # one case differs
-
-# 3. 265 cases, all the same, however two different meals => take the first out of the data
-test1 <- filter(df_17, duplicated(df_17$ccrs) & duplicated(df_17$transaction_id) & duplicated(df_17$trans_date) & total_amount == prop_price) # 265 cases
-test1_ <- df_17[duplicated(df_17),] # 435 cases are double in df_7, however also those with multiple transactions
-diff_ <- anti_join(test1, test1_)
-
-test2 <- filter(df_17, transaction_id %in% diff_$transaction_id) # in total 13 unique ccrs numbers (and one ccrs (1000584132) number has same transaction but different meals)
-
-# 4. three people with more than one transaction per day (resp. meal purchases) 252 cases
-#ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=1000610019
-test_ <- df_7 %>% group_by(ccrs) %>% summarise(tot = n()) %>% filter(tot>60) # because of the lenght of the fieldexperiment
-
-test_2 <- filter(df_7, ccrs %in% test_$ccrs)
-
-# some code left----
-# only two cases left seems to have same transaction_id (however two different persons)
-test2 <- filter(test0, duplicated(test0$transaction_id) & total_amount == prop_price)
-
-## there are some problems with some of the transactions 
-# load trans_dat, trans_art, trans_pay to check the transaction => see script 00_merge
-trans_art2 <- left_join(trans_art,  art_info, by = "article_id")
-trans_pay2 <- left_join(trans_pay, pay_method, by = "payment_id")
-
-# single cases are from the dataframe called plausibility_egel
-# ccrs nr 1000598155
-c <- filter(trans_dat, ccrs == 1000598155) # in original data set
-c1 <- filter(df_7, ccrs == 1000598155) # in merged data set
-t <- filter(trans_dat, transaction_id == 2377305) # double entry in, which is not making sense
-a <- filter(trans_art2, transaction_id == 2377305) # only one entry
-p <- filter(trans_pay2, transaction_id == 2377305) # only one entry
-
-
-t <- filter(trans_dat, transaction_id == 2377327) # double entry in, which is not making sense
-
-
-a <- filter(trans_art2, transaction_id == 2354099)
-
-# check for double or more same entries according time stamp and transaction id
-d_ <- filter(trans_dat, duplicated(trans_dat$trans_date) & duplicated(trans_dat$transaction_id)) 
-d <- filter(d_, ccrs == 1000598155)
-
-# another try via trans_num (KassenbonNr)
-d_2 <- filter(trans_dat, duplicated(trans_dat$trans_num)) # is resulting in many more duplicates
-
-
-# antijoin between dubplicates and trans_dat
-# continue to check the data again
-trans_dat2 <- anti_join(trans_dat, d_, by = c("transaction_id", "trans_date"))
-
-t <- filter(trans_dat2, transaction_id == 2433098)
-
-
-# try to find a way to delete douplicates, without loosing double payers (e.g. payed for a friend)
-# in that case exclude hot and cold, however check if there are same problems with double transaction_id and same tot_amount as price
-test0 <- filter(df,label_content != "Hot and Cold" & ccrs == 1000598155) # test case
-
-# check first duplicats in trans_dat and transaction_id and second: is prop_price same as tot_amount
-# seems to work
-test1 <- filter(df_, duplicated(df_$transaction_id) & duplicated(df_$trans_date) & df_$total_amount == df_$prop_price) 
-
-# now create data set wich excludes "test" from above: i expect dataset with 51-8 rows
-# seems to work 
-test2 <- filter(df_, !(duplicated(df_$transaction_id) & duplicated(df_$trans_date) & df_$total_amount == df_$prop_price)) 
-
-# seems not to work: my guess is, it excludes both transaction not only one: 51-16
-test3 <- anti_join(test0, test1)
-
-# fourth way: is not working as above excludes both transactions
-test4 <- filter(test0, !(transaction_id %in% test1$transaction_id))
 

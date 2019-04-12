@@ -9,10 +9,10 @@
 pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr")
 lapply(pack, function(x){do.call("library", list(x))})
 
+# for difference between data sets see: zz_diff_datasets_181002_egel.R
 
 ####
 # data from 2017-------- for individual analysis
-# problem with encoding, dont know how to handle => especially while file savings
 df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
     mutate(date = as.Date(date)) 
 
@@ -37,10 +37,12 @@ df_7 <- left_join(df_17, info, by = c("shop_description","date","article_descrip
 df_7_ <- left_join(df_17,info_, by = c("shop_description","date","article_description","cycle"))
 
 # dataset without double entries: check script yy_plausibility for more information
-df_2017 <- filter(df_7, !(total_amount > prop_price & duplicated(transaction_id))) # delete 436 entries
-df_2017 <- filter(df_2017, !(duplicated(df_2017$ccrs) & duplicated(df_2017$transaction_id) & duplicated(df_2017$trans_date) & total_amount == prop_price)) # delete 265 entries
-df_2017 <- filter(df_2017, !qty_weight > 1) # delete 70 entries, which payed more than one meal (qty bigger than 1)
-df_2017 <- filter(df_2017, ccrs != 1000564422 & ccrs !=1000584092 & ccrs !=1000610019)# exclude 3 cases with 216 entries  (which has more than one transaction per day)
+df_7 <- filter(df_7, !qty_weight > 1) # delete 75 entries, which payed more than one meal (qty bigger than 1)
+df_2017 <- group_by(df_7, ccrs, date) %>% 
+    summarize(multi_date = n()) %>% 
+    filter(multi_date > 1) %>% # check how many transactions per person were made per day
+    ungroup() %>% 
+    anti_join(df_7,., by = c("ccrs", "date")) # in total 2027 transactions were deleted
 
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
