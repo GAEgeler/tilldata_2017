@@ -18,7 +18,7 @@ test_01 <- df_17[duplicated(df_17$trans_date),]
 # A. 67 persons with 75 transactions
 test_a <- filter(df_17, qty_weight > 1)
 
-# B. 880 persons with double dates (2038 cases)
+# B. 490 persons with double dates (2038 cases)
 test_b <- group_by(df_17, ccrs, date) %>% 
     summarize(multi_date = n()) %>% 
     filter(multi_date > 1) %>% # attention the data includes some of the cases from A

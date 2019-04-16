@@ -1,7 +1,7 @@
 ## load data -----
 
 ###
-# state: january 2019
+# state: april 2019
 # author: gian-Andrea egeler
 ###
 
@@ -37,12 +37,13 @@ df_7 <- left_join(df_17, info, by = c("shop_description","date","article_descrip
 df_7_ <- left_join(df_17,info_, by = c("shop_description","date","article_description","cycle"))
 
 # dataset without double entries: check script yy_plausibility for more information
-df_7 <- filter(df_7, !qty_weight > 1) # delete 75 entries, which payed more than one meal (qty bigger than 1)
-df_2017 <- group_by(df_7, ccrs, date) %>% 
+df_17_ <- group_by(df_7_, ccrs, date) %>% 
     summarize(multi_date = n()) %>% 
     filter(multi_date > 1) %>% # check how many transactions per person were made per day
     ungroup() %>% 
-    anti_join(df_7,., by = c("ccrs", "date")) # in total 2027 transactions were deleted
+    anti_join(df_7_,., by = c("ccrs", "date")) # in total 2027 transactions were deleted
+
+df_2017 <- filter(df_17_, !qty_weight > 1) # check, if all multiple buyings are deleted (qty bigger than 1)
 
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info, by = c("shop_description","date","article_description","cycle"))
