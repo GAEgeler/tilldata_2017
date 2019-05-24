@@ -1,27 +1,25 @@
 # R-Skript for brief report of selected results on meal sellings
-# Status: 10.01.2019
+# Status: may 2019
 
-
-# required packages
-library(dplyr)
-library(tidyr)
-library(lubridate)
-library(stringr)
-library(ggplot2)
 
 # to load data 
-source(file = "04_load_data_180802_egel.R")
+source(file = "04_1_load_data_190128_egel.R")
 # to load themes
 source(file = "08_theme_plots_180419_egel.R")
 # warnings can be ignored
+source("09_function_is_dark_190114_egel.R")
+
 
 
 # chapter 3.1: plot sellings hs 2017 overall------
 
 #prepare data for plot: aggregated data => locals are included
-df_ <- group_by(df_agg, condit ,week, label_content )%>% summarise(tot_sold=n())
+df_ <- df_agg
+df <- df_ %>% 
+    mutate(label_content = str_replace(.$label_content, "Geflügel", "Fleisch"))%>% 
+    group_by(condit ,week, label_content )%>% summarise(tot_sold=n())
 
-df_ <- df_ %>% 
+df_ <- df %>% 
     group_by(week,condit) %>% # give in variable, you want to calculate percentage
     mutate(pct=(tot_sold/sum(tot_sold)))
 
@@ -40,27 +38,25 @@ df_$xlab <- paste(df_$week, df_$condit, sep = "\n")
 ## check if the background color is dark or not
 # see mytheme for function
 # my colors for the plot
-ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fleisch" = "#fad60d","Hot and Cold"="#4c4848")
- 
+ColsPerCat=c("Unknown" = "black","Pflanzlich" = "grey90", "Pflanzlich+" = "#80ccff", "Vegetarisch" = "#c5b87c", "Fisch"="#6619e6", "Fleisch" = "#fad60d", "Hot and Cold" = "#262626") 
 # detects dark color: for labelling the bars
-source("09_function_is_dark_190114_egel.R")
 
 df_$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_$label_content], # takes every label and their belonged color
                                     function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
 
 # barplot
-p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c("Unknown", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch", "Fleisch", "Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
     xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
     # xlab(cat('"winter semester weeks (Basis: "','meat','" week, Intervention: "','vegetarian','" week"'))+
     ylab("\nVerkaufte Gerichte in Prozent")+
-    guides(fill = guide_legend("Men?-Inhalt\n"),
+    guides(fill = guide_legend("Menü-Inhalt\n"),
            color = F)+
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fleisch oder Fisch", "Hot and Cold (Buffet)"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot and Cold (Buffet)"))+
     scale_color_manual(values = levels(df_$label_color))+
     geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 8, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
@@ -92,6 +88,7 @@ summary.lm(ao1)
 
 # test if meal content differ statistically
 sell_dat <- df_agg %>%
+    mutate(label_content = str_replace(.$label_content, "Geflügel", "Fleisch")) %>% 
     mutate(label_content2 = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan")) %>% # change name 
     # mutate(label_content2 = str_replace_all(.$label_content, "Pflanzlich\\+", "Vegan_plus")) %>% # to check if the sellings in the intervention week differs between vegan and vegan plus
     mutate(label_content2 = str_replace(.$label_content2, "Pflanzlich", "Vegan")) %>% # change name
@@ -293,16 +290,17 @@ TukeyHSD(aov1, ordered = T)
 # see line 128 for sell_dat
 m_sell <- na.omit(sell_dat) %>% group_by(condit,label_content2) %>% summarise(val = mean(tot_sold)) # calculate means (per what) of the label_content per condition
 
-p <- ggplot(sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, shape = factor(label_content2, levels = ("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold")))) + 
+p <- ggplot(data = sell_dat, aes(x = condit, y = tot_sold, linetype = label_content2, 
+                                 shape = parse_factor(label_content2, levels = c("Fleisch", "Fisch", "Vegetarisch", "Vegan", "Hot and Cold")))) + 
     geom_point(data = m_sell, aes(y = val), size = 4) +
     geom_line(data = m_sell, aes(y = val, group = label_content2), size = 2) + 
     labs(y = "Durchschnittlich verkaufte Gerichte pro Woche", x = "Experimentbedingungen") + 
     scale_y_continuous(breaks = seq(0,1400,200), limits = c(0, 1400)) +
     scale_x_discrete(label = c("Basiswochen", "Interventionswochen"))+
-    scale_shape_manual(values = c("Fleisch" = 15, "Hot and Cold" = 17,"Vegan" = 3, "Vegetarisch" = 19), # change order of shape labels
-                        breaks = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold"),
-                        labels = c("Fleisch oder Fisch", "Ovo-lakto-vegetarisch", "Vegan", "Hot & Cold (Buffet)"))+
-    guides(shape = guide_legend(title = "Men?-Inhalt\n"), linetype = F)+
+    scale_shape_manual(values = c("Fleisch" = 15, "Hot and Cold" = 17,"Vegan" = 3, "Vegetarisch" = 19, "Fisch" = 7), # change order of shape labels
+                        breaks = c("Fleisch", "Vegetarisch", "Vegan", "Hot and Cold", "Fisch"),
+                        labels = c("Fleisch", "Ovo-lakto-vegetarisch", "Vegan", "Hot & Cold (Buffet)", "Fisch"))+
+    guides(shape = guide_legend(title = "Menü-Inhalt\n"), linetype = F)+
     mytheme
 
 p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")

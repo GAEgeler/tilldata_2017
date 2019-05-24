@@ -1,5 +1,5 @@
 # R-Skript for brief report of selected results on purchase behaviour
-# State: january 2019
+# State: may 2019
 # author: gian-andrea egeler
 
 ####ATTENTION: some encoding problems with umlaute!!
@@ -17,19 +17,22 @@ source("09_function_is_dark_190114_egel.R")
 # chapter 3.1. compare sample with population----------
 # summary canteen card holders according to gender and member
 canteen <- df_2017 %>%
-    filter(!duplicated(df_2017$ccrs)) %>% 
+    filter(!duplicated(df_2017$ccrs)) %>% # to get single card holders
     group_by(gender, member) %>% 
     summarise(tot_canteen = n()) %>% 
     ungroup() %>%
-    mutate(canteen_member = c("Mitarbeiterinnen", "Studentinnen", "Mitarbeiter", "Studenten", "Spezialkarten"),
+    mutate(canteen_member = c("Mitarbeiterin", "Studentin", "Mitarbeiter", "Student", "Spezialkarten"),
            canteen_pct = round((tot_canteen/sum(tot_canteen))*100,1)) %>% 
-    select(canteen_member, tot_canteen, canteen_pct)
+    select(-gender)
 
-# see excel_file in folder 00_grundgesamtheit dep N
-pop_w <- c(342, 671, 335, 797, 358) # card holders according to gender and member of wädenswil (status: dezember 2017)
+# see excel_file in folder 00_grundgesamtheit dep N: population wädenswil
+pop_w <- read_excel("S:/pools/n/N-IUNR-nova-data/00_grundgesamtheit dep N/campus_cards_181220_egel.xlsx", range = "F3:G10", sheet = 2) %>%
+    rename(pop_member = X__1, tot_pop = Frequenz) %>% 
+    drop_na() %>% 
+    mutate(pop_pct = round(.$tot_pop / sum(.$tot_pop)*100,1)) # card holders according to gender and member of wädenswil (status: dezember 2017)
 
-canteen$tot_pop <- pop_w
-canteen$pop_pct <- round((canteen$tot_pop/sum(canteen$tot_pop))*100,1)
+canteen <- canteen %>% 
+    left_join(., pop_w, by = c("canteen_member" = "pop_member"))
 
 # dont differ statistically
 # depends on spezialkarten

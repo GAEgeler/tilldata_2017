@@ -1,14 +1,17 @@
 # check for plausibility
 
-# state: april 18 
+# state: may 18 
 # author: gian-andrea egeler
 
-# load data see script 04_load_data
+# load data see script 04_1_load_data
+source(file = "04_1_load_data_190128_egel.R") # see for df_17 (original file)
 
 # short notice: ----
 # after discussion with baur 26.10.18:-----
-# - delete all cases with multiple entries (e.g. those which payed for another one)
-# in total 987 cases deleted (attention do not take the sum of the signle steps, due to duplicates in the signle steps)
+# - delete all cases with multiple entries (e.g. those with multiple entries or multiple payments per day)
+# in total 2113 (=2038+75) cases deleted (attention do not take the sum of the signle steps, due to duplicates in the signle steps)
+# 1 problem, delete those with multiple entries per day (if the meals where all the same), however let the first transaction in the dataset (e.g. 2017-11-16, 4 transactions (4 favorites) from one person) => delete only three transactions
+
 
 # 0. 435 cases are double in datafreame df_17, however if we look closer there are some other weird transactions! => see A - D
 test_0 <- df_17[duplicated(df_17),] 
@@ -16,16 +19,23 @@ test_01 <- df_17[duplicated(df_17$trans_date),]
 
 
 # A. 67 persons with 75 transactions
-test_a <- filter(df_17, qty_weight > 1)
+test_a <- filter(df_17, qty_weight > 1) # for aggregated dataset take all meals into account; for the individual dataset only the one transaction
 
-# B. 490 persons with double dates (2038 cases)
+# B. 490 persons with double or more date entries at the same day (total 1615)
 test_b <- group_by(df_17, ccrs, date) %>% 
-    summarize(multi_date = n()) %>% 
-    filter(multi_date > 1) %>% # attention the data includes some of the cases from A
-    ungroup()
+    add_tally() %>% 
+    filter(n > 1) %>% # attention the data includes some of the cases from A: double check that
+    ungroup() 
 
-test_b1 <- inner_join(df_17, test_b, by =c("ccrs", "date")) %>% filter(qty_weight <= 1) # something is weird => somehow the total transactions differ form here to the total in 04_load_data
+test_b1 <- distinct(test_b_) # take only distinct values (drop 435) for further steps
 
+# solution to problem, keep one entry when meal comes up twice, however same content (198 cases to keep)
+test_b2 <- group_by(test_b1, ccrs, date, article_description) %>% 
+    add_tally(.) %>% # mutate + summarize with n()
+    filter(n > 1) %>% # filter all with double entries around 400
+    distinct(ccrs, date, article_description, .keep_all = T) # select only one of them
+    
+    
 
 # C. 431 cases with duplicates 
 # duplicates in ccrs, transaction_id and total_amount > prop_price: means that the person payed more than one meal
