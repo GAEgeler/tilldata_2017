@@ -27,7 +27,7 @@ test_b <- group_by(df_17, ccrs, date) %>%
     filter(n > 1) %>% # attention the data includes some of the cases from A: double check that
     ungroup() 
 
-test_b1 <- distinct(test_b_) # take only distinct values (drop 435) for further steps
+test_b1 <- distinct(test_b) # take only distinct values (drop 435) for further steps
 
 # solution to problem, keep one entry when meal comes up twice, however same content (198 cases to keep)
 test_b2 <- group_by(test_b1, ccrs, date, article_description) %>% 

@@ -45,7 +45,7 @@ df_7_ <- left_join(df_17, info_, by = c("shop_description","date","article_descr
 
 # first: check for special entries due to occurencies of the same dates per person (usually one person etas once per day for him/herself)
 # 2050 (from them 435 duplicates)
-df_dat <- df_17 %>% 
+df_dat <- df_7_ %>% 
     group_by(ccrs, date) %>% # take all that transactions with double dates
     add_tally() %>% 
     filter(n > 1) %>%
@@ -53,7 +53,7 @@ df_dat <- df_17 %>%
     select(-n)
 
 #second: exlude them all
-df_ <- anti_join(df_17, df_dat)
+df_ <- anti_join(df_7_, df_dat)
 
 # third: some cases of df_dat can be kept (200): some transactions where even due to same date identical thus keep one of them => see script yy_plausibility
 df_keep <- group_by(distinct(df_dat), ccrs, date, article_description) %>% 

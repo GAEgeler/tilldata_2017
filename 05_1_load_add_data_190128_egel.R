@@ -1,13 +1,24 @@
 ## load additional data-----
 
 ###
-# state: february 2019
+# state: may 2019
 # author: gian-Andrea egeler
 ###
 
 # load packages
 pck <- c("dplyr", "stringr", "readr", "readxl", "reshape2", "lubridate")
 lapply(pck, function(x){do.call("library", list(x))})
+
+# attention readxl did some updates with new features, especially with giving names of unnames rows (old: X__1, new: ...1)
+# there is a way to omit that (source here: https://github.com/tidyverse/readxl/issues/546)
+legacy_repair <- function(nms, prefix = "X", sep = "__") {
+    if (length(nms) == 0) return(character())
+    blank <- nms == ""
+    nms[!blank] <- make.unique(nms[!blank], sep = sep)
+    new_nms <- setdiff(paste(prefix, seq_along(nms), sep = sep), nms)
+    nms[blank] <- new_nms[seq_len(sum(blank))]
+    nms
+}
 
 # load documentation ----------- (last update janaury 2019)
 # of with info about fish
@@ -17,13 +28,13 @@ source("07_change_documentary_190128_egel.R") # some changes in label_content
 # load hot and cold buffet information-----
 buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
     mutate(article_description = "Hot and Cold") %>%
-    mutate(date = parse_date(.$date)) %>% # to get same date format as other data frames
+    mutate(date = as_date(.$date)) %>% # to get same date format as other data frames, somehow parse_date not working
     mutate(shop_description = str_replace(.$shop_description, " .*", ""))
 
 
 # load environmental data-----------
 ## load ubp
-ubp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T) %>% # load specific space in excel sheet
+ubp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name = `Name Menu`, meal_name_comp = X__2, article_description = X__3, week = X__4,  gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(cycle = 1, method = "ubp", X__5 = str_sub(X__5, end = 5)) %>% # create new variables: cycle, calculation method, date
     mutate(date=paste(str_sub(X__5, end = -3), str_sub(X__5, start = 4), 17, sep = ".")) %>% # paste date together, however need some changes
@@ -72,12 +83,12 @@ group_by(t, cycle) %>% count # check, both cycles shoud be 90
 
 # add new dates to the date of the first cycle
 library(lubridate)
-library(anytime)
+
 
 first_part <- t %>% 
     filter(cycle == 2 & week < 46) %>% 
     mutate(date = ifelse(.$week%%2 ==0, .$date %m+% weeks(7), .$date %m+% weeks(5))) %>% # adds for even weeks 7 weeks to the date and for the odd week 5
-    mutate(date = anydate(date)) %>% # changes dates back to origin format 
+    mutate(date = as_date(date)) %>% # changes dates back to origin format 
     mutate(week = isoweek(date))
 
 second_part <- t %>% 
@@ -106,7 +117,7 @@ ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cyc
 
 
 ## load gwp
-gwp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T) %>% # load specific space in excel sheet
+gwp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name_comp = X__2, gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(method = "gwp") %>% # create new variables: calculation method
     dplyr::select(meal_name_comp, label_content, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%
@@ -143,7 +154,7 @@ group_by(t, cycle) %>% count # check, both cycles shoud be 90
 first_part <- t %>% 
     filter(cycle == 2 & week < 46) %>% 
     mutate(date = ifelse(.$week%%2 ==0, .$date %m+% weeks(7), .$date %m+% weeks(5))) %>% # adds for even weeks 7 weeks to the date and for the odd week 5
-    mutate(date = anydate(date)) %>% # changes dates back to origin format 
+    mutate(date = as_date(date)) %>% # changes dates back to origin format 
     mutate(week = isoweek(date))
 
 # add first cycle
@@ -187,7 +198,7 @@ envir_tot <- inner_join(ubp_long, gwp_long, by = c("meal_name.y" = "meal_name", 
 
 
 # load nutritional data-----------
-nutri_wide <- read_xlsx("S:/pools/n/N-IUNR-nova-data/08_bewertung_ausgewogenheit/Zusammenfassung_EBP_Tellermodell_V7.xlsx", range = "Tabelle1!A6:H99", trim_ws = T, col_names = F) %>%
+nutri_wide <- read_xlsx("S:/pools/n/N-IUNR-nova-data/08_bewertung_ausgewogenheit/Zusammenfassung_EBP_Tellermodell_V7.xlsx", range = "Tabelle1!A6:H99", trim_ws = T, col_names = F, .name_repair = legacy_repair) %>%
     rename(week = X__1, meal_name = X__2, ebp_points = X__5, ebp_label = X__6, teller_points = X__7, teller_label = X__8) %>%
     mutate(info = sub(".*_","",.$meal_name)) %>% # search string for _ and grep all after
     mutate(week = as.numeric(str_sub(.$info,start = 1, end = 2))) %>% # grep fist to letters of string as week
@@ -226,3 +237,4 @@ nutri_wide_ <- info_orig %>%
 rm(list=c("gwp", "gwp_", "nutri_wide", "envir_tot",
           "pck", "ubp","t", "first_part",
           "second_part", "ubp_long", "gwp_long", "pats"))
+

@@ -5,6 +5,9 @@
 # author: gian-andrea egeler
 
 # load documentation ----------- (last update sept 2018)
+library(tidyverse)
+library(lubridate)
+
 info_orig <- read_delim("augmented data/menu_inhalt_protein_180420_matu08.csv", trim_ws = T, delim =';', locale = locale(encoding = 'LATIN1'),
                         col_types = cols(date = col_date(format = "%d.%m.%Y"))) %>% # pay attention to the date format (now is it Date format not POSIXct)
     mutate(date = as.Date(.$date)) %>%
