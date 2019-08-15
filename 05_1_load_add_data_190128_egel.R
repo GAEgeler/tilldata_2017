@@ -34,12 +34,12 @@ buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
 
 # load environmental data-----------
 ## load ubp
-ubp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
+ubp <- read_xlsx("raw data/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name = `Name Menu`, meal_name_comp = X__2, article_description = X__3, week = X__4,  gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(cycle = 1, method = "ubp", X__5 = str_sub(X__5, end = 5)) %>% # create new variables: cycle, calculation method, date
     mutate(date=paste(str_sub(X__5, end = -3), str_sub(X__5, start = 4), 17, sep = ".")) %>% # paste date together, however need some changes
     dplyr::select(meal_name, meal_name_comp, article_description, label_content, date, week, cycle, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>% ## select variables
-    # sum all variables => only for sorting in plot
+        # sum all variables => only for sorting in plot
     mutate(tot_ubp = Kohlenhydrate + Protein + gemuse_fruchte + ol_fett_nuss + suss_salz_alk + foodwaste + zubereitung) # add all variables together
 
 
@@ -117,7 +117,7 @@ ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cyc
 
 
 ## load gwp
-gwp <- read_xlsx("S:/pools/n/N-IUNR-nova-data/09_bewertung_umwelt/Auswertung/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
+gwp <- read_xlsx("raw data/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name_comp = X__2, gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(method = "gwp") %>% # create new variables: calculation method
     dplyr::select(meal_name_comp, label_content, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%
@@ -198,7 +198,7 @@ envir_tot <- inner_join(ubp_long, gwp_long, by = c("meal_name.y" = "meal_name", 
 
 
 # load nutritional data-----------
-nutri_wide <- read_xlsx("S:/pools/n/N-IUNR-nova-data/08_bewertung_ausgewogenheit/Zusammenfassung_EBP_Tellermodell_V7.xlsx", range = "Tabelle1!A6:H99", trim_ws = T, col_names = F, .name_repair = legacy_repair) %>%
+nutri_wide <- read_xlsx("raw data/Zusammenfassung_EBP_Tellermodell_V7.xlsx", range = "Tabelle1!A6:H99", trim_ws = T, col_names = F, .name_repair = legacy_repair) %>%
     rename(week = X__1, meal_name = X__2, ebp_points = X__5, ebp_label = X__6, teller_points = X__7, teller_label = X__8) %>%
     mutate(info = sub(".*_","",.$meal_name)) %>% # search string for _ and grep all after
     mutate(week = as.numeric(str_sub(.$info,start = 1, end = 2))) %>% # grep fist to letters of string as week
