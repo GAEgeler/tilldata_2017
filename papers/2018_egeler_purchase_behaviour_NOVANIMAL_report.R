@@ -302,7 +302,7 @@ dat$group <- ifelse(dat$test2 > 2 & dat$test2 < 7, "group", "subgroup")
 
 # open pdf device for saving plot
 
-cairo_pdf("Plots/treemap_cluster_181221_egel.pdf", width = 20, height = 20)
+cairo_pdf("Plots/treemap_cluster_190822_egel.pdf", width = 20, height = 20)
 
 treemap(dat, #Your data frame object
         index="label",  #A list of your categorical variables

@@ -47,7 +47,7 @@ df_7_ <- left_join(df_17, info_, by = c("shop_description","date","article_descr
 # 2050 (from them 435 duplicates)
 df_dat <- df_7_ %>% 
     group_by(ccrs, date) %>% # take all that transactions with double dates
-    add_tally() %>% 
+    add_tally() %>% # counts occurencies
     filter(n > 1) %>%
     ungroup() %>% 
     select(-n)
@@ -69,4 +69,4 @@ df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_des
     
 
 # delete some datasets
-rm(list = c("pack", "envir", "buffet", "df_", "df_7_", "envir_tot", "info_", "info_compl", "info_orig"))
+rm(list = c("pack", "envir", "buffet", "df_", "df_7_", "df_17", "envir_tot", "info_", "info_compl", "info_orig"))
