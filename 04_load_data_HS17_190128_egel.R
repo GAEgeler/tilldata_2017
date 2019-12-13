@@ -1,4 +1,4 @@
-## load data -----
+## load till data 2017-----
 
 ###
 # state: may 2019
@@ -6,7 +6,7 @@
 ###
 
 # required packages
-pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr")
+pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr", "here")
 lapply(pack, function(x){do.call("library", list(x))})
 
 
@@ -18,7 +18,7 @@ df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", loc
 
 
 # data from 2017---------- for aggregated analysis
-df_ <- read_delim("augmented data/data_edit_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
+df_ <- read_delim("augmented data/data_edit_agg_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
     mutate(date = as.Date(date)) 
 
 # peeple who payed more than one meal at once, are beeing replicated
@@ -33,7 +33,6 @@ source("05_1_load_add_data_190128_egel.R") # with the difference between fish an
 # merge  
 info_compl <- left_join(info_orig, envir, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) # left join
     
-
 # documentation with buffet data
 info_compl <- left_join(info_compl, buffet, by=c("date","article_description","shop_description"))
 
@@ -67,6 +66,5 @@ df_2017 <- bind_rows(df_, df_keep)
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
     
-
 # delete some datasets
-rm(list = c("pack", "envir", "buffet", "df_", "df_7_", "df_17", "envir_tot", "info_", "info_compl", "info_orig"))
+rm(list = c("pack","df_dat", "df_", "df_7_", "df_17", "envir", "df_keep", "gwp_1", "nutri_wide", "nutri_wide_",  "ubp_", "envir_tot", "info_", "info_compl", "info_orig"))

@@ -10,18 +10,10 @@ library(dplyr)
 library(readr)
 library(lubridate)
 
-# load both data sets -------------
-# individual dataset
-df <- read_delim("clean data/data_clean_180929_egel.csv", delim = ';')
-
-# aggreagted dataset
-df <- read_delim("clean data/data_clean_180802_egel.csv", delim = ';')
-
-
+#####article filter--------
 # subset data: Favorite, Garden (= Hot n Cold), Kitchen (0,1,2,3,4), LocalFavorite, LocalKitchen, LocalWorld, World => Local Kitchen is missing?
 # individual data set: 23736 observations
 # agg data set: 28199 observations (many differences because of the cash payers)
-
 articles <- c(
     "A10001" ,# Favorite
     "A10010", # Kitchen 0
@@ -40,45 +32,56 @@ articles <- c(
     "A10023" ,#	Local 3
     "A10024"  # Local 4
 )
-df_ <- filter(df, art_code %in% articles) # attention no time filter
 
-# double check----------
-### as control, filter data with article names => same result as above
-articl_name <- c(
-    "Favorite",
-    "Kitchen",
-    "Hot and Cold",
-    "Local Favorite",
-    "Local World",
-    "Local Tössfeld",
-    "World")
-df_ <- filter(df, article_description %in% articl_name) # attention no time filter
+###############
+### filter for individual dara
+# load data set-------------
+# individual dataset
+df_ind <- read_delim(here("clean data/data_clean_ind_180929_egel_check.csv"), delim = ';')
 
-# time filter (only lunch meals)-----
+# 1. article filter--------
+df_i <- filter(df_ind, art_code %in% articles) # attention no time filter
+
+# 2. time filter (only lunch meals)-----
 # between 8 and 9 oclock are weiered transactions (total amount over 1000). it seems that michael krauer then feed in missing sold meals of the evenings
 # filter all meals between 9 and 10 to see how many are affected 
+df_in <- filter(df_i, (hour(trans_date) >= 9 & hour(trans_date) <= 14)) # starts at 9:00 and end at 14:59
 
-df_ <- filter(df_, (hour(trans_date) >= 9 & hour(trans_date) <= 14)) # starts at 9:00 and end at 14:59, and excluds cases (only one) which the total_amount is higher than 1000
+# 3. change date format (because it causes several problems while merging)----------
+df_in$date <- as.Date(df_in$date) # change date format from POSIXct to Date
 
-
-# only for agg dataset------
-# one strange transactions in total_amount.x (1) 1700 CHF 
-# exclude that one
-df_ <- filter(df_, total_amount.x < 1000)
-
-# exclude Gutschein payers for agg data set, becaus of double entries
-df_ <- filter(df_, !grepl("Gutschein",df_$pay_description))
-
-
-
-# change date format (because it causes several problems while merging)----------
-df_$date <- as.Date(df_$date) # change date format from POSIXct to Date
-
-# save data-------
-
+# 4. save data-------
 # individual data set: 23683 obs
-write_delim(df_, "clean data/data_filtered_180929_egel.csv", delim = ';')
+write_delim(df_in, "clean data/data_filtered_ind_180929_egel_check.csv", delim = ';')
 
+##################################################
+##################################################--------------------------------
+##################################################
+
+#load data set------------
+# aggreagted dataset
+df_agg <- read_delim(here("clean data/data_clean_agg_180802_egel_check.csv"), delim = ';')
+
+###############
+### filter for aggregated dara: 
+# 1. article filter-----
+df_a <- filter(df_agg, art_code %in% articles) # attention no time filter
+
+# 2. time filter (only lunch meals)-----
+# between 8 and 9 oclock are weiered transactions (total amount over 1000). it seems that michael krauer then feed in missing sold meals of the evenings
+# filter all meals between 9 and 10 to see how many are affected 
+df_ag <- filter(df_a, (hour(trans_date) >= 9 & hour(trans_date) <= 14)) # starts at 9:00 and end at 14:59, and excluds cases (only one) which the total_amount is higher than 1000
+
+# 3. one strange transactions in total_amount (1) 1700 CHF 
+# exclude that one
+df_ag <- filter(df_ag, total_amount < 1000)
+
+# 4. exclude Gutschein payers for agg data set, becaus of double entries
+df_ag <- filter(df_ag, !grepl("Gutschein",df_ag$pay_description))
+
+# 5. change date format (because it causes several problems while merging)----------
+df_ag$date <- as.Date(df_ag$date) # change date format from POSIXct to Date
+
+# 6. save data-------
 # agg data set: 26234 obs
-write_delim(df_, "clean data/data_filtered_180929_egel.csv", delim = ';')
-
+write_delim(df_ag, "clean data/data_filtered_agg_180802_egel_check.csv", delim = ';')

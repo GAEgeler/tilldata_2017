@@ -10,7 +10,7 @@ pck <- c("dplyr", "stringr", "readr", "readxl", "reshape2", "lubridate")
 lapply(pck, function(x){do.call("library", list(x))})
 
 # attention readxl did some updates with new features, especially with giving names of unnames rows (old: X__1, new: ...1)
-# there is a way to omit that (source here: https://github.com/tidyverse/readxl/issues/546)
+# there is a way to omit that (reference here: https://github.com/tidyverse/readxl/issues/546)
 legacy_repair <- function(nms, prefix = "X", sep = "__") {
     if (length(nms) == 0) return(character())
     blank <- nms == ""
@@ -26,7 +26,7 @@ source("07_change_documentary_190128_egel.R") # some changes in label_content
 
 
 # load hot and cold buffet information-----
-buffet <- read_xlsx("augmented data/buffet_animal_180425_03egel.xlsx") %>%
+buffet <- read_xlsx("augmented data/buffet_animal_180425.xlsx") %>%
     mutate(article_description = "Hot and Cold") %>%
     mutate(date = as_date(.$date)) %>% # to get same date format as other data frames, somehow parse_date not working
     mutate(shop_description = str_replace(.$shop_description, " .*", ""))

@@ -1,7 +1,7 @@
 # vori 190819
 # Anzahl verkaufte Gerichte pro Menülinie und demografische Merkmale der Mensabesucher. Beides für die Acht Befragungstage 
 
-library("tydivers")
+library("tidyverse")
 library("gmodels")
 # Laden der Daten
 source("04_1_load_data_190128_egel.R")

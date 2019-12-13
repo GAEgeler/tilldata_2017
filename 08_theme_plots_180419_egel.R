@@ -65,19 +65,9 @@ mytheme1 <- theme_bw()+ # definve theme for plot
 
 
 
-## MY Theme 2: for more information in plot ----------------------
-## MY Theme 2: for more information in plot ----------------------
-
-mytheme2 <- theme_bw()+ # definve theme for plot
-    theme(plot.title = element_text(size = 20, face = "bold"),
-          axis.text.x = element_text(size=16),
-          axis.text.y = element_text(size=20, face = "plain"),
-          legend.text = element_text(size = 20),
-          legend.title = element_text(size =20),
-          axis.title.y = element_text(size = 25, margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.x = element_text(size = 25,  margin = margin(t = 20, r = 0, b = 0, l = 0)))
-
-
+## MY Theme 2: for plots in working paper ----------------------
+#see how to change fonts: https://stackoverflow.com/questions/34522732/changing-fonts-in-ggplot2
+mytheme2 <- 
 
 
 ### MY Theme 3: for plots without lines on the left and on the top -------------------
