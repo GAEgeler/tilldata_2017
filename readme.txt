@@ -19,7 +19,7 @@
 
 08_theme_plots_180419.R: defined themes for plotting
 
-09_12: some usefull functions e.g. for plots
+09_13: some usefull functions e.g. for plots
 
 ----------------------
 

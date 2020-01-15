@@ -6,10 +6,10 @@
 ###
 
 # snapshot of packages
-checkpoint::checkpoint("2019-12-09")
+# checkpoint::checkpoint("2019-12-09")
 
 # required packages
-pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr")
+pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr", "here")
 lapply(pack, function(x){do.call("library", list(x))})
 
 
