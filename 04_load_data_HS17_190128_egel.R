@@ -52,9 +52,10 @@ df_dat <- df_7_ %>%
     select(-n)
 
 #second: exlude them all
-df_ <- anti_join(df_7_, df_dat)
+df_ <- anti_join(df_7_, df_dat) 
 
 # third: some cases of df_dat can be kept (200): some transactions where even due to same date identical thus keep one of them => see script yy_plausibility
+# there is one case, which is strange ccrs == 1000564482 (i let them however in the dataset)
 df_keep <- group_by(distinct(df_dat), ccrs, date, article_description) %>% 
     add_tally(.) %>% # mutate + summarize with n()
     filter(n > 1) %>% # filter all with double entries around 400
@@ -67,4 +68,4 @@ df_2017 <- bind_rows(df_, df_keep)
 df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
     
 # delete some datasets
-rm(list = c("pack","df_dat", "df_", "df_7_", "df_17", "envir", "df_keep", "gwp_1", "nutri_wide", "nutri_wide_",  "ubp_", "envir_tot", "info_", "info_compl", "info_orig"))
+rm(list = c("pack","df_dat", "df_", "df_7_", "df_17", "envir", "df_keep", "gwp_1", "nutri_wide", "nutri_wide_",  "ubp_", "envir_tot", "info_", "info_compl"))
