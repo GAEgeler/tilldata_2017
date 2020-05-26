@@ -22,7 +22,7 @@ legacy_repair <- function(nms, prefix = "X", sep = "__") {
 
 # load documentation ----------- (last update janaury 2019)
 # of with info about fish
-source("07_change_documentary_190128_egel.R") # some changes in label_content
+source("07_change_documentary_190128_egel.R", encoding = "ISO8859-1") # some changes in label_content
 
 
 # load hot and cold buffet information-----
@@ -34,7 +34,7 @@ buffet <- read_xlsx("augmented data/buffet_animal_180425.xlsx") %>%
 
 # load environmental data-----------
 ## load ubp
-ubp <- read_xlsx("raw data/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
+ubp <- read_xlsx("raw data/Novanimal_Umweltbewertung_Menus_final.xlsx", range="Rezepte!A3:T96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name = `Name Menu`, meal_name_comp = X__2, article_description = X__3, week = X__4,  gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(cycle = 1, method = "ubp", X__5 = str_sub(X__5, end = 5)) %>% # create new variables: cycle, calculation method, date
     mutate(date=paste(str_sub(X__5, end = -3), str_sub(X__5, start = 4), 17, sep = ".")) %>% # paste date together, however need some changes
@@ -117,7 +117,7 @@ ubp_long <- melt(ubp_, id.vars = c("meal_name.y", "meal_name_comp", "date", "cyc
 
 
 ## load gwp
-gwp <- read_xlsx("raw data/Novanimal_Umweltbewertung_Menüs_final.xlsx", range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
+gwp <- read_xlsx("raw data/Novanimal_Umweltbewertung_Menus_final.xlsx", range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
     rename(label_content = Menuart, meal_name_comp = X__2, gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
     mutate(method = "gwp") %>% # create new variables: calculation method
     dplyr::select(meal_name_comp, label_content, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%

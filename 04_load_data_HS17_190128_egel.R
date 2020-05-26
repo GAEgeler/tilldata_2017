@@ -14,7 +14,7 @@ lapply(pack, function(x){do.call("library", list(x))})
 # data from 2017-------- for individual analysis
 # problem with encoding, dont know how to handle => especially while file savings
 df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
-    mutate(date = as.Date(date)) 
+    mutate(date = as.Date(date))  # Data of 12 Personen where excluded from the individual dataset (1564-1552)
 
 
 # data from 2017---------- for aggregated analysis
@@ -28,7 +28,7 @@ df_agg <- filter(df_, qty_weight > 1) %>%
 
 
 # merge documentation info with environmental data (no nutritional data (code is here, however not finished))-----
-source("05_1_load_add_data_190128_egel.R") # with the difference between fish and meat
+source("05_1_load_add_data_190128_egel.R", encoding = "ISO8859-1") # with the difference between fish and meat
 
 # merge  
 info_compl <- left_join(info_orig, envir, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) # left join
@@ -44,7 +44,7 @@ df_7_ <- left_join(df_17, info_, by = c("shop_description","date","article_descr
 
 # first: check for special entries due to occurencies of the same dates per person (usually one person etas once per day for him/herself)
 # 2050 (from them 435 duplicates)
-df_dat <- df_7_ %>% 
+df_double <- df_7_ %>% 
     group_by(ccrs, date) %>% # take all that transactions with double dates
     add_tally() %>% # counts occurencies
     filter(n > 1) %>%
@@ -52,19 +52,22 @@ df_dat <- df_7_ %>%
     select(-n)
 
 #second: exlude them all
-df_ <- anti_join(df_7_, df_dat)
+df_keep <- anti_join(df_7_, df_double)
 
 # third: some cases of df_dat can be kept (200): some transactions where even due to same date identical thus keep one of them => see script yy_plausibility
-df_keep <- group_by(distinct(df_dat), ccrs, date, article_description) %>% 
+df_keep2 <- group_by(distinct(df_double), ccrs, date, article_description) %>% 
     add_tally(.) %>% # mutate + summarize with n()
     filter(n > 1) %>% # filter all with double entries around 400
     distinct(ccrs, date, article_description, .keep_all = T) # select only one of them (200)
     
 # fourth: row_bind add that 200 cases
-df_2017 <- bind_rows(df_, df_keep)
+df_2017 <- bind_rows(df_keep, df_keep2)
 
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
+
+# print message
+print("Data: 'df_2017' (all sellings with info about the person) and 'df_agg' (all sellings during the field experiment) loaded successfully!")
     
 # delete some datasets
-rm(list = c("pack","df_dat", "df_", "df_7_", "df_17", "envir", "df_keep", "gwp_1", "nutri_wide", "nutri_wide_",  "ubp_", "envir_tot", "info_", "info_compl", "info_orig"))
+rm(list = c("pack","df_dat", "df_", "df_7_", "df_17", "envir", "df_keep", "df_keep2", "gwp_1", "nutri_wide", "nutri_wide_",  "ubp_", "envir_tot", "info_", "info_compl", "info_orig"))

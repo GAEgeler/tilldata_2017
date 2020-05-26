@@ -16,7 +16,14 @@ lapply(pack, function(x){do.call("library", list(x))})
 #### 2015-2016: label content-----
 # using here and source from another project is causing major problems
 # this helps: https://stackoverflow.com/questions/42815889/r-source-and-path-to-source-files
-source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_label_191206_egel.R", chdir = T) # attention from another folder (due to reproductibility)
+# check if path exists, if so load from pool otherwise from online-server
+if (dir.exists("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/")) {
+    source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_label_191206_egel.R", chdir = T)
+} else{
+    source("scripts from another project/03_edit_data_label_191206_egel.R", encoding = "ISO8859-1")
+    
+}
+
 
 #### 2017: group meal content----
 source("04_load_data_HS17_190128_egel.R")
@@ -35,7 +42,12 @@ menu_tot_label <- bind_rows(menu_tot5, menu_tot6, menu_tot7)
 rm(list = c("menu_tot5", "menu_tot6", "menu_tot7"))
 
 #### 2015-2016: meal line
-source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_line_191206_egel.R", chdir = T) # attention from another folder (due to reproductibility)
+if (dir.exists("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/")) {
+    source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_line_191206_egel.R", chdir = T)
+} else{
+    source("scripts from another project/03_edit_data_line_191206_egel.R", encoding = "ISO8859-1")
+    
+}
 
 # group data 2017 according meal line----
 menu_tot7 <- df_agg %>%
@@ -47,6 +59,8 @@ menu_tot7 <- df_agg %>%
 # merge with data 2017
 menu_tot_line <- bind_rows(df_tot, menu_tot7)
 
+# print message
+print("Data: 'menu_tot_line' (with all info about the mealline) and 'menu_tot_label' (all info about the meal content) loaded successfully!")    
 
 # delete unused data sets
 rm(list = c("dat_hs_tot", "df_tot", "menu_tot7", "df_tot"))

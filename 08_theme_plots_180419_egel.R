@@ -9,14 +9,26 @@
 ###
 
 # required packages
+library(testit)
 library(ggplot2)
 library(extrafont) # https://cran.r-project.org/web/packages/extrafont/README.html
+# showtext is not working
 library(showtext) # https://www.r-bloggers.com/adding-custom-fonts-to-ggplot-in-r/
-loadfonts(device = "win", quiet = T) # import fonts from win
+if (has_error(loadfonts(device = "win", quiet = T), silent = TRUE)) {
+    font_add(family = "Akkurat", 
+             regular = "fonts/Akkurat.ttf", 
+             bold = "fonts/Akkurat Bold.ttf", 
+             italic = "fonts/Akkurat Light.ttf")
+    showtext_auto()
+    print("You work with Showtext Package")
+} else{
+    loadfonts(device = "win", quiet = T)
+    print("Yout work with Extrafont Package")
+}
+
 
 #somehow not working 
-# font_add(family = "Akkurat", regular = "C:/Windows/Fonts/Akkurat.ttf", bold = "C:/Windows/Fonts/Akkurat Bold.ttf", italic = "C:/Windows/Fonts/Akkurat Light.ttf")
-# showtext_auto()
+
 
 
 # function to increase vertical spacing between legend keys
