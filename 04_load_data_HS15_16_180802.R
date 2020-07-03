@@ -18,15 +18,15 @@ lapply(pack, function(x){do.call("library", list(x))})
 # this helps: https://stackoverflow.com/questions/42815889/r-source-and-path-to-source-files
 # check if path exists, if so load from pool otherwise from online-server
 if (dir.exists("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/")) {
-    source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_label_191206_egel.R", chdir = T)
+    source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_label_191206_egel.R", chdir = T, encoding = "Latin1")
 } else{
-    source("scripts from another project/03_edit_data_label_191206_egel.R", encoding = "ISO8859-1")
+    source("./scripts from another project/03_edit_data_label_191206_egel.R", chdir = TRUE, encoding = "ISO8859-1")
     
 }
 
 
 #### 2017: group meal content----
-source("04_load_data_HS17_190128_egel.R")
+source("04_load_data_HS17_190128.R", chdir = TRUE, encoding = "Latin1")
 rm(list = c("df_2017")) # only need aggregated data
 
 # edit aggregated data 2017
@@ -45,7 +45,7 @@ rm(list = c("menu_tot5", "menu_tot6", "menu_tot7"))
 if (dir.exists("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/")) {
     source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_line_191206_egel.R", chdir = T)
 } else{
-    source("scripts from another project/03_edit_data_line_191206_egel.R", encoding = "ISO8859-1")
+    source("scripts from another project/03_edit_data_line_191206_egel.R", chdir = TRUE, encoding = "ISO8859-1")
     
 }
 

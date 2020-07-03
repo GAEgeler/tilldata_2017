@@ -6,20 +6,39 @@
 ###
 
 # required packages
-pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr", "here")
+pack <- c("dplyr", "lubridate", "readr", "stringr", "readxl", "tidyr", "here", "magrittr")
 lapply(pack, function(x){do.call("library", list(x))})
 
 
-####
-# data from 2017-------- for individual analysis
-# problem with encoding, dont know how to handle => especially while file savings
-df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
+####load data
+
+if(file.exists("augmented data/data_edit_180929_egel.csv")){
+    # data from 2017-------- meal buying with campuscard
+    df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
     mutate(date = as.Date(date))  # Data of 12 Personen where excluded from the individual dataset (1564-1552)
 
 
-# data from 2017---------- for aggregated analysis
-df_ <- read_delim("augmented data/data_edit_agg_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
+    # data from 2017---------- for aggregated analysis
+    df_ <- read_delim("augmented data/data_edit_agg_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
     mutate(date = as.Date(date)) 
+    
+    print("---You load your data from an local server---")
+    
+}else{
+    # data from 2017 --- meal buying with campuscard
+    df_17 <- fread("URL", encoding = "Latin1") %>% 
+        mutate(date = as.Date(date)) %>% 
+        as_tibble()
+    
+    #data from 2017 --- for aggregated analysis
+    df_ <- fread("URL", encoding = "Latin1") %>% 
+        mutate(date = as.Date(date)) %>% 
+        as_tibble()
+    
+    print("---You load your data from ...(Webpage)---")
+}
+
+
 
 # peeple who payed more than one meal at once, are beeing replicated
 df_agg <- filter(df_, qty_weight > 1) %>%
@@ -27,15 +46,19 @@ df_agg <- filter(df_, qty_weight > 1) %>%
     left_join(df_, .) # merge it back to agg dataframe
 
 
-# merge documentation info with environmental data (no nutritional data (code is here, however not finished))-----
-source("05_1_load_add_data_190128_egel.R", encoding = "ISO8859-1") # with the difference between fish and meat
-
-# merge  
-info_compl <- left_join(info_orig, envir, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) # left join
+#merge documentation info with environmental data (no nutritional data (code is here, however not finished))-----
+#information can be downloaded form the website ...
+if(file.exists("05_load_add_data_190128.R")){
+    # load data
+    source("05_load_add_data_190128.R", encoding = "Latin1") # with the difference between fish and meat
     
-# documentation with buffet data
-info_compl <- left_join(info_compl, buffet, by=c("date","article_description","shop_description"))
-
+    print("---You load your data from an local server---")
+}else{
+    # load data form webpage
+    info_compl <- fread("URL", )
+    
+    print("---You load your data from ...(Webpage)---")
+}
 # merge documentation with data 2017
 info_ <- select(info_compl, meal_name_comp, meal_name, article_description, label_content, date, cycle, shop_description, tot_ubp, tot_gwp, buffet_animal_comp, outside, sun, clouds, rainfall) # subset of info_compl
 df_7_ <- left_join(df_17, info_, by = c("shop_description","date","article_description","cycle")) # attention with cylce as key variable => all information for second cycle is not included!!
@@ -66,8 +89,5 @@ df_2017 <- bind_rows(df_keep, df_keep2)
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
 
-# print message
-print("Data: 'df_2017' (all sellings with info about the person) and 'df_agg' (all sellings during the field experiment) loaded successfully!")
-    
 # delete some datasets
-rm(list = c("pack","df_dat", "df_", "df_7_", "df_17", "envir", "df_keep", "df_keep2", "gwp_1", "nutri_wide", "nutri_wide_",  "ubp_", "envir_tot", "info_", "info_compl", "info_orig"))
+rm(list = c("pack","df_" ,"df_17", "df_7_", "info_", "df_double", "df_keep", "df_keep2", "info_compl"))

@@ -17,7 +17,7 @@
 *.Rhistory
 *.RData
 *.Ruserdata
-*.Rproj
+.Rproj
 
 
 
@@ -30,10 +30,10 @@
 /analysen
 /archive
 /plots
-/papers/*
-/.Rproj/**
-.Rproj.user
+/papers
 /survey meat
 /publications
 /scripts from another project
 /fonts
+
+.Rproj.user
