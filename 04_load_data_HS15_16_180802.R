@@ -45,7 +45,7 @@ rm(list = c("menu_tot5", "menu_tot6", "menu_tot7"))
 if (dir.exists("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/")) {
     source("S:/pools/n/N-IUNR-nova-data/02_kassendaten/00_tilldata_2015_2016/03_edit_data_line_191206_egel.R", chdir = T)
 } else{
-    source("scripts from another project/03_edit_data_line_191206_egel.R", chdir = TRUE, encoding = "ISO8859-1")
+    source("scripts from another project/03_edit_data_line_191206_egel.R", chdir = TRUE, encoding = "ISO8859-1") # there are some weird transaction concerning the kitchen meal line e.g. 2016-12-20 0 kitchen sellings (however if i check the original data, no kitchen entry)
     
 }
 

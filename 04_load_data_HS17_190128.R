@@ -22,20 +22,20 @@ if(file.exists("augmented data/data_edit_180929_egel.csv")){
     df_ <- read_delim("augmented data/data_edit_agg_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
     mutate(date = as.Date(date)) 
     
-    print("---You load your data from an local server---")
+    message("---You load your data from an local server---")
     
 }else{
     # data from 2017 --- meal buying with campuscard
-    df_17 <- fread("URL", encoding = "Latin1") %>% 
+    df_17 <- data.table::fread("URL", encoding = "Latin1", sep = ";") %>% 
         mutate(date = as.Date(date)) %>% 
         as_tibble()
     
     #data from 2017 --- for aggregated analysis
-    df_ <- fread("URL", encoding = "Latin1") %>% 
+    df_ <- data.table::fread("URL", encoding = "Latin1", sep = ";") %>% 
         mutate(date = as.Date(date)) %>% 
         as_tibble()
     
-    print("---You load your data from ...(Webpage)---")
+    message("---You load your data from ...(Webpage)---")
 }
 
 
@@ -52,12 +52,12 @@ if(file.exists("05_load_add_data_190128.R")){
     # load data
     source("05_load_add_data_190128.R", encoding = "Latin1") # with the difference between fish and meat
     
-    print("---You load your data from an local server---")
+    message("---You load your data from an local server---")
 }else{
     # load data form webpage
-    info_compl <- fread("URL", )
+    info_compl <- data.table::fread("URL", encoding = "Latin1", sep = ";")
     
-    print("---You load your data from ...(Webpage)---")
+    message("---You load your data from ...(Webpage)---")
 }
 # merge documentation with data 2017
 info_ <- select(info_compl, meal_name_comp, meal_name, article_description, label_content, date, cycle, shop_description, tot_ubp, tot_gwp, buffet_animal_comp, outside, sun, clouds, rainfall) # subset of info_compl
@@ -88,6 +88,9 @@ df_2017 <- bind_rows(df_keep, df_keep2)
 
 # merge aggregated sv data
 df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
+
+#message
+message("you load succsessfully your data: mensaverkäfe (df_agg), gästedaten (df_2017)")
 
 # delete some datasets
 rm(list = c("pack","df_" ,"df_17", "df_7_", "info_", "df_double", "df_keep", "df_keep2", "info_compl"))
