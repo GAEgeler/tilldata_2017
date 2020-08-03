@@ -72,6 +72,7 @@ df_plan_7_intervention <- tibble(year = rep(2017, times=180),
 # Actual: Locals are included
 # use documentation for that (not selling data)
 # exclude hot and cold (only using filter() is deleting missing cases!)
+source("05_load_add_data_190128.R")
 df_actual_7 <- info_orig %>% 
     filter(!grepl("Hot and Cold", info_orig$label_content)) %>% 
     mutate(offer = "Angeboten", year = year(date)) %>% 
@@ -125,7 +126,7 @@ p <- ggplot(df, aes(y = pct,x = xlab, fill=factor(label_content,levels=c("Unbeka
     # scale_y_continuous(labels = scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)","Vegan (authentisch)","Ovo-lakto-vegetarisch","Fleisch oder Fisch", "Hot and Cold"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)","Vegan (authentisch)","Ovo-lakto-vegetarisch","Fleisch oder Fisch", "Hot&Cold"))+
     scale_color_manual(values = levels(df$label_color)) +
     scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
     scale_x_discrete(limits=c("2015 - 2016\nGeplant\n", "","2017\nGeplant\nBasis", "2017\nAngeboten\nBasis","2017\nGeplant\nIntervention", "2017\nAngeboten\nIntervention"), labels = c("2015 - 2016\nGeplant\n", "","2017\nGeplant\nBasiswochen", "2017\nAngeboten\nBasiswochen","2017\nGeplant\nInterventionswochen", "2017\nAngeboten\nInterventionswochen"))+
@@ -409,6 +410,16 @@ canteen_light <- canteen %>%
   mutate(pct_cant = tot_canteen / sum(tot_canteen),
          pct_pop = tot_pop / sum(tot_pop))
 
+# only gender
+canteen_light <- canteen %>% 
+  mutate(canteen_member = str_replace_all(.$canteen_member, "Studentin|Mitarbeiterin", "F")) %>% 
+  mutate(canteen_member = str_replace_all(.$canteen_member, "Student|Mitarbeiter", "M")) %>% 
+  group_by(canteen_member) %>% 
+  summarise(tot_canteen = sum(tot_canteen),
+            tot_pop = sum(tot_pop)) %>% 
+  mutate(pct_cant = tot_canteen / sum(tot_canteen),
+         pct_pop = tot_pop / sum(tot_pop))
+
 #--------------
 # dont differ statistically
 # depends on spezialkarten
@@ -460,8 +471,8 @@ df_ <- df %>%
     mutate(pct = pct(tot_sold)) %>%   # calculate percentage
     ungroup() %>% 
     complete(., article_description, year, fill = list(tot_sold = 0, pct = 0)) %>% 
-    left_join(., text[, c("year", "xlab")]) # merge with text df, due to info about xlab
-
+    left_join(., text[, c("year", "xlab")]) %>%  # merge with text df, due to info about xlab
+    ungroup()
 ## check if the background color is dark or not
 # see mytheme for function
 # my colors for the plot
@@ -483,7 +494,7 @@ p <- ggplot(df_, aes(y = pct, x = xlab, fill=factor(article_description,levels=c
            color=F)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$names,
-                      labels = c("Local/Zusatzangebot","Kitchen","Green (2015, 2016: nur Vegi)\nWorld (2017: Fleisch oder Vegi)","Favorite","Hot & Cold (Buffet)"))+
+                      labels = c("Local/Zusatzangebot","Kitchen","Green (2015, 2016: nur Vegi)\nWorld (2017: Fleisch oder Vegi)","Favorite","Hot&Cold (Buffet)"))+
     scale_y_continuous(labels = scales::percent) + #for thousand seperator see https://stackoverflow.com/questions/13191601/thousand-separator-in-label-of-x-or-y-axis/13203569
     # scale_x_discrete(labels = scales::parse_format()(df$xlab))
     scale_color_manual(values = levels(df_$label_color)) +
@@ -551,8 +562,8 @@ index_turnover_17 <- dat_17 %>% # mean of week sellings as index
 pl2 <- menu_tot_turnover %>% 
     group_by(week, year) %>% 
     summarise(week_turnover = sum(turnover)) %>% 
-    mutate(turnover_index = week_turnover/mean(index_turnover_17$sum_turn)) %>% 
-    mutate(txt = round(turnover_index, 2)) %>%
+    mutate(turnover_index = week_turnover/mean(index_turnover_17$sum_turn)*100) %>% 
+    mutate(txt = round(turnover_index, 0)) %>%
     ungroup() %>% 
     left_join(pl, ., by = c("week", "year")) 
     # mutate(year = factor(year, levels = c("2015", "2016", "2017"))) %>% 
@@ -565,22 +576,22 @@ pl2$label_color <- as.factor(sapply(unlist(ColsPerCat)[pl2$article_description],
                                          function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
 
-p <-ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
+p <- ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_description, levels = c("Kitchen", "Green/World","Favorite","Hot and Cold")), color = label_color)) + 
     geom_bar(stat = "identity", color = NA, position = position_stack(), width = .7) +
-    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)") +
+    xlab("Herbstsemesterwochen (Kalenderwochen 40 bis 51)\n\n") +
     ylab("\nUmsatz in Prozent")+
     scale_y_continuous(label = scales::percent) +
-    guides(fill = guide_legend("Menülinie\n"),
+    guides(fill = guide_legend(""),
            color = F)+
     facet_wrap(~year)+
     scale_color_manual(values = levels(pl2$label_color)) +
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Local/Zusatzangebot","Kitchen","Green (2015, 2016: nur Vegi)\nWorld (2017: Fleisch oder Vegi)","Favorite","Hot & Cold (Buffet)"))+
+                      labels = c("Local/Zusatzangebot","Kitchen","Green (2015, 2016: nur Vegi)\nWorld (2017: Fleisch oder Vegi)","Favorite","Hot&Cold (Buffet)"))+
     geom_text(aes(label = scales::percent(round(pct_turn, 2), accuracy = 1)), position = position_stack(vjust = .5), size = 8) +
     geom_text(aes(x = factor(week), y = 1.05), label = pl2$txt, size = 6, color = levels(pl2$label_color)[1]) + # seems to work, but the color is black and bold => no other solution found yet
     mytheme + # check script 08_mythemes
-    theme(strip.background = element_rect(fill="grey95"))
+    theme(legend.position = "bottom", strip.background = element_rect(fill="grey95"))
 
 
 # p + labs(caption = "Daten: Kassendaten SV Schweiz (2017)")
@@ -589,9 +600,8 @@ p <-ggplot(pl2, aes(x = factor(week), y = pct_turn, fill = factor(article_descri
 ggsave(filename = paste(path, "meal_line_turnover_181203_egel.pdf", sep = ""),p,
        width = w_13,
        height = h_1,
-       units="in",
        dpi = 300,
-       device = "pdf") # figure 4, has a large size => why?
+       device = cairo_pdf) # figure 4, has a large size => why?
 ```
 
 
@@ -655,7 +665,7 @@ p <- ggplot(data = m_sell, aes(x = xlab, y = pct,
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot and Cold (Buffet)"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot&Cold (Buffet)"))+
     scale_color_manual(values = levels(m_sell$label_color)) +
     geom_text(aes(label=ifelse(pct > .02, scales::percent(round(pct, 2), accuracy = 1), "")), size = 12, position = position_stack(vjust = 0.5))+
     coord_flip()+
@@ -724,7 +734,7 @@ p <- ggplot(df_, aes(y = pct,x = as.factor(xlab), fill = factor(label_content, c
     scale_y_continuous(labels=scales::percent)+
     scale_fill_manual(values = ColsPerCat,
                       breaks = attributes(ColsPerCat)$name,
-                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot and Cold (Buffet)"))+
+                      labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot&Cold (Buffet)"))+
     scale_color_manual(values = levels(df_$label_color))+
     geom_text(aes(label=ifelse(pct*100>1.5,paste0(round(pct*100, digits=0),"%"),"")),size = 10, position = position_stack(vjust = 0.5))+ # omit 0% with ifelse()
     annotate( 
@@ -753,7 +763,7 @@ source("04_load_data_HS17_190128.R", chdir = TRUE, encoding = "Latin1") # sourci
 
 
 
-## 6.1 Unterschiede nach Geschlecht und Alter
+## 6.2 Unterschiede nach Geschlecht und Alter
 > age and gender
 
 ```{r figure 7}
@@ -762,7 +772,7 @@ source("04_load_data_HS17_190128.R", chdir = TRUE, encoding = "Latin1") # sourci
 df <- df_2017 %>% 
     filter(member != "Spezialkarten") %>% 
     mutate(label_content = str_replace(.$label_content, "Geflügel", "Fleisch")) %>% 
-    mutate(age_group = cut(age, breaks = c(-Inf, 25, 35, 50, 65, Inf), # menuCH age groups
+    mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
                            labels=c("15- bis 25-jährig","26- bis 34-jährig","35- bis 49-jährig","50- bis 64-jährig","keine Angaben"))) %>%
     filter(age_group != "keine Angaben") %>% # drop people with no entries (n = 22 )
     group_by(age_group, gender, label_content) %>%
@@ -811,7 +821,7 @@ p <- ggplot(df, aes(as.factor(xlab), pct, fill = factor(label_content, c("Unbeka
         scale_y_continuous(labels=scales::percent)+
         scale_fill_manual(values = ColsPerCat,
                           breaks = attributes(ColsPerCat)$name,
-                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot & Cold (Buffet)")) +
+                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot&Cold (Buffet)")) +
         scale_color_manual(values = levels(df$label_color))+
         # scale_x_discrete(limits = rev(levels(as.factor(df$xlab)))) +   https://gist.github.com/jennybc/6f3fa527b915b920fdd5 
     geom_text(aes(label=ifelse(pct < 0.02,"", scales::percent(round(pct, 2), accuracy = 1))), size = 12, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
@@ -881,7 +891,7 @@ p <- ggplot(df, aes(xlab, pct, fill = factor(label_content, c("Unbekannt", "Pfla
         scale_y_continuous(labels=scales::percent)+
         scale_fill_manual(values = ColsPerCat,
                           breaks = attributes(ColsPerCat)$name,
-                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot & Cold (Buffet)"))+
+                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot&Cold (Buffet)"))+
         # scale_x_discrete(limits = c("Frauen\nBasis", "Frauen\nIntervention", "", "Männer\nBasis", "Männer\nIntervention")) + # add some space
         scale_color_manual(values = levels(df$label_color))+
         geom_text(aes(label=ifelse(pct < 0.02,"", scales::percent(round(pct, 2), accuracy = 1))), size = 12, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
@@ -913,7 +923,7 @@ df <- df_2017 %>%
                                .$article == "World" ~ "Favorite/World",
                                .$article == "Favorite" ~ "Favorite/World")) %>% 
     mutate(label_content = str_replace(.$label_content, "Geflügel", "Fleisch")) %>% 
-    mutate(age_group = cut(age, breaks = c(-Inf, 25, 35, 50, 65, Inf), # menuCH age groups
+    mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
                            labels=c("15- bis 25-jährig","26- bis 34-jährig","35- bis 49-jährig","50- bis 64-jährig","keine Angaben"))) %>%
     filter(age_group != "keine Angaben") %>% # exclude thus without 
     group_by(age_group, gender, article, label_content) %>%
@@ -957,12 +967,12 @@ p <- ggplot(df_2, aes(xlab, pct, fill = factor(article, c("Kitchen", "Favorite/W
         geom_bar(stat = "identity", position = "fill", color = NA, width = .6) + # set color NA otherwise error occurs
         xlab("") +
         ylab("\nVerkaufte Gerichte in Prozent\n")+
-        guides(fill = guide_legend("", reverse = T, nrow = T),
+        guides(fill = guide_legend("", reverse = T, nrow = 1),
                color = F)+
         scale_y_continuous(labels=scales::percent) +
         scale_fill_manual(values = ColsPerCat,
                           breaks = attributes(ColsPerCat)$name,
-                          labels = c("Kitchen", "Favorite/World", "Hot and Cold"))+
+                          labels = c("Kitchen", "Favorite/World", "Hot&Cold (Buffet)"))+
         # scale_x_discrete(limits = c("Frauen\nBasis", "Frauen\nIntervention", "", "Männer\nBasis", "Männer\nIntervention")) + # add some space
         scale_color_manual(values = levels(df_2$label_color))+
         geom_text(aes(label=ifelse(pct < 0.02,"", scales::percent(round(pct,2), accuracy = 1))), size = 12, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
@@ -1038,7 +1048,7 @@ p <- ggplot(df_2, aes(xlab, pct, fill = factor(article, c("Kitchen", "Favorite/W
         scale_y_continuous(labels=scales::percent) +
         scale_fill_manual(values = ColsPerCat,
                           breaks = attributes(ColsPerCat)$name,
-                          labels = c("Kitchen", "Favorite/World", "Hot and Cold"))+
+                          labels = c("Kitchen", "Favorite/World", "Hot&Cold (Buffet)"))+
         scale_color_manual(values = levels(df_2$label_color))+
         geom_text(aes(label=ifelse(pct < 0.02,"", scales::percent(round(pct,2), accuracy = 1))), size = 12, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
         facet_wrap(~member, ncol = 1, scales = "free")+
@@ -1064,7 +1074,7 @@ ggsave(filename = paste(path, "member_gender_meal_line_200115_egel.pdf"),p,
 # somehow the numbers do not make sense
 visiter <- df_2017 %>%
     filter(member != "Spezialkarten") %>% 
-    group_by(ccrs, shop_description) %>%
+    group_by(ccrs) %>%
     summarise(visit = n())
 
 aggregate(visiter$visit ~ visiter$shop_description, FUN = mean)
@@ -1072,39 +1082,13 @@ aggregate(visiter$visit ~ visiter$shop_description, FUN = mean)
 # something is not matching
 visiter_freq <- visiter %>% 
     # select(ccrs, shop_description) %>% 
-    mutate(category=cut(visit, breaks = c(-Inf,1,5,12,24,36,48,Inf), 
-                        labels=c("1-mal", "2- bis 5-mal", "6- bis 12-mal",
-                                 "13- bis 24-mal","25- bis 36-mal","37- bis 48-mal",
+    mutate(category=cut(visit, breaks = c(-Inf,1,5,11,23,35,48,Inf), labels=c("1-mal", "2- bis 5-mal", "6- bis 11-mal",
+                                 "12- bis 23-mal","24- bis 35-mal","36- bis 47-mal",
                                  "48- bis 60-mal"))) %>%
-    group_by(shop_description, category) %>% 
+    group_by(category) %>% 
     summarise(visit_counts = n()) %>% # count how often a visit occurs
     mutate(pct = visit_counts/sum(visit_counts)) %>% 
     ungroup()
-
-##  do some double checking: it results in the same groups as above
-df_ <- df_2017
-df_2 <- df_ %>%
-    mutate(label_content = str_replace(df_$label_content, "Fisch|Geflügel", "Fleisch")) %>% 
-    select(ccrs, label_content, gender, member, age) %>% # select variable of interest
-    filter(member != "Spezialkarten") %>% # exclude spezialkarten
-    reshape2::dcast(formula = ccrs + gender + age + member ~ label_content, value.var="label_content", fun.aggregate= length) %>% # reshape into wide format and aggregate after occurencies of label content
-    rename(Unknown = 'NA') %>% # rename NA to unknown
-    mutate(tot_buy = rowSums(.[ ,-c(1:4)])) %>% # exclude ccrs and information of person for sum of rows
-    mutate(meaty =(.$Fleisch)/.$tot_buy,
-           hnc = .$`Hot and Cold` / .$tot_buy)
-
-
-
-visiter_freq_2 <- df_2 %>% 
-    select(ccrs, shop_description, tot_buy) %>% 
-    mutate(category=cut(tot_buy, breaks = c(-Inf,2,5,12,24,36,48,Inf), 
-                        labels=c("1-mal", "2- bis 5-mal", "6- bis 12-mal",
-                                 "13- bis 24-mal","25- bis 36-mal","37- bis 48-mal",
-                                 "48- bis 60-mal"))) %>%
-    group_by(shop_description, category) %>% 
-    summarise(visit_counts = sum(tot_buy)) %>% # count how hoften a visit occurs, e.g. oneday visitors occur 200 times 
-    mutate(pct = visit_counts/sum(visit_counts))
-
 
 
 #### some stats#######
@@ -1118,124 +1102,107 @@ fisher.test(df[ ,1:2], simulate.p.value = T, B = 100000) # seems to have differe
 chisq.test(df)
 
 # plot 
-p <- ggplot(visiter_freq, aes(x = category, y = pct, fill = shop_description)) +
-    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
-    # scale_fill_manual()+
+p <- ggplot(visiter_freq, aes(x = category, y = pct)) +
+    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .5, fill = "#fad60d")+
     scale_y_continuous(limits = c(0, .35), breaks = seq(0,.35,.1), labels = scales::percent_format(accuracy = 1L)) + # instead of percent!
     xlab("\nMensabesuche während 12 Wochen") +
     ylab("Anteil Mensabesucher") +
-    scale_fill_manual(breaks =  c("Grüental", "Vista"),
-                      values =  c("#fad60d","#c5b87c"),
-                      labels = c("Grüental", "Reidbach")) +
     guides(fill= guide_legend(title = "Campus")) +
     geom_text(aes(label = scales::percent(round(pct, 2), accuracy = 1L)), colour = "#000000", position = position_dodge(width = .6),  vjust=-0.25, size= 11) +
     mytheme # see skript 08_theme_plots
 
 # save
-ggsave(filename = paste(path, "visit_freq_181128_egel.pdf"),p,
+ggsave(filename = paste(path, "visit_freq_overall_181128_egel.pdf"),p,
        height = h_1,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 11
+       device = cairo_pdf) # figure 10
 
 
 ```
 
 
-### Häufigkeit Mensabesuche: Geschlecht
+### Häufigkeit Mensabesuche: Geschlecht x Hochschulzugehörigkeit
 >visiter frequency by gender
 
 ```{r figure 12}
 # by gender
 visiter <- df_2017 %>%
     filter(member != "Spezialkarten") %>% 
-    group_by(ccrs, gender) %>%
+    group_by(ccrs, gender, member) %>%
     summarise(visit = n()) %>% 
     ungroup()
 
 # mean of visits for gender
-aggregate(visiter$visit ~ visiter$gender, FUN = mean)
+aggregate(visiter$visit ~ visiter$gender + visiter$member, FUN = mean)
 
 # prepare data
 visiter_freq <- visiter %>% # exclude spezialkarten
-    mutate(category = cut(visit, breaks = c(-Inf,1,5,12,24,36,48,Inf), 
-                        labels=c("1-mal", "2- bis 5-mal", "6- bis 12-mal",
-                                 "13- bis 24-mal","25- bis 36-mal","37- bis 48-mal",
+    mutate(category = cut(visit, breaks = c(-Inf,1,5,11,23,35,48,Inf), 
+                        labels=c("1-mal", "2- bis 5-mal", "6- bis 11-mal",
+                                 "12- bis 23-mal","24- bis 35-mal","36- bis 47-mal",
                                  "48- bis 60-mal"))) %>%
-    group_by(gender, category) %>% 
+    group_by(gender, member, category) %>% 
     summarise(visit_counts = n()) %>%
     mutate(pct=visit_counts/sum(visit_counts)) %>% 
     ungroup()
 
+###some stats#####
+aggregate(pct~category + gender, data = visiter_freq, FUN = mean)
+aggregate(visit_counts~category + gender, data = visiter_freq, FUN = sum)
+aggregate(pct~category + member, data = visiter_freq, FUN = mean)
+aggregate(visit_counts~category + member, data = visiter_freq, FUN = sum)
 
-# plot
-p <- ggplot(visiter_freq, aes(x = category, y = pct, fill = gender)) +
-    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
-    scale_fill_manual(values =  c("M" = "#6619e6", "F" = "#99f200"),
-                      labels = c("F" = "Frauen", "M" = "Männer"))+
-    scale_y_continuous(limits = c(0, .35), breaks = seq(0,.35,.10), labels=scales::percent_format(accuracy = 1L)) + #https://stackoverflow.com/questions/53072282/how-to-prevent-scalespercent-from-adding-decimal
-    xlab("\nMensabesuche während 12 Wochen") +
-    ylab("Anteil Mensabesucher")+
-    guides(fill= guide_legend(title = "Geschlecht", override.aes = list(color = "white")))+
-    geom_text(aes(label = scales::percent(round(pct, 2), accuracy = 1)), colour = "#000000", position = position_dodge(width = .6),  vjust=-0.25, size= 11) +
-    mytheme
+# add label
+visiter_freq2 <- visiter_freq %>% 
+    group_by(member, gender) %>% 
+    summarise(tot_visit = sum(visit_counts)) %>% 
+    mutate(text = paste("n = ", tot_visit, sep = "")) %>% 
+    ungroup() %>% 
+    left_join(., visiter_freq, by = c("gender", "member")) %>% 
+    mutate(gender = ifelse(.$gender == "F", "Frauen", "Männer")) %>% 
+    mutate(xlab = paste(gender, text, sep = "\n"))
+  
 
-# save
-ggsave(paste(path, "visit_freq_gender_181128_egel.pdf"),p,
-       height = h_1,
-       width = w_1,
-       dpi = 300,
-       device = cairo_pdf) # figure 12
-```
+# cols per category
+ColsPerCat = c(
+"1-mal" = "grey90",
+"2- bis 5-mal" = "#99f200",
+"6- bis 11-mal" = "#c5b87c",
+"12- bis 23-mal" = "#fad60d",
+"24- bis 35-mal" = "#80ccff",
+"36- bis 47-mal" = "#6619e6",
+"48- bis 60-mal" = "#262626") #einmaliger Besuch" = "#000000", "mehr als 5-mal pro Woche" = "#ffffff",
 
+visiter_freq2$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter_freq2$category], # takes every label and their belonged color
+                                         function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
-
-### Häufigkeit Mensabesuche: Hochschulzugehörigkeit
->visiter frequency by member
-
-```{r figure 13}
-
-# by member
-visiter <- df_2017 %>%
-    filter(!grepl("Spezialkarten", .$member)) %>% # exclude spezialkarten
-    group_by(ccrs, member) %>%
-    summarise(visit = n()) %>% 
-    ungroup() 
-
-# mean of visits for member
-aggregate(visiter$visit ~ visiter$member, FUN = mean)
-table(visiter$member)
-
-# prepare data
-visiter_freq <- visiter %>% 
-    mutate(category=cut(visit, breaks = c(-Inf,1,5,12,24,36,48,Inf), 
-                        labels=c("1-mal", "2- bis 5-mal", "6- bis 12-mal",
-                                 "13- bis 24-mal","25- bis 36-mal","37- bis 48-mal",
-                                 "48- bis 60-mal"))) %>%
-    group_by(member, category) %>% 
-    summarise(visit_counts=n()) %>% 
-    mutate(pct=visit_counts/sum(visit_counts))
 
 
 # plot
-p <- ggplot(visiter_freq, aes(x = category, y = pct, fill = factor(member, levels = c("Studierende", "Mitarbeitende", "Spezialkarten")))) +
-    geom_bar(stat="identity",colour=NA, position = position_dodge(width = NULL), width = .6)+
-    scale_fill_manual(values =  c("Studierende" = "#99f200", "Mitarbeitende" = "#008099"))+
-    scale_y_continuous(limits = c(0, .30), breaks = seq(0,.30,.10), labels=scales::percent_format(accuracy = 1L)) +
-    xlab("\nMensabesuche während 12 Wochen") +
-    ylab("Anteil Mensabesucher")+
-    guides(fill= guide_legend(title = "Hochschulzugehörigkeit"))+
-    geom_text(aes(label = scales::percent(round(pct, 2), accuracy = 1L)), colour = "#000000", position = position_dodge(width = .6),  vjust=-0.25, size= 11) +
-    mytheme
+p <- ggplot(visiter_freq2, aes(x = xlab, y = pct, fill = factor(category, levels = c("48- bis 60-mal", "36- bis 47-mal", "24- bis 35-mal", "12- bis 23-mal", "6- bis 11-mal", "2- bis 5-mal", "1-mal")),  color = label_color)) +
+    geom_bar(stat="identity", colour=NA, position = position_stack(), width = .6)+
+    coord_flip() +
+    scale_fill_manual(values =  ColsPerCat,
+                      breaks = attributes(ColsPerCat)$name)+
+    scale_y_continuous(labels=scales::percent_format(accuracy = 1L)) + #https://stackoverflow.com/questions/53072282/how-to-prevent-scalespercent-from-adding-decimal
+    ylab("\nMensabesuche während 12 Wochen \n") +
+    xlab("\n")+
+    guides(fill = guide_legend(title = "", override.aes = list(color = "white"), nrow = 1), color = F)+
+    scale_color_manual(values = levels(visiter_freq2$label_color)) +
+    geom_text(aes(label = ifelse(pct > .013, scales::percent(round(pct, 2), accuracy = 1), "")), position = position_stack(vjust = .5),  size= 11) +
+    facet_wrap(~member, ncol = 1, scales = "free")+
+    mytheme +
+    theme(legend.position = "bottom", strip.background =element_rect(fill="grey95"))
 
 # save
-ggsave(filename = paste(path, "visit_freq_member_181128_egel.pdf"),p,
-       height = h_1,
+ggsave(paste(path, "visit_freq_gender_member_181128_egel.pdf"),p,
+       height = h_14,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 13
-
+       device = cairo_pdf) # figure 11
 ```
+
 
 
 # 7 Verpflegungstyp
@@ -1267,12 +1234,26 @@ df_ <- df_ %>%
 table(df_$gender)
 
 ########  check age and gender: stats  ##########
-df_2 <- df_ %>% mutate(age_group = cut(age, breaks = c(-Inf, 25, 35, 50, 65, Inf), # menuCH age groups
+df_2 <- df_ %>% mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
                labels=c("15 bis 25-jährig","26 bis 34-jährig","35 bis 49-jährig","50 bis 64-jährig","keine Angaben"))) %>%
    filter(age_group != "keine Angaben") %>% 
-  group_by(age_group) %>%  # age_groups, gender
+  group_by(age_group) %>%  # age_groups
   tally() %>% 
-  mutate(pct = n / sum(n))
+  mutate(pct = n / sum(n)) # table 6
+
+df_2 <- df_ %>% mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
+               labels=c("15 bis 25-jährig","26 bis 34-jährig","35 bis 49-jährig","50 bis 64-jährig","keine Angaben"))) %>%
+   filter(age_group != "keine Angaben") %>% 
+  group_by(age_group, gender) %>%  # age_groups, gender
+  tally() %>% 
+  mutate(pct = n / sum(n)) 
+
+df_2 <- df_ %>% mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
+               labels=c("15 bis 25-jährig","26 bis 34-jährig","35 bis 49-jährig","50 bis 64-jährig","keine Angaben"))) %>%
+   filter(age_group != "keine Angaben") %>% 
+  group_by(age_group, member) %>%  # age_groups, member
+  tally() %>% 
+  mutate(pct = n / sum(n)) 
 
 
 ######## check member only reg_visitors: stats ######## 
@@ -1522,7 +1503,7 @@ treemap(dat, #Your data frame object
         fontsize.labels = 34,
         algorithm = "pivotSize",
         sortID = "test2",
-        fontfamily.labels = "sans") # figure 14
+        fontfamily.labels = "sans") # figure 12
 
 dev.off() # close device
 
@@ -1623,9 +1604,9 @@ p <- ggplot(pl, aes(y = value, x = factor(cluster, levels = c("buffet","never me
     scale_y_continuous(label = scales::percent_format(accuracy = 1L)) +
     scale_fill_manual(values = c("pct_cluster" = "#fad60d","pct_sellings" = "#c5b87c"),
                       breaks = c("pct_cluster", "pct_sellings"),
-                      labels = c("Anteil Mensagänger*innen\nnach Verpflegungstypen (100 % = 990)", "Anteil Menüverkäufe\nnach Verpflegungstypen (100 % = 19'761)")) +
+                      labels = c("Anteil Mensagäste\nnach Verpflegungstyp (100 % = 990)", "Anteil Menüverkäufe\nnach Verpflegungstyp (100 % = 19'761)")) +
     scale_x_discrete(limits = c("buffet","never meat", "veg-flexitarians", "meat-flexitarians", "meat-eaters", "meat lovers", "always meat"),
-      labels = c("Buffetarians","Never Meat", "Vegetarian\nFlexitarians", "Meat\nFlexitarians", "Meat Eaters", "Meat Lovers", "Always Meat")) +
+      labels = c("Buffetarian","Never Meat", "Vegetarian\nFlexitarian", "Meat\nFlexitarian", "Meat Eater", "Meat Lover", "Always Meat")) +
     geom_text(aes(label = scales::percent(round(value, 2), accuracy = 1L)), position = position_dodge(width = .6), vjust = -.25, size = 11) + #check_overlap = TRUE, use value instead => there is an error message due to that.
     guides(fill = guide_legend("", override.aes = list(color = "white"))) +
     xlab("") +
@@ -1639,7 +1620,7 @@ ggsave(filename = paste(path, "nutrition_purchase_190131_egel.pdf"),p,
        height = h_1,
        width = w_15,
        dpi = 300,
-       device = cairo_pdf) # figure 15
+       device = cairo_pdf) # figure 13
 
 ```
 
@@ -1653,9 +1634,9 @@ ggsave(filename = paste(path, "nutrition_purchase_190131_egel.pdf"),p,
 # plot all groups according to their visit frequency
 # prepare data
 visiter <- reg_visitors %>% 
-    mutate(category=cut(tot_buy, breaks = c(-Inf,2,12,24,36,48,60,Inf), 
-                        labels=c("einmaliger Besuch", "höchstens 1-mal", "> 1-mal bis \u2264 2-mal",
-                                 "> 2-mal bis  \u2264 3-mal","> 3-mal bis \u2264 4-mal","> 4-mal bis \u2264 5-mal", "> 5-mal"))) %>%
+    mutate(category=cut(tot_buy, breaks = c(-Inf,11,23,35,47,Inf), 
+                        labels=c("6- bis 11-mal", "12- bis 23-mal",
+                                 "24- bis 35-mal","36- bis 47-mal","48- bis 60-mal"))) %>%
     group_by(cluster, category) %>% 
     summarise(visit_counts=n()) %>% 
     ungroup()#%>%  
@@ -1681,11 +1662,11 @@ visiter2_ <- visiter  %>%
                                                       "meat-eaters", "meat lovers", "always meat")))
   
 ColsPerCat = c(
-"höchstens 1-mal" = "grey90",
-"> 1-mal bis \u2264 2-mal" = "#99f200",
-"> 2-mal bis  \u2264 3-mal" = "#c5b87c",
-"> 3-mal bis \u2264 4-mal" = "#fad60d",
-"> 4-mal bis \u2264 5-mal" = "#80ccff") #einmaliger Besuch" = "#000000", "mehr als 5-mal pro Woche" = "#ffffff",
+"6- bis 11-mal" = "#c5b87c",
+"12- bis 23-mal" = "#fad60d",
+"24- bis 35-mal" = "#80ccff",
+"36- bis 47-mal" = "#6619e6",
+"48- bis 60-mal" = "#262626")  #einmaliger Besuch" = "#000000", "mehr als 5-mal pro Woche" = "#ffffff",
 
 visiter2_$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter2$cluster], # takes every label and their belonged color
                                          function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
@@ -1704,9 +1685,9 @@ p <- ggplot(visiter2_, aes(x = xlab,
            color = F) +
     scale_y_continuous(labels=scales::percent_format(accuracy = 1L)) +
     scale_x_discrete(limits = rev(c("buffet\nn=19", "never meat\nn=22", "veg-flexitarians\nn=218", "meat-flexitarians\nn=185", "meat-eaters\nn=323", "meat lovers\nn=205", "always meat\nn=18")),
-                     labels = rev(c("Buffetarians\n (19)", "Never Meat\n(22)", "Vegetarian Flexitarians\n(218)", "Meat Flexitarians\n(185)", "Meat Eaters\n(323)", "Meat Lovers\n(205)", "Always Meat\n(18)"))) +
+                     labels = rev(c("Buffetarian\n (19)", "Never Meat\n(22)", "Vegetarian Flexitarian\n(218)", "Meat Flexitarian\n(185)", "Meat Eater\n(323)", "Meat Lover\n(205)", "Always Meat\n(18)"))) +
     xlab("") +
-    ylab("\ndurchschnittliche Mensabesuche pro Woche\n") +
+    ylab("\nMensabesuche während 12 Wochen\n") +
     geom_text(aes(label = ifelse(visiter2$pct<.02,"", scales::percent(round(pct, 2), accuracy = 1L))), position = position_stack(vjust = .5, reverse = T), size= 12) +
     # annotate("text", x = 1:7, y = 1.05, label = text$label, parse = T, size = 9) +
     
@@ -1727,9 +1708,9 @@ ggsave(filename = paste(path, "visit_freq_cluster_190525_egel.pdf"),p,
 ```{r figure 17}
 # prepare data
 visiter <- reg_visitors %>% 
-    mutate(category=cut(tot_buy, breaks = c(-Inf,2,12,24,36,48,60,Inf), 
-                        labels=c("einmaliger Besuch", "höchstens 1-mal", "> 1-mal bis \u2264 2-mal",
-                                 "> 2-mal bis  \u2264 3-mal","> 3-mal bis \u2264 4-mal","> 4-mal bis \u2264 5-mal", "> 5-mal"))) %>%
+    mutate(category=cut(tot_buy, breaks = c(-Inf,11,23,35,47,Inf), 
+                        labels=c("6- bis 11-mal", "12- bis 23-mal",
+                                 "24- bis 35-mal","36- bis 47-mal","48- bis 60-mal"))) %>%
     group_by(member, gender, category) %>% 
     summarise(visit_counts=n()) %>% 
     mutate(pct=visit_counts/sum(visit_counts)) %>% 
@@ -1747,11 +1728,11 @@ visiter2_ <- visiter  %>%
            xlab = paste(gender, label, sep = "\n"))  
   
 ColsPerCat = c(
-"höchstens 1-mal" = "grey90",
-"> 1-mal bis \u2264 2-mal" = "#99f200",
-"> 2-mal bis  \u2264 3-mal" = "#c5b87c",
-"> 3-mal bis \u2264 4-mal" = "#fad60d",
-"> 4-mal bis \u2264 5-mal" = "#80ccff") #einmaliger Besuch" = "#000000", "mehr als 5-mal pro Woche" = "#ffffff",
+"6- bis 11-mal" = "#c5b87c",
+"12- bis 23-mal" = "#fad60d",
+"24- bis 35-mal" = "#80ccff",
+"36- bis 47-mal" = "#6619e6",
+"48- bis 60-mal" = "#262626") #einmaliger Besuch" = "#000000", "mehr als 5-mal pro Woche" = "#ffffff",
 
 visiter2_$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter2_$category], # takes every label and their belonged color
                                          function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
@@ -1759,7 +1740,7 @@ visiter2_$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter2_$category]
 # plot
 #factor(cluster, levels = c("buffet", "never meat", "Vegetarian Flexitarians", "Meat Flexitarians", "meat-eaters", "meat lovers", "always meat"))
 p <- ggplot(visiter2_, aes(x = xlab, 
-                     y = pct, fill = (category), color = "black")) +
+                     y = pct, fill = (category), color = label_color)) +
     geom_bar(stat = "identity", colour = NA, position = position_stack(reverse = T), width = .6) + # reverse = T due to coord_flip, see https://stackoverflow.com/questions/42710056/reverse-stacked-bar-order
     scale_fill_manual(breaks = attributes(ColsPerCat)$name,
                       limits = attributes(ColsPerCat)$name,
@@ -1772,7 +1753,7 @@ p <- ggplot(visiter2_, aes(x = xlab,
     # scale_x_discrete(limits = rev(c("buffet\nn=19", "never meat\nn=22", "veg-flexitarians\nn=218", "meat-flexitarians\nn=185", "meat-eaters\nn=323", "meat lovers\nn=205", "always meat\nn=18")),
     #                  labels = rev(c("Buffetarians\n (19)", "Never Meat\n(22)", "Vegetarian Flexitarians\n(218)", "Meat Flexitarians\n(185)", "Meat Eaters\n(323)", "Meat Lovers\n(205)", "Always Meat\n(18)"))) +
     xlab("") +
-    ylab("\ndurchschnittliche Mensabesuche pro Woche\n") +
+    ylab("\nMensabesuche während 12 Wochen\n") +
     geom_text(aes(label = ifelse(pct<.02,"", scales::percent(round(pct, 2), accuracy = 1L))), position = position_stack(vjust = .5, reverse = T), size= 12) +
     # annotate("text", x = 1:7, y = 1.05, label = text$label, parse = T, size = 9) +
     facet_wrap(~member, ncol = 1, scales = "free") +
@@ -1794,7 +1775,7 @@ ggsave(filename = paste(path, "visit_freq_member_gender_freq_200708.pdf"), p,
 ```{r figure 18}
 
 dat <- reg_visitors %>% 
-    mutate(age_group = cut(age, breaks = c(-Inf, 25, 35, 50, 65, Inf), # menuCH age groups
+    mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
                labels=c("15- bis 25-jährig","26- bis 34-jährig","35- bis 49-jährig","50- bis 64-jährig","keine Angaben"))) %>%
    filter(age_group != "keine Angaben") %>% 
   group_by(age_group, gender, cluster) %>% 
@@ -1842,8 +1823,8 @@ p <- ggplot(pl, aes(y = pct_gender,
              width = .6) + # set color NA otherwise error occurs
     facet_wrap(~age_group, nrow = 1, scales = "free")+
     xlab("") +
-    ylab("\nAnteil Personen mit Verpflegungstypen\n\n")+
-    guides(fill = guide_legend(title = "Verpflegungstypen\n"), 
+    ylab("\nAnteil Verpflegungstyp\n\n")+
+    guides(fill = guide_legend(title = "Verpflegungstyp\n"), 
            color = F) +
     scale_fill_manual(values = ColsPerCat, 
                       breaks = c("buffet",
@@ -1853,12 +1834,12 @@ p <- ggplot(pl, aes(y = pct_gender,
                                  "meat-eaters" , 
                                  "meat lovers" ,
                                  "always meat"),
-                      labels = c("Buffetarians",
+                      labels = c("Buffetarian",
                                  "Never Meat",
-                                 "Vegetarian Flexitarians" , 
-                                 "Meat Flexitarians",
-                                 "Meat Eaters" , 
-                                 "Meat Lovers" ,
+                                 "Vegetarian Flexitarian" , 
+                                 "Meat Flexitarian",
+                                 "Meat Eater" , 
+                                 "Meat Lover" ,
                                  "Always Meat")) +
     # coord_flip() +
     
@@ -1928,7 +1909,7 @@ p <- ggplot(pl, aes(y = pct_member,
              color = NA, 
              width = .5) + # set color NA otherwise error occurs
     xlab("") +
-    ylab("\nAnteil Personen mit Verpflegungstypen\n\n")+
+    ylab("\nAnteil Verpflegungstyp\n\n")+
     guides(fill = guide_legend(title = "", nrow = 1), 
            color = F) +
     scale_fill_manual(values = ColsPerCat, 
@@ -1939,12 +1920,12 @@ p <- ggplot(pl, aes(y = pct_member,
                                  "meat-eaters" , 
                                  "meat lovers" ,
                                  "always meat"),
-                      labels = c("Buffetarians",
+                      labels = c("Buffetarian",
                                  "Never Meat",
-                                 "Vegetarian Flexitarians" , 
-                                 "Meat Flexitarians",
-                                 "Meat Eaters" , 
-                                 "Meat Lovers" ,
+                                 "Vegetarian Flexitarian" , 
+                                 "Meat Flexitarian",
+                                 "Meat Eater" , 
+                                 "Meat Lover" ,
                                  "Always Meat")) +
     coord_flip() +
     # scale_x_discrete(limits = c("Frauen\nn = 170", "Männer\nn = 181", "Frauen\nn = 233", "Männer\nn = 406"), breaks = c("Frauen\nn = 170", "Männer\nn = 181", "Frauen\nn = 233", "Männer\nn = 406")) + #rev() changes the order, however scale = free is not working anymore
@@ -2126,7 +2107,7 @@ for (i in 1:length(dfList)) {
         scale_y_continuous(labels=scales::percent_format(accuracy = 1L)) +
         scale_fill_manual(values = ColsPerCat,
                            breaks = attributes(ColsPerCat)$name,
-                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot & Cold (Buffet)")) +
+                          labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot&Cold (Buffet)")) +
         facet_wrap(~gender, ncol = 1, scales = "free_y") +
         coord_flip() +
         scale_x_discrete(breaks = interaction(pl_$condit, pl_$gender), # define breaks to add text correct
