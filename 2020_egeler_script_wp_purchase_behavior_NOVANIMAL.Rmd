@@ -1116,7 +1116,7 @@ ggsave(filename = paste(path, "visit_freq_overall_181128_egel.pdf"),p,
        height = h_1,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 10
+       device = cairo_pdf) # figure 11
 
 
 ```
@@ -1200,7 +1200,7 @@ ggsave(paste(path, "visit_freq_gender_member_181128_egel.pdf"),p,
        height = h_14,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 11
+       device = cairo_pdf) # figure 12
 ```
 
 
@@ -1435,7 +1435,7 @@ knitr::kable(df_2, "html") %>%  # indesign do not support htlm only xml (see bel
 
 ```
 
-```{r figure 14}
+```{r figure 13}
 # plot all groups: treemap
 # prepare data
 # i did some changes with illustrator!
@@ -1503,7 +1503,7 @@ treemap(dat, #Your data frame object
         fontsize.labels = 34,
         algorithm = "pivotSize",
         sortID = "test2",
-        fontfamily.labels = "sans") # figure 12
+        fontfamily.labels = "sans") # figure 13
 
 dev.off() # close device
 
@@ -1574,7 +1574,7 @@ rm(list = c("table_0", "table_1", "table_2", "table_3", "table_4"))
 >nutritional patter and purchase behavior 
 
 ### kaufverhalten vs. häufigkeit typen
-```{r figure 15}
+```{r figure 14}
 
 # plot all groups according to their purchase behavior
 purchase <- right_join(df_2017, reg_visitors[,c("ccrs", "cluster")], by = "ccrs") %>% 
@@ -1620,7 +1620,7 @@ ggsave(filename = paste(path, "nutrition_purchase_190131_egel.pdf"),p,
        height = h_1,
        width = w_15,
        dpi = 300,
-       device = cairo_pdf) # figure 13
+       device = cairo_pdf) # figure 14
 
 ```
 
@@ -1629,7 +1629,7 @@ ggsave(filename = paste(path, "nutrition_purchase_190131_egel.pdf"),p,
 >nutritional patter and visits
 
 
-```{r figure 16}
+```{r figure 15}
 
 # plot all groups according to their visit frequency
 # prepare data
@@ -1699,13 +1699,13 @@ ggsave(filename = paste(path, "visit_freq_cluster_190525_egel.pdf"),p,
        height = h_15,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 16
+       device = cairo_pdf) # figure 15
 
 ```
 
 ## 7.4 Häufigkeit Mensabesuche nach Geschlecht und Alter
 
-```{r figure 17}
+```{r figure 16}
 # prepare data
 visiter <- reg_visitors %>% 
     mutate(category=cut(tot_buy, breaks = c(-Inf,11,23,35,47,Inf), 
@@ -1764,7 +1764,7 @@ ggsave(filename = paste(path, "visit_freq_member_gender_freq_200708.pdf"), p,
        height = h_15,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 17
+       device = cairo_pdf) # figure 16
 
 
 ```
@@ -1772,7 +1772,7 @@ ggsave(filename = paste(path, "visit_freq_member_gender_freq_200708.pdf"), p,
 
 ## 7.5 Verpflegungstyp nach Geschlecht und Alter
 
-```{r figure 18}
+```{r figure 17}
 
 dat <- reg_visitors %>% 
     mutate(age_group = cut(age, breaks = c(-Inf, 25, 34, 49, 65, Inf), # menuCH age groups
@@ -1856,14 +1856,14 @@ ggsave(filename = paste(path, "gender_diets_191008_egel.pdf"), p,
        height = h_1,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 18
+       device = cairo_pdf) # figure 17
 
 ```
 
 
 ## 7.6 Verpflegungstyp nach Hochschulzugehörigkeit und Geschlecht
 
-```{r figure 19}
+```{r figure 18}
 
 dat <- reg_visitors %>% 
     group_by(gender, member, cluster) %>% 
@@ -1943,7 +1943,7 @@ ggsave(filename = paste(path, "member_diets_200204_egel.pdf"),p,
        height = h_15,
        width = w_1,
        dpi = 300,
-       device = cairo_pdf) # figure 19
+       device = cairo_pdf) # figure 18
 
 ```
 
@@ -2050,7 +2050,7 @@ df_2017 %>% filter(ccrs %in% meat_lovers_alwy_meat$ccrs) %>%
   summarise(sum(pct))
 ```
 
-```{r figure 20-24}
+```{r figure 19-23}
 # buffetarians and never meat go together; meat_lovers and alwys_meat too 
 buffet_no_meat <- bind_rows(buffet, no_meat)
 meat_lovers_alwy_meat <- bind_rows(meat_lovers, alwy_meat)
@@ -2125,7 +2125,7 @@ for (i in 1:length(dfList)) {
            width = w_15,
            height = h_15,
            dpi = 300,
-           device = cairo_pdf) # figure 20-24
+           device = cairo_pdf) # figure 19-23
     
     message(paste(dat$check[1]), " printed!")
 }
