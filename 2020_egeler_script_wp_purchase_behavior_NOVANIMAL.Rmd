@@ -1269,13 +1269,16 @@ df_t$label_color <- as.factor(sapply(unlist(ColsPerCat)[df_t$label_content],
                                     function(color) { if (isDark(color)) 'white' else 'black' })) 
 
 #plot
-p <- ggplot(df_t, aes(xlab, pct, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch","Fleisch", "Hot and Cold")), color = label_color)) + 
+p <- ggplot(df_t, aes(factor(xlab, levels = c("Intervention\nn = 10'399","Basis\nn = 10'641",
+                                              "Intervention\nn = 3'909", "Basis\nn = 3'968",
+                                              "Intervention\nn = 6'490","Basis\nn = 6'673")), pct, fill = factor(label_content, c("Unbekannt", "Pflanzlich", "Pflanzlich+", "Vegetarisch", "Fisch","Fleisch", "Hot and Cold")), color = label_color)) + 
         geom_bar(stat = "identity", position = position_stack(), color = NA, width = .6) + # set color NA otherwise error occurs
         xlab("") +
         ylab("\nVerkaufte Gerichte in Prozent\n")+
         guides(fill = guide_legend("", reverse = T, nrow = 1),
                color = F)+
         scale_y_continuous(labels=scales::percent)+
+        # scale_x_discrete(limits = forcats::fct_rev(df_t$xlab)) + # not really working, bcause there are multiple entries
         scale_fill_manual(values = ColsPerCat,
                           breaks = attributes(ColsPerCat)$name,
                           labels = c("Unbekannt","Vegan (Fleischersatz)", "Vegan (authentisch)", "Ovo-lakto-vegetarisch", "Fisch", "Fleisch", "Hot&Cold (Buffet)"))+
@@ -1283,7 +1286,7 @@ p <- ggplot(df_t, aes(xlab, pct, fill = factor(label_content, c("Unbekannt", "Pf
         scale_color_manual(values = levels(df_t$label_color))+
         geom_text(aes(label=ifelse(pct < 0.02,"", scales::percent(round(pct, 2), accuracy = 1))), size = 12, position = position_stack(vjust = 0.5)) + # omit 0% with ifelse()
         coord_flip() +
-        facet_wrap(~factor(gender_, levels = c("Alle", "Männer", "Frauen")), nrow = NULL, ncol = 1, scales = "free", ) + # use scales free otherwiese it prints the "whole" x-axis
+        facet_wrap(~factor(gender_, levels = c("Alle",  "Frauen", "Männer")), nrow = NULL, ncol = 1, scales = "free", ) + # use scales free otherwiese it prints the "whole" x-axis
         mytheme +
         theme(legend.position = "bottom", strip.background =element_rect(fill="grey95"))
 
@@ -1816,7 +1819,7 @@ visiter_all$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter_all$clust
 
 # plot
 #factor(cluster, levels = c("buffet", "never meat", "Vegetarian Flexitarians", "Meat Flexitarians", "meat-eaters", "meat lovers", "always meat"))
-p <- ggplot(visiter_all, aes(x = factor(xlab, levels = c("Frauen\nn = 403", "Männer\nn = 587", "Alle\nn = 990" )), 
+p <- ggplot(visiter_all, aes(x = factor(xlab, levels = c("Männer\nn = 587", "Frauen\nn = 403", "Alle\nn = 990" )), 
                      y = pct, fill = factor(cluster, 
                                             levels = c("buffet","never meat", 
                                                        "veg-flexitarians", "meat-flexitarians", 
