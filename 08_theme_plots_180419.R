@@ -9,38 +9,33 @@
 ###
 
 # required packages
+library(testit)
 library(ggplot2)
 library(extrafont) # https://cran.r-project.org/web/packages/extrafont/README.html
+# showtext is not working
 library(showtext) # https://www.r-bloggers.com/adding-custom-fonts-to-ggplot-in-r/
-loadfonts(device = "win", quiet = T) # import fonts from win
+if (has_error(loadfonts(device = "win", quiet = T), silent = TRUE)) {
+    font_add(family = "Akkurat", 
+             regular = "fonts/Akkurat.ttf", 
+             bold = "fonts/Akkurat Bold.ttf", 
+             italic = "fonts/Akkurat Light.ttf")
+    showtext_auto()
+    print("You work with Showtext Package")
+} else{
+    loadfonts(device = "win", quiet = T)
+    print("Yout work with Extrafont Package")
+}
+
 
 #somehow not working 
-# font_add(family = "Akkurat", regular = "C:/Windows/Fonts/Akkurat.ttf", bold = "C:/Windows/Fonts/Akkurat Bold.ttf", italic = "C:/Windows/Fonts/Akkurat Light.ttf")
-# showtext_auto()
+
 
 
 # function to increase vertical spacing between legend keys
 # source: https://github.com/tidyverse/ggplot2/issues/2844
-# seems not to work anymore (update january 2020)
-# will try the override.aes = list(color = "white") option
-draw_key_polygon3 <- function(data, params, size) {
-    lwd <- min(data$size, min(size) / 4)
-    
-    grid::rectGrob(
-        width = grid::unit(0.6, "npc"),
-        height = grid::unit(0.6, "npc"),
-        gp = grid::gpar(
-            col = data$colour,
-            fill = alpha(data$fill, data$alpha),
-            lty = data$linetype,
-            lwd = lwd * .pt,
-            linejoin = "mitre"
-        ))
-}
+# seems not to work anymore (update July 2020)
+# see here new approachs: https://github.com/tidyverse/ggplot2/issues/3180 and https://github.com/tidyverse/ggplot2/issues/2844
 
-# register new key drawing function, 
-# the effect is global & persistent throughout the R session
-GeomBar$draw_key = draw_key_polygon3
 
 ### MY Theme 0: for regular plots -------------------
 
@@ -57,11 +52,12 @@ mytheme <- theme_bw()+ # definve theme for plot
           plot.subtitle = element_text(margin=margin(b=15),size = 22),
           plot.caption = element_text(margin=margin(t=15), face="italic", size=22),
           text = element_text(family = "Akkurat"),
-          legend.key = element_rect(color = NA), # see for that part the funktion draw_key_ploygon3
+          legend.key = element_rect(color = "white", size = 6, fill = "white"), # see for that part the funktion draw_key_ploygon3
           legend.key.size = unit(1.5, "cm"),
           legend.margin = margin(-0.5, 0, 0.05, 0, "cm"),
           plot.margin = unit(c(t = 0, r = 0, b = 0, l = 0),"cm"))
 
+theme_update(legend.key = element_rect(size = 6, fill = "white", colour = "black"), legend.key.size = unit(1.5, "cm"))
 
 ### MY Theme 0.1: for plots in wp -------------------
 
@@ -87,9 +83,10 @@ mytheme0.1 <- theme_bw()+ # definve theme for plot
 ### MY Theme 1: for plots in presentations -------------------
 
 mytheme1 <- theme_bw()+ # definve theme for plot
-    theme(plot.title = element_text(size = 30, face = "bold"),
-          axis.text.x = element_text(size=28),
-          axis.text.y = element_text(size=30, face = "plain"),
+    theme(plot.title = element_text(size = 35, face = "bold"),
+          axis.text.x = element_text(size=35),
+          axis.text.y = element_text(size=35, face = "plain"),
+          strip.text = element_text(size=40),
           legend.text = element_text(size = 35),
           legend.title = element_text(size =35),
           axis.title.y = element_text(size = 40, margin = margin(t = 0, r = 20, b = 0, l = 0)),
