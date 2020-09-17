@@ -13,7 +13,11 @@
 
 04_load_data_HS17.R: load data sets from 2017 (aggregated and individual data)
 
-05_1_load_add_data.R: load additional data: meal offer, environmental data, nutritional data (attention: meals containing meat were split up in fish and poultry)
+05_load_add_data.R: load additional data: meal offer, environmental data, nutritional data (attention: meals containing meat were split up in fish and poultry)
+
+06_1_load_envir_data.R: load environmental impact per meal
+
+06_2_load nutrition_data.R: load nutritional information per meal
 
 07_change_documentary_190128.R: additional information about meals containing fish and poultry
 
@@ -22,6 +26,8 @@
 09_13: some usefull functions e.g. for plots
 
 ----------------------
+
+xx_test_differences.R: some tests to replicate a specific case
 
 yy_plausibility.R: some plausibility checks
 
