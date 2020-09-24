@@ -116,7 +116,7 @@ df4_agg <- left_join(df3, pay_inf, by = "transaction_id", "total_amount") %>%# s
     rename(total_amount = total_amount.x)
 
 # save aggregated data-------------
-write_delim(df4_agg, "raw data/data_trans_agg_180802_egel_check.csv", delim = ';') # contains all transaction over ZHAW
+write_delim(df4_agg, here::here("augmented data/data_trans_agg_180802.csv"), delim = ';') # contains all transaction over ZHAW
 
 
 ################# Second Step: SQL Merging: individual data-------
@@ -143,4 +143,4 @@ df4_ind <- left_join(df3, pay_inf, by = "transaction_id", "total_amount") %>%# s
     rename(total_amount = total_amount.x)
 
 # save individual data---------        
-write_delim(df4_ind, "raw data/data_trans_ind_180929_egel_check.csv", delim = ';') # contains all transaction over ZHAW
+write_delim(df4_ind, here::here("augmented data/data_trans_ind_180929.csv"), delim = ';') # contains all transaction over ZHAW

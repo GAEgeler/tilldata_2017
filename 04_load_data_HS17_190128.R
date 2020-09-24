@@ -12,19 +12,19 @@ lapply(pack, function(x){do.call("library", list(x))})
 
 ####load data
 
-if(file.exists("augmented data/data_edit_180929_egel.csv")){
-    # data from 2017-------- meal buying with campuscard
-    df_17 <- read_delim("augmented data/data_edit_180929_egel.csv", delim = ";", locale = locale(encoding = "LATIN1")) %>%
-    mutate(date = as.Date(date))  # Data of 12 Personen where excluded from the individual dataset (1564-1552)
+if(dir.exists(here::here("augmented data/"))){ # load from your local machine
+    # data from 2017-------- meal buyings with campuscard
+    df_17 <- read_delim(here::here("augmented data/", "2017_ZHAW_individual_menu_sales_NOVANIMAL.csv"), delim = ";", locale = locale(encoding = "LATIN1")) %>%
+    mutate(date = as.Date(date)) 
 
 
     # data from 2017---------- for aggregated analysis
-    df_ <- read_delim("augmented data/data_edit_agg_180802_egel.csv", delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
+    df_ <- read_delim(here::here("augmented data/", "2017_ZHAW_aggregated_menu_sales_NOVANIMAL.csv"), delim = ";", locale = locale(encoding = "LATIN1"), trim_ws = T) %>%
     mutate(date = as.Date(date)) 
     
-    message("---You load your data from an local server---")
     
-}else{
+}else{ # load data from zenodo
+    
     # data from 2017 --- meal buying with campuscard
     df_17 <- data.table::fread("URL", encoding = "Latin1", sep = ";") %>% 
         mutate(date = as.Date(date)) %>% 
@@ -48,17 +48,8 @@ df_agg <- filter(df_, qty_weight > 1) %>%
 
 #merge documentation info with environmental data (no nutritional data (code is here, however not finished))-----
 #information can be downloaded form the website ...
-if(file.exists("05_load_add_data_190128.R")){
-    # load data
-    source("05_load_add_data_190128.R", encoding = "Latin1") # with the difference between fish and meat
+source("05_load_add_data_190128.R", encoding = "Latin1") # while the first sourcing
     
-    message("---You load your data from an local server---")
-}else{
-    # load data form webpage
-    info_compl <- data.table::fread("URL", encoding = "Latin1", sep = ";")
-    
-    message("---You load your data from ...(Webpage)---")
-}
 # merge documentation with data 2017
 info_ <- select(info_compl, meal_name_comp, meal_name, article_description, label_content, date, cycle, shop_description, tot_ubp, tot_gwp, buffet_animal_comp, outside, sun, clouds, rainfall) # subset of info_compl
 df_7_ <- left_join(df_17, info_, by = c("shop_description","date","article_description","cycle")) # attention with cylce as key variable => all information for second cycle is not included!!
@@ -90,7 +81,7 @@ df_2017 <- bind_rows(df_keep, df_keep2)
 df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
 
 #message
-message("you load succsessfully your data: mensaverkäfe (df_agg), gästedaten (df_2017)")
+message("you load succsessfully your data: menüverkaufsdaten (df_agg), gästedaten (df_2017)")
 
 # delete some datasets
 rm(list = c("pack","df_" ,"df_17", "df_7_", "info_", "df_double", "df_keep", "df_keep2", "info_compl"))

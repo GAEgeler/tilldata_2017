@@ -16,12 +16,11 @@ from datetime import datetime # not sure if needed
 import random
 import numpy as np
 
-
-# load data
-os.chdir('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/')
+#set environment
+path = os.getcwd()
 
 # load individual data set
-d = pd.read_csv('clean data/data_filtered_ind_180929_egel_check.csv', sep=';', parse_dates=['trans_date']) # do not parse date
+d = pd.read_csv('path/clean data/data_filtered_ind_180929.csv', sep=';', parse_dates=['trans_date']) # do not parse date
 
 
 # one special cases:
@@ -43,7 +42,7 @@ d.update(spec)# merge it back to data frame, in total 67 cases had favorites at 
 d.loc[(d['date']=='2017-10-09') & (d['article_description']=="Local TÃ¶ssfeld"),'article_description'] ='Local Kitchen'
 
 # 	2017-10-17
-d.loc[(d['date']=='2017-10-17') & (d['article_description']=="Kitchen 4") & (d['shop_description']=='GrÃ¼ental'),'article_description'] ='Local Kitchen'
+d.loc[(d['date']=='2017-10-17') & (d['article_description']=="Kitchen 4") & (d['shop_description']=='Grüental'),'article_description'] ='Local Kitchen'
 
 # 	2017-10-20
 d.loc[(d['date']=='2017-10-20') & (d['shop_description']=='Vista') & (d['article_description']=="Kitchen 4"),'article_description'] ='Local Kitchen'
@@ -52,7 +51,7 @@ d.loc[(d['date']=='2017-10-20') & (d['shop_description']=='Vista') & (d['article
 d.loc[(d['date']=='2017-11-20') & (d['article_description']=="Kitchen 2"),'article_description'] ='Local Kitchen'
 
 #   2017-12-19: in aggregated data set (16)
-d.loc[(d['date']=='2017-12-19') & (d['shop_description']=='GrÃ¼ental') & (d['article_description']=="Kitchen 2"),'article_description'] = 'Local Kitchen'
+d.loc[(d['date']=='2017-12-19') & (d['shop_description']=='Grüental') & (d['article_description']=="Kitchen 2"),'article_description'] = 'Local Kitchen'
 
 # 	2017-12-20: in individual data set (14)
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Kitchen 2"),'article_description'] ='Local Kitchen'
@@ -73,7 +72,7 @@ d.loc[(d['date']=='2017-10-26') & (d['article_description']=="Local Favorite"),'
 d.loc[(d['date']=='2017-10-30') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
 
 # 	2017-11-03:
-d.loc[(d['date']=='2017-11-03') & (d['shop_description']=='GrÃ¼ental') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
+d.loc[(d['date']=='2017-11-03') & (d['shop_description']=='Grüental') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
 
 # 	2017-11-07: 5 observations in individual data set
 d.loc[(d['date']=='2017-11-07') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
@@ -106,7 +105,7 @@ d.loc[(d['date']=='2017-12-15') & (d['article_description']=="Local Favorite"),'
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Local Favorite"),'article_description'] = 'Favorite'
 
 ### save individual data
-d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/augmented data/data_edit_ind_180929_egel_check.csv',sep=';', index=False)
+d.to_csv('path/augmented data/2017_ZHAW_individual_menu_sales_NOVANIMAL.csv',sep=';', index=False)
 
 
 #########################################################
@@ -115,8 +114,8 @@ d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/augmented 
 
 #############
 # load agg data set
-d = pd.read_csv('clean data/data_filtered_agg_180802_egel_check.csv', sep=';', parse_dates=['trans_date',"date"])
-# the shop_description contained two words "grÃ¼ental/vista MENSA"; to delete the mensa word see code below
+d = pd.read_csv('path/clean data/data_filtered_agg_180802.csv', sep=';', parse_dates=['trans_date',"date"])
+# the shop_description contained two words "grüental/vista MENSA"; to delete the mensa word see code below
 #d['shop_description'] = d['shop_description'].str.replace(" .*","") # select only fist word of string
 
 # two special cases:
@@ -139,7 +138,7 @@ d.update(spec)# merge it back to data frame
 d.loc[(d['date']=='2017-10-09') & (d['article_description']=="Local TÃ¶ssfeld"),'article_description'] ='Local Kitchen'
 
 # 	2017-10-17
-d.loc[(d['date']=='2017-10-17') & (d['article_description']=="Kitchen 4") & (d['shop_description']=='GrÃ¼ental'),'article_description'] ='Local Kitchen'
+d.loc[(d['date']=='2017-10-17') & (d['article_description']=="Kitchen 4") & (d['shop_description']=='Grüental'),'article_description'] ='Local Kitchen'
 
 # 	2017-10-20
 d.loc[(d['date']=='2017-10-20') & (d['shop_description']=='Vista') & (d['article_description']=="Kitchen 4"),'article_description'] ='Local Kitchen'
@@ -148,7 +147,7 @@ d.loc[(d['date']=='2017-10-20') & (d['shop_description']=='Vista') & (d['article
 d.loc[(d['date']=='2017-11-20') & (d['article_description']=="Kitchen 2"),'article_description'] ='Local Kitchen'
 
 #   2017-12-19: in aggregated data set (16)
-d.loc[(d['date']=='2017-12-19') & (d['shop_description']=='GrÃ¼ental') & (d['article_description']=="Kitchen 2"),'article_description'] = 'Local Kitchen'
+d.loc[(d['date']=='2017-12-19') & (d['shop_description']=='Grüental') & (d['article_description']=="Kitchen 2"),'article_description'] = 'Local Kitchen'
 
 # 	2017-12-20: in aggregated data set (15)
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Kitchen 2"),'article_description'] ='Local Kitchen'
@@ -172,7 +171,7 @@ d.loc[(d['date']=='2017-10-30') & (d['article_description']=="Local World"),'art
 d.loc[(d['date']=='2017-11-02') & (d['shop_description']=='Vista') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
 
 # 	2017-11-03:
-d.loc[(d['date']=='2017-11-03') & (d['shop_description']=='GrÃ¼ental') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
+d.loc[(d['date']=='2017-11-03') & (d['shop_description']=='Grüental') & (d['article_description'] =="Local Favorite"),'article_description'] = 'Local World'
 
 #   2017-11-07: 6 observations in aggrageted data set
 d.loc[(d['date']=='2017-11-07') & (d['article_description']=="Local World"),'article_description'] = 'Local Favorite'
@@ -208,4 +207,4 @@ d.loc[(d['date']=='2017-12-15') & (d['article_description']=="Local Favorite"),'
 d.loc[(d['date']=='2017-12-20') & (d['shop_description']=='Vista') & (d['article_description']=="Local Favorite"),'article_description'] = 'Favorite'
 
 ### save agg data set
-d.to_csv('S:/pools/n/N-IUNR-nova-data/02_kassendaten/02_tilldata_2017/augmented data/data_edit_agg_180802_egel_check.csv',sep=';', index=False)
+d.to_csv('path/augmented data/2017_ZHAW_aggregated_menu_sales_NOVANIMAL.csv',sep=';', index=False)

@@ -111,8 +111,7 @@ ubp_1 <- info_orig %>%
 ## load gwp-----------
 gwp <- read_xlsx(here::here("raw data/Novanimal_Umweltbewertung_Menus_final.xlsx"), range="Rezepte!AC3:AN96", trim_ws=TRUE, col_names = T, .name_repair = legacy_repair) %>% # load specific space in excel sheet
   rename(label_content = Menuart, meal_name_comp = X__2, gemuse_fruchte = `Gemüse & Früchte`, ol_fett_nuss = `Öle, Fette & Nüsse`, suss_salz_alk = `Süsses/Salziges/Alkoholisches`, foodwaste = `Foodwaste, ohne Tellerrest`, zubereitung = `Zubereitung Mensa`) %>% # rename variables
-  mutate(method = "gwp") %>% # create new variables: calculation method
-  dplyr::select(meal_name_comp, method, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%
+  dplyr::select(meal_name_comp, Kohlenhydrate, Protein, gemuse_fruchte, ol_fett_nuss, suss_salz_alk, foodwaste, zubereitung) %>%
   mutate(tot_gwp = Kohlenhydrate + Protein + gemuse_fruchte + ol_fett_nuss + suss_salz_alk + foodwaste + zubereitung)
 
 # date, week and cycle is missing => merge with ubp
@@ -120,8 +119,8 @@ gwp_ <- left_join(gwp[ , -2], ubp_[ , c("meal_name_comp", "article_description",
 
 
 # problems of six dublicates => we need to delete them manually!
-t <- bind_rows(gwp_, gwp_[ , -12]) %>% # drop cycle
-  mutate(cycle = ifelse(is.na(cycle), 2, cycle))  # add second cycle, however now there are six meals to much (those 3 form the second cycle and their duplicated from the first cycle)
+t <- bind_rows(gwp_, gwp_[ , -11]) %>% # drop cycle
+  mutate(cycle = ifelse(is.na(cycle), 2, cycle))    # add second cycle, however now there are six meals to much (those 3 form the second cycle and their duplicated from the first cycle)
   
 
 # delete six cases (attention in comparison to the ubp dataset, there ist only meal_name_comp, thus the search strings need to be changed)
@@ -157,15 +156,15 @@ gwp_1 <- info_orig %>%
   filter(!grepl("Local ", .$article_description) & article_description != "Hot and Cold" & shop_description == "Grüental") %>% 
   dplyr::select(article_description, week, cycle, date, label_content, meal_name) %>%
   # filter(!duplicated(meal_name)) %>% # only duplicates (because of shop_description) => not a good
-  join(second_part, ., on = c("article_description", "date", "cycle", "week"), kind = "full", check = m~1)  # gen = "_merge" to check if rows matched
-
+  join(second_part, ., on = c("article_description", "date", "cycle", "week"), kind = "full", check = m~1) %>%   # gen = "_merge" to check if rows matched
+  mutate(method = "gwp") # create new variables: calculation method
 
 # merge dataframes of environmental data
 # to merge with df_agg or df_2017 this file should it do
 # contains only tot_ubp and tot_gwp => for more information see envir_tot
-envir <- left_join(ubp_1[ , c("meal_name_comp", "meal_name_muir", "article_description", "label_content", "date", "week", "cycle", "tot_ubp")], 
-                   gwp_1[ , c("meal_name_comp", "article_description", "label_content", "date", "week", "cycle", "tot_gwp")], 
-                   by = c("meal_name_comp", "article_description", "label_content", "date", "week", "cycle"))
+envir <- left_join(ubp_1[ , c("meal_name_comp", "meal_name", "article_description", "label_content", "date", "week", "cycle", "tot_ubp")], 
+                   gwp_1[ , c("meal_name_comp", "meal_name", "article_description", "label_content", "date", "week", "cycle", "tot_gwp")], 
+                   by = c("meal_name_comp","meal_name", "article_description", "label_content", "date", "week", "cycle"))
 
 
 

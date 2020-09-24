@@ -11,7 +11,7 @@ lapply(pack, function(x){do.call("library", list(x))})
 
 
 # individual data set-----------
-df_ind <- read_delim(here("raw data/data_trans_ind_180929_egel_check.csv"), delim=';', col_types = cols(qty_weight = col_double(),
+df_ind <- read_delim(here("augmented data/data_trans_ind_180929.csv"), delim=';', col_types = cols(qty_weight = col_double(),
                                                                                       trans_date = col_datetime()))  # in comparison to the old data set the actual set counts around 53'000 less transactions
 # filter for grüental and vista (agg data set 50'026, individual data set 41'585) -----------
 df_dat <- df_ind %>%
@@ -54,7 +54,7 @@ df_dat$cycle <- ifelse(df_dat$week >= 40 & df_dat$week <= 45,1,2)
 df_dat$condit <- ifelse(df_dat$week %%2 == 0 & df_dat$cycle == 1, "Basis", ifelse(df_dat$week %%2 == 1 & df_dat$cycle == 2, "Basis", "Intervention"))
 
 # save individual data ----------
-write_delim(df_dat,"clean data/data_clean_ind_180929_egel_check.csv", delim = ';')
+write_delim(df_dat,"clean data/data_clean_ind_180929.csv", delim = ';')
 
 ###############################
 ###############################------------------------------------------------------
@@ -62,7 +62,7 @@ write_delim(df_dat,"clean data/data_clean_ind_180929_egel_check.csv", delim = ';
 
 
 # aggregated data set (rename from ZHAW_transactions_180802_egel)-----
-df_agg <- read_delim(here("raw data/data_trans_agg_180802_egel_check.csv"),  delim=';', col_types = cols(qty_weight = col_double()))
+df_agg <- read_delim(here("augmented data/data_trans_agg_180802.csv"),  delim=';', col_types = cols(qty_weight = col_double()))
 
 
 # filter for grüental and vista (agg data set 50'026, individual data set 41'585) -----------
@@ -102,4 +102,4 @@ df_dat$cycle <- ifelse(df_dat$week >= 40 & df_dat$week <= 45,1,2)
 df_dat$condit <- ifelse(df_dat$week %%2 == 0 & df_dat$cycle == 1, "Basis", ifelse(df_dat$week %%2 == 1 & df_dat$cycle == 2, "Basis", "Intervention"))
 
 # save agg data -------
-write_delim(df_dat,"clean data/data_clean_agg_180802_egel_check.csv", delim = ';')
+write_delim(df_dat,"clean data/data_clean_agg_180802.csv", delim = ';')
