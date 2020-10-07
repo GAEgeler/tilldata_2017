@@ -11,8 +11,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 
-# load libraries
-library(testit)
 
 # to load data menüverkäufe, attention for the encoding engine (set it to latin not utf-8)
 # errors can be ignored => due to rm()
