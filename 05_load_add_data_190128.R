@@ -50,7 +50,10 @@ envir_nutri <- left_join(envir, nutri_, by = c("date", "article_description", "c
 tmp <- tempfile(fileext = ".xlsx")
 buffet <- curl::curl_download(url= "https://novanimal.ch/wp-content/uploads/2020/09/2017_ZHAW_buffet_content_NOVANIMAL.xlsx", tmp) %>% 
     read_excel() %>% 
-    mutate(date = as_date(date)) # causes an error: Error in the HTTP2 framing layer
+    mutate(date = as_date(date)) %>%  # causes an error: Error in the HTTP2 framing layer
+    mutate(article_description = "Hot and Cold") %>%
+    mutate(shop_description = str_replace(.$shop_description, " .*", ""))
+
 file.remove(tmp)
 
 
@@ -59,7 +62,7 @@ file.remove(tmp)
 info_compl <- left_join(info_orig, envir_nutri, by=c("meal_name", "article_description","date", "cycle", "week", "label_content")) # left join
 
 # merge the file with the documentation of the hot and cold buffet
-info_compl <- left_join(info_compl, buffet, by=c("date", "shop_description"))
+info_compl <- left_join(info_compl, buffet, by=c("date", "shop_description", "article_description"))
 
 
 #delete other data sets

@@ -54,6 +54,19 @@ df_ %>%
     uncount(qty_weight) %>%  # replicates rows according quantity of buyings
     left_join(df_, .) -> df_agg # merge it back to agg dataframe
 
+
+#merge documentation info with environmental data (no nutritional data (code is here, however not finished))-----
+#information can be downloaded form the website ...
+source("05_load_add_data_190128.R", encoding = "Latin1") # while the first sourcing
+
+# merge documentation with data 2017
+info_ <- select(info_compl, meal_name_comp, meal_name, article_description, label_content, date, cycle, shop_description, tot_ubp, tot_gwp, buffet_animal_comp, outside, sun, clouds, rainfall) # subset of info_compl
+
+# merge aggregated sv data
+df_2017 <- left_join(df_17, info_, by = c("shop_description","date","article_description","cycle")) # attention with cylce as key variable => all information for second cycle is not included!!
+df_agg <- left_join(df_agg, info_, by = c("shop_description","date","article_description", "cycle"))
+
+
 # delete some datasets
-rm(list = c("df_" ,"df_17", "df_double", "df_keep", "df_keep2"))
+rm(list = c("df_" ,"df_17", "df_double", "df_keep", "df_keep2", "info_compl"))
 
