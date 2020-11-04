@@ -14,6 +14,9 @@ lapply(pack, function(x){do.call("library", list(x))})
 
 #### 2015-2016: label content-----
 # check out github: https://github.com/GAEgeler/tilldata_2015_2016
+if(!dir.exists(here::here("/scripts from another project/"))){
+    message("Check out https://github.com/GAEgeler/tilldata_2015_2016 for scripts concerning selling data from 2015 and 2016")
+}
 source(here::here("/scripts from another project/03_edit_data_label_191206_egel.R"), chdir = TRUE, encoding = "ISO8859-1")
 
 
@@ -34,6 +37,7 @@ menu_tot_label <- bind_rows(menu_tot5, menu_tot6, menu_tot7)
 rm(list = c("menu_tot5", "menu_tot6", "menu_tot7"))
 
 #### 2015-2016: meal line
+# check out github: https://github.com/GAEgeler/tilldata_2015_2016
 source(here::here("/scripts from another project/03_edit_data_label_191206_egel.R"), chdir = TRUE, encoding = "ISO8859-1")
 
 

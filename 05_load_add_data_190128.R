@@ -18,20 +18,17 @@ lapply(pck, function(x){do.call("library", list(x))})
 
 
 #UBP & GWP
-envir <- data.table::fread("https://novanimal.ch/wp-content/uploads/2020/09/2017_ZHAW_gwp_ubp_NOVANIMAL.csv", encoding = "unknown", sep = ";" ) %>% 
-    mutate(date = as_date(date)) %>%
-    as_tibble()
+envir <- read_delim("https://zenodo.org/record/4115376/files/2017_ZHAW_gwp_ubp_NOVANIMAL.csv?download=1", locale = locale(encoding = "latin1"), delim = ";") %>% 
+    mutate(date = as_date(date))
 
 
 #EBP
-nutri_ <- data.table::fread("https://novanimal.ch/wp-content/uploads/2020/09/2017_ZHAW_ebp_teller_NOVANIMAL.csv", encoding = "unknown", sep = ";") %>% 
-    mutate(date = as_date(date)) %>% 
-    as_tibble()
+nutri_ <- read_delim("https://zenodo.org/record/4115429/files/2017_ZHAW_ebp_teller_NOVANIMAL.csv?download=1", locale = locale(encoding = "latin1"), delim = ";") %>% 
+    mutate(date = as_date(date))
 
 #feldtagebuch
-info_orig <- data.table::fread("https://novanimal.ch/wp-content/uploads/2020/09/2017_ZHAW_feldtagebuch_dokumentation_NOVANIMAL.csv", encoding = "unknown", sep = ";") %>% 
-    mutate(date = as_date(date)) %>% 
-    as_tibble()
+info_orig <- read_delim("https://zenodo.org/record/4115449/files/2017_ZHAW_feldtagebuch_dokumentation_NOVANIMAL.csv?download=1", locale = locale(encoding = "latin1"), delim = ";") %>% 
+    mutate(date = as_date(date))
 
 
 
@@ -48,7 +45,7 @@ envir_nutri <- left_join(envir, nutri_, by = c("date", "article_description", "c
 
 # infos from here: https://github.com/tidyverse/readxl/issues/278
 tmp <- tempfile(fileext = ".xlsx")
-buffet <- curl::curl_download(url= "https://novanimal.ch/wp-content/uploads/2020/09/2017_ZHAW_buffet_content_NOVANIMAL.xlsx", tmp) %>% 
+buffet <- curl::curl_download(url= "https://zenodo.org/record/4243055/files/2017_ZHAW_buffet_content_NOVANIMAL.xlsx?download=1", tmp) %>% 
     read_excel() %>% 
     mutate(date = as_date(date)) %>%  # causes an error: Error in the HTTP2 framing layer
     mutate(article_description = "Hot and Cold") %>%

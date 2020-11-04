@@ -56,7 +56,7 @@ df_ %>%
 
 
 #merge documentation info with environmental data (no nutritional data (code is here, however not finished))-----
-#information can be downloaded form the website ...
+#information can be downloaded form the zenodo website
 source("05_load_add_data_190128.R", encoding = "Latin1") # while the first sourcing
 
 # merge documentation with data 2017
