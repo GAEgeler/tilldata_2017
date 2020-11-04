@@ -9,6 +9,7 @@
 library(dplyr)
 library(readr)
 library(lubridate)
+library(here)
 
 #####article filter--------
 # subset data: Favorite, Garden (= Hot n Cold), Kitchen (0,1,2,3,4), LocalFavorite, LocalKitchen, LocalWorld, World => Local Kitchen is missing?
@@ -37,7 +38,7 @@ articles <- c(
 ### filter for individual dara
 # load data set-------------
 # individual dataset
-df_ind <- read_delim(here("clean data/data_clean_ind_180929_egel_check.csv"), delim = ';')
+df_ind <- read_delim(here::here("clean data/data_clean_ind_180929.csv"), delim = ';')
 
 # 1. article filter--------
 df_i <- filter(df_ind, art_code %in% articles) # attention no time filter
@@ -52,7 +53,7 @@ df_in$date <- as.Date(df_in$date) # change date format from POSIXct to Date
 
 # 4. save data-------
 # individual data set: 23683 obs
-write_delim(df_in, "clean data/data_filtered_ind_180929_egel_check.csv", delim = ';')
+write_delim(df_in, here::here("clean data/", "data_filtered_ind_180929.csv"), delim = ';')
 
 ##################################################
 ##################################################--------------------------------
@@ -60,7 +61,7 @@ write_delim(df_in, "clean data/data_filtered_ind_180929_egel_check.csv", delim =
 
 #load data set------------
 # aggreagted dataset
-df_agg <- read_delim(here("clean data/data_clean_agg_180802_egel_check.csv"), delim = ';')
+df_agg <- read_delim(here::here("clean data/data_clean_agg_180802.csv"), delim = ';')
 
 ###############
 ### filter for aggregated dara: 
@@ -84,4 +85,4 @@ df_ag$date <- as.Date(df_ag$date) # change date format from POSIXct to Date
 
 # 6. save data-------
 # agg data set: 26234 obs
-write_delim(df_ag, "clean data/data_filtered_agg_180802_egel_check.csv", delim = ';')
+write_delim(df_ag, here::here("clean data/data_filtered_agg_180802.csv"), delim = ';')

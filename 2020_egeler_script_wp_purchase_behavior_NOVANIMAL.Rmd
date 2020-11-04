@@ -11,8 +11,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 
-# load libraries
-library(testit)
 
 # to load data menüverkäufe, attention for the encoding engine (set it to latin not utf-8)
 # errors can be ignored => due to rm()
@@ -1148,6 +1146,8 @@ aggregate(visit_counts~category + gender, data = visiter_freq, FUN = sum)
 aggregate(pct~category + member, data = visiter_freq, FUN = mean)
 aggregate(visit_counts~category + member, data = visiter_freq, FUN = sum)
 
+aggregate(visit_counts ~ category + member + gender, data = visiter_freq, FUN = sum)
+
 # add label
 visiter_freq2 <- visiter_freq %>% 
     group_by(member, gender) %>% 
@@ -1319,6 +1319,7 @@ df_2 <- df_ %>%
 ```
 
 ```{r chapter 7, define types}
+# see chuck 20 for data set df_
 # pre defined groups (one timers, some timers, buffetarians, canteen eaters (with three subgroups according to meat consumption)
 # one timers: people went only once to the canteen 
 one <-  df_ %>%  
@@ -1493,8 +1494,8 @@ psych::describe(reg_visitors$tot_buy)
 
 
 ```{r figure 15}
-
 # plot all groups according to their purchase behavior
+# reg_visitors see chuck 20 and 22
 purchase <- right_join(df_2017, reg_visitors[,c("ccrs", "cluster")], by = "ccrs") %>% 
     # filter(cluster != "one" & cluster!= "some") %>%
     group_by(., cluster) %>% 
@@ -1512,8 +1513,9 @@ cluster_dat <- reg_visitors %>%
 
 #prepare data for plot
 pl <- left_join(purchase, cluster_dat, by = "cluster") %>% 
-    select(- count_cluster, -tot_sell) %>% 
-    pivot_longer(-cluster, values_to = "value", names_to = "variable") # long format
+    # mutate(xlab = paste(cluster, count_cluster, sep = "\n")) %>%     
+    select(-count_cluster, -tot_sell) %>% 
+    pivot_longer(-c(cluster), values_to = "value", names_to = "variable") # long format
 
 # plot
 p <- ggplot(pl, aes(y = value, x = factor(cluster, levels = c("buffet","never meat", "veg-flexitarians", "meat-flexitarians", "meat-eaters", "meat lovers", "always meat")), 
@@ -1524,7 +1526,7 @@ p <- ggplot(pl, aes(y = value, x = factor(cluster, levels = c("buffet","never me
                       breaks = c("pct_cluster", "pct_sellings"),
                       labels = c("Anteil Mensagäste\nnach Verpflegungstyp (100 % = 990)", "Anteil Menüverkäufe\nnach Verpflegungstyp (100 % = 19'761)")) +
     scale_x_discrete(limits = c("buffet","never meat", "veg-flexitarians", "meat-flexitarians", "meat-eaters", "meat lovers", "always meat"),
-      labels = c("Buffetarian","Never Meat", "Vegetarian\nFlexitarian", "Meat\nFlexitarian", "Meat Eater", "Meat Lover", "Always Meat")) +
+      labels = c("Buffetarian\n(19)","Never Meat\n(22)", "Vegetarian\nFlexitarian\n(218)", "Meat\nFlexitarian\n(185)", "Meat Eater\n(323)", "Meat Lover\n(205)", "Always Meat\n(18)")) + # I added the cluster size manually
     geom_text(aes(label = scales::percent(round(value, 2), accuracy = 1L)), position = position_dodge(width = .6), vjust = -.25, size = 11) + #check_overlap = TRUE, use value instead => there is an error message due to that.
     guides(fill = guide_legend("", override.aes = list(color = "white"))) +
     xlab("") +
@@ -1576,25 +1578,26 @@ visiter2_ <- visiter  %>%
                                                       "meat-eaters", "meat lovers", "always meat")))
   
 ColsPerCat = c(
-"6- bis 11-mal" = "#c5b87c",
-"12- bis 23-mal" = "#fad60d",
-"24- bis 35-mal" = "#80ccff",
-"36- bis 47-mal" = "#6619e6",
-"48- bis 60-mal" = "#262626")  #einmaliger Besuch" = "#000000", "mehr als 5-mal pro Woche" = "#ffffff",
+"6- bis 11-mal" = "#99f200",
+"12- bis 23-mal" =  "#008099",
+"24- bis 35-mal" = "#fad60d",
+"36- bis 47-mal" = "#c5b87c",
+"48- bis 60-mal" = "#262626")
 
-visiter2_$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter2$cluster], # takes every label and their belonged color
+
+visiter2_$label_color <- as.factor(sapply(unlist(ColsPerCat)[visiter2_$category], # takes every label and their belonged color
                                          function(color) { if (isDark(color)) 'white' else 'black' })) # check if color is dark, than give back "white" else "black"
 
 # plot
 #factor(cluster, levels = c("buffet", "never meat", "Vegetarian Flexitarians", "Meat Flexitarians", "meat-eaters", "meat lovers", "always meat"))
 p <- ggplot(visiter2_, aes(x = xlab, 
-                     y = pct, fill = (category), color = "black")) +
+                     y = pct, fill = (category), color = label_color)) +
     geom_bar(stat = "identity", colour = NA, position = position_stack(reverse = T), width = .6) + # reverse = T due to coord_flip, see https://stackoverflow.com/questions/42710056/reverse-stacked-bar-order
     scale_fill_manual(breaks = attributes(ColsPerCat)$name,
                       limits = attributes(ColsPerCat)$name,
                       values =  ColsPerCat) +
-    coord_flip() +
     scale_color_manual(values = levels(visiter2_$label_color)) +
+    coord_flip() +
     guides(fill = guide_legend("", nrow = 1, reverse = F),
            color = F) +
     scale_y_continuous(labels=scales::percent_format(accuracy = 1L)) +
@@ -1603,8 +1606,6 @@ p <- ggplot(visiter2_, aes(x = xlab,
     xlab("") +
     ylab("\nMensabesuche während 12 Wochen\n") +
     geom_text(aes(label = ifelse(visiter2$pct<.02,"", scales::percent(round(pct, 2), accuracy = 1L))), position = position_stack(vjust = .5, reverse = T), size= 12) +
-    # annotate("text", x = 1:7, y = 1.05, label = text$label, parse = T, size = 9) +
-    
     mytheme +
     theme(legend.position = "bottom")
 
@@ -2048,7 +2049,7 @@ for (i in 1:length(dfList)) {
 ```
 
 
-## 7. Verpflegungstyp: statistik (delete?)
+## 7. Verpflegungstyp: statistik
 
 
 ```{r chapter 7 stats on all types, eval=FALSE}

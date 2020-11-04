@@ -33,11 +33,8 @@
 /papers
 /survey meat
 /publications
-<<<<<<< HEAD
 /scripts from another project
 /fonts
-
-.Rproj.user
-=======
 /weather_food
->>>>>>> master
+/export_zenodo
+.Rproj.user
